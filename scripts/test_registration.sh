@@ -1,0 +1,1 @@
+python3 -m src.test_registration

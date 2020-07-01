@@ -1,0 +1,3 @@
+python3 -m src.train_registration --loss ncc --ncc_win_size 9 --lam 1 --channels 64 128 256 --batch_size 3 --gpus 0,1 --lr 0.0001 --bnorm --dropout --savedir ./loss/out/registration/ncc --distributed_backend ddp --max_epochs=3000
+python3 -m src.train_registration --loss ncc+supervised --ncc_win_size 9 --lam 1 --channels 64 128 256 --batch_size 3 --gpus 0,1 --lr 0.0001 --bnorm --dropout --savedir ./loss/out/registration/ncc+supervised --distributed_backend ddp --max_epochs=3000
+python3 -m src.train_registration --loss deepsim --lam 0.5 --channels 64 128 256 --batch_size 3 --gpus 0,1 --lr 0.0001 --bnorm --dropout --savedir ./loss/out/registration/deepsim --distributed_backend ddp --max_epochs=3000
