@@ -196,7 +196,7 @@ class CommonLightningModel(pl.LightningModule):
                 return obj.to(device)
         # visualize output
         if self.current_epoch - self.last_viz >= self.viz_every_n_epochs:
-            device = self.device
+            device = next(iter(self.parameters())).device
             if device.type == 'cpu' or (device.type == 'cuda' and device.index == 0):
                 batch = map_to_device(self.viz_batch, device)
                 print('Creating Visualization..')
