@@ -11,5 +11,5 @@
 
 #Runtime
 #Note that a program will be killed once it exceeds this time!
-#SBATCH --time=0-12:00:0
+#SBATCH --time=1-00:00:00
 $1
