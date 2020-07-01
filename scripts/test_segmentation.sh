@@ -1,0 +1,1 @@
+python3 -m src.test_segmentation --weights ./loss/weights/segmentation/weights.ckpt --out ./loss/out/segmentation.tif
