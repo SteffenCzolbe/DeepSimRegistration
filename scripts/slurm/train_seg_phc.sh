@@ -23,4 +23,4 @@ export PYTHONFAULTHANDLER=1
 
 hostname
 echo CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES
-srun python3 -m src.train_segmentation --dataset phc-u373 --max_steps 15000 --savedir ./out/phc-u373/segmentation/ --channels 64 128 256 --batch_size 2 --accumulate_grad_batches 4 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp
+srun python3 -m src.train_segmentation --dataset phc-u373 --max_steps 15000 --savedir ./out/phc-u373/segmentation/ --channels 64 128 256 --batch_size 5 --accumulate_grad_batches 2 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp
