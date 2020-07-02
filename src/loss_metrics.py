@@ -8,7 +8,7 @@ import math
 
 class NCC(nn.Module):
     """
-    Local (over window) normalized cross correlation loss. Normalized to window [0,1], with 0 being perfect match.
+    Local (over window) normalized cross correlation loss. Normalized to window [0,2], with 0 being perfect match.
     """
 
     def __init__(self, window=5):
@@ -88,5 +88,5 @@ class DeepSim(nn.Module):
             cos_sim = prod_ab / (norm_a * norm_b)
             losses.append(torch.mean(cos_sim))
 
-        # mean, rescale
+        # mean and invert for minimization
         return -torch.stack(losses).mean() + 1
