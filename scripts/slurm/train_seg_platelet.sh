@@ -15,7 +15,7 @@
 
 #Runtime
 #Note that a program will be killed once it exceeds this time!
-#SBATCH --time=1-00:00:00
+#SBATCH --time=0-15:00:00
 
 # debugging flags (optional)
 export NCCL_DEBUG=INFO
