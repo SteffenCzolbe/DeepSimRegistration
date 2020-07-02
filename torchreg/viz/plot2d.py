@@ -170,7 +170,7 @@ class Fig:
         return self
 
     def plot_transform_vec(
-        self, row, col, flow, interval=5, arrow_length=1.0, linewidth=1.0, title=None
+        self, row, col, flow, interval=5, arrow_length=1.0, linewidth=1.0, title=None, overlay=False
     ):
         """
         plots a transformation of the form 2 x H x W at position row, col.
@@ -180,6 +180,7 @@ class Fig:
             flow: Tensor of shape 2 x H x W
             interval: spacing of grid lines. default 5.
             title: optional title
+            overlay: bool, is the grid an overlay over an existing image? Default False
         """
         # get identity
         idty_transform = Identity()
@@ -201,9 +202,11 @@ class Fig:
         # calculate magnitude
         M = np.hypot(U, V)
 
-        self.axs[row, col].invert_yaxis()
-        self.axs[row, col].set_aspect("equal")
-        self.axs[row, col].title.set_text(title)
+        if not overlay:
+            # only set up frame if this is not an overlay
+            self.axs[row, col].invert_yaxis()
+            self.axs[row, col].set_aspect("equal")
+            self.axs[row, col].title.set_text(title)
 
         self.axs[row, col].quiver(
             X[::interval, ::interval],
