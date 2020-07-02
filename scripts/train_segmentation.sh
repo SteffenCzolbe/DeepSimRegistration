@@ -1,2 +1,2 @@
-python3 -m src.train_segmentation --dataset phc-u373 --savedir ./loss/out/phc-u373/segmentation/ --channels 64 128 256 --batch_size 6 --auto_scale_batch_size='binsearch' --gpus 0,1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp
-python3 -m src.train_segmentation --dataset platelet-em --savedir ./loss/out/platelet-em/segmentation/ --channels 64 128 256 --batch_size 2 --auto_scale_batch_size='binsearch' --gpus 0,1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp
+python3 -m src.train_segmentation --dataset phc-u373 --max_steps 15000 --savedir ./out/phc-u373/segmentation/ --channels 64 128 256 --batch_size 2 --accumulate_grad_batches 4 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp
+srun python3 -m src.train_segmentation --dataset platelet-em --max_steps 15000 --savedir ./out/platelet-em/segmentation/ --channels 64 128 256 --batch_size 2 --accumulate_grad_batches 4 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp
