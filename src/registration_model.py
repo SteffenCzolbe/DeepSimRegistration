@@ -3,10 +3,11 @@ import argparse
 import numpy as np
 import torch
 import torchreg
-import torchreg.transforms.functional as ttf
 import torchreg.viz as viz
 from.common_lightning_model import CommonLightningModel
-from .models.UNet import UNet
+from .models.voxelmorph import Voxelmorph
+from .loss_metrics import NCC, DeepSim
+from .segmentation_model import SegmentationModel
 import ipdb
 
 class RegistrationModel(CommonLightningModel):
@@ -18,7 +19,7 @@ class RegistrationModel(CommonLightningModel):
         """
         Init method instantiates the network
         """
-        super().__init__(hparams, dataset_image_pairs=False)
+        super().__init__(hparams, dataset_image_pairs=True)
         self.hparams = hparams
 
         # set net
@@ -31,6 +32,8 @@ class RegistrationModel(CommonLightningModel):
         )
 
         if hparams.loss == 'deepsim':
+            if not hparams.deepsim_weights:
+                raise ValueError('No weights specified for Deep Similarity Metric.')
             feature_extractor = SegmentationModel.load_from_checkpoint(hparams.deepsim_weights)
             self.deepsim = DeepSim(feature_extractor)
 
@@ -38,7 +41,7 @@ class RegistrationModel(CommonLightningModel):
         self.mse = torch.nn.MSELoss()
         self.diffusion_reg = torchreg.metrics.GradNorm()
         self.dice_overlap = torchreg.metrics.DiceOverlap(classes=list(range(3)))
-        self.transformer = tnn.SpatialTransformer()
+        self.transformer = torchreg.nn.SpatialTransformer()
 
     def forward(self, moving, fixed):
         """
@@ -98,46 +101,33 @@ class RegistrationModel(CommonLightningModel):
             "accuracy": accuracy,
         }
 
-
-    def viz_results(self, I_0, I_m, I_1, S_0, S_m, S_1, flow):
-
-        def class_to_rgb(segmap):
-            return (
-                ttf.volumetric_image_to_tensor(
-                    np.array(datahelpers.class_to_rgb(ttf.image_to_numpy(segmap[0])))
-                )
-                / 255
-            )
-
-        print('creating vizualization...')
-
+    def viz_results(self, I_0, I_m, I_1, S_0, S_m, S_1, flow, save=True):
         # make figure
-        fig = viz.Fig(3, 3, f"Epoch {self.current_epoch}", figsize=(6, 6))
-        fig.plot_img(0, 0, I_0[0], vmin=0, vmax=1, title="Source")
-        fig.plot_img(0, 1, I_m[0], vmin=0, vmax=1, title="Morphed")
-        fig.plot_img(0, 2, I_1[0], vmin=0, vmax=1, title="Target")
-        fig.plot_img(
-            1, 0, class_to_rgb(S_0), title="Source"
-        )
-        fig.plot_img(
-            1, 1, class_to_rgb(S_m), title="Morphed"
-        )
-        fig.plot_img(
-            1, 2, class_to_rgb(S_1), title="Target"
-        )
+        fig = viz.Fig(2, 3, f"Epoch {self.current_epoch}", figsize=(9, 6))
+
+        fig.plot_img(0, 0, I_0[0], vmin=0, vmax=1, title="$I_0$")
+        fig.plot_overlay_class_mask(0, 0, S_0[0], num_classes=self.dataset_config('classes'), 
+            colors=self.dataset_config('class_colors'), alpha=0.2)
+
+        fig.plot_img(0, 1, I_m[0], vmin=0, vmax=1, title="$I_0 \circ \Phi$")
+        fig.plot_overlay_class_mask(0, 1, S_m[0], num_classes=self.dataset_config('classes'), 
+            colors=self.dataset_config('class_colors'), alpha=0.2)
+
+        fig.plot_img(1, 1, I_1[0], vmin=0, vmax=1, title="$I_1$")
+        fig.plot_overlay_class_mask(1, 1, S_1[0], num_classes=self.dataset_config('classes'), 
+            colors=self.dataset_config('class_colors'), alpha=0.2)
+
         fig.plot_transform_grid(
-            2, 0, flow[0], title="$\Phi$", interval=15, linewidth=0.1
+            1, 0, flow[0], title="$\Phi$", interval=15, linewidth=0.1
         )
-        fig.plot_transform_vec(2, 1, flow[0], title="$\Phi$", interval=15)
+        fig.plot_img(0, 2, (S_0[0] != S_1[0]).long(), vmin=0, vmax=1, title="Diff")
+        fig.plot_img(1, 2, (S_m[0] != S_1[0]).long(), vmin=0, vmax=1, title="Diff Registered")
 
-        fig.plot_img(
-            2, 2, (S_m[0] - S_1[0]).abs(), vmin=0, vmax=1, title="Diff"
-        )
-
-
-        os.makedirs(self.hparams.savedir, exist_ok=True)
-        fig.save(os.path.join(self.hparams.savedir, f"{self.current_epoch}.pdf"),)
-
+        if save:
+            os.makedirs(self.hparams.savedir, exist_ok=True)
+            fig.save(os.path.join(self.hparams.savedir, f"{self.current_epoch}.pdf"),)
+        else:
+            return fig
 
     @staticmethod
     def add_model_specific_args(parent_parser):
@@ -153,7 +143,10 @@ class RegistrationModel(CommonLightningModel):
             "--ncc_win_size", type=int, default=9, help="Window-Size for the NCC loss function (Default: 9)"
             )
         parser.add_argument(
-            "--deepsim_weights", type=str, default='./loss/weights/segmentation/weights.ckpt', help="Path to deep feature model weights. Default: 'loss/weights/segmentation/weights.ckpt"
+            "--deepsim_weights", type=str, default=None, help="Path to deep feature model weights."
+        )
+        parser.add_argument(
+            "--lam", type=float, default=0.5, help="Diffusion regularizer strength"
         )
         parser.add_argument(
             "--channels", nargs='+', type=int, default=[64, 128, 256, 512], help="U-Net encoder channels. Decoder uses the reverse. Defaukt: [64, 128, 256, 512]"

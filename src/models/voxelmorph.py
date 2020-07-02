@@ -9,7 +9,7 @@ from .backbone import Backbone, FlowPredictor
 class Voxelmorph(nn.Module):
     """
     VoxelMorph network for (unsupervised) nonlinear registration between two images.
-    Slightly modified implementation, retuning both the flow and it's inverse.
+    Slightly modified implementation.
     """
     def __init__(
         self,
@@ -52,10 +52,7 @@ class Voxelmorph(nn.Module):
             target: the target image
         
         Return:
-            Dictionary of:
-            "morphed": the morphed source image
-            "flow": the transformation
-            "inv_flow": the inverse of the transformation
+            the flow
         """
         # concatenate inputs
         x = torch.cat([source, target], dim=1)
