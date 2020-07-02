@@ -1,1 +1,2 @@
-python3 -m src.test_segmentation --weights ./loss/weights/segmentation/weights.ckpt --out ./loss/out/segmentation.tif
+python3 -m src.test_segmentation --weights ./weights/platelet-em/segmentation/weights.ckpt --out ./out/platelet-em/segmentation/segmentation.tif
+python3 -m src.test_segmentation --weights ./weights/phc-u373/segmentation/weights.ckpt --out ./out/phc-u373/segmentation/segmentation.tif
