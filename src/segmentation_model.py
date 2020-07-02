@@ -64,7 +64,7 @@ class SegmentationModel(CommonLightningModel):
             "accuracy": accuracy,
         }
 
-    def viz_results(self, x, y_true, y_pred):
+    def viz_results(self, x, y_true, y_pred, save=True):
         # make figure
         fig = viz.Fig(1, 3, f"Epoch {self.current_epoch}", figsize=(8, 3))
         fig.plot_img(0, 0, x[0], vmin=0, vmax=1, title="Input")
@@ -75,8 +75,11 @@ class SegmentationModel(CommonLightningModel):
         fig.plot_overlay_class_mask(0, 2, y_true[0], num_classes=self.dataset_config('classes'), 
             colors=self.dataset_config('class_colors'), alpha=0.5)
 
-        os.makedirs(self.hparams.savedir, exist_ok=True)
-        fig.save(os.path.join(self.hparams.savedir, f"{self.current_epoch}.pdf"),)
+        if save:
+            os.makedirs(self.hparams.savedir, exist_ok=True)
+            fig.save(os.path.join(self.hparams.savedir, f"{self.current_epoch}.pdf"),)
+        else:
+            return fig
 
     def extract_features(self, x):
         """

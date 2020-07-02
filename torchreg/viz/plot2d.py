@@ -3,6 +3,8 @@ from torchreg.nn import Identity
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
+import io
+from PIL import Image
 
 
 class Fig:
@@ -230,3 +232,58 @@ class Fig:
         plt.savefig(path)
         if close:
             plt.close(self.fig)
+    def save_to_PIL(self, close=True):
+        """
+        saves the current figure toa PIL image object.
+        Parameters:
+            path: path to save at. Including extension. eg. '~/my_fig.png'
+            close: Bool, closes the figure when set.
+        """
+        buf = io.BytesIO()
+        self.save(buf, close=close)
+        buf.seek(0)
+        return Image.open(buf)
+
+    def save_ax(self, row, col, path, close=True):
+        """
+        saves an axis-sub image.
+        Parameters:
+            row: the row to plot the image
+            col: the clolumn to plot the image
+            path: path to save at. Including extension. eg. '~/my_fig.png'
+            close: Bool, closes the figure when set.
+        """
+        extent = self.axs[row, col].get_window_extent().transformed(self.fig.dpi_scale_trans.inverted())
+        self.fig.savefig(path, bbox_inches=extent)
+        if close:
+            plt.close(self.fig)
+
+    def save_ax_to_PIL(self, row, col, close=True):
+        """
+        saves an axis-sub image to a PIL image object.
+        Parameters:
+            row: the row to plot the image
+            col: the clolumn to plot the image\
+            close: Bool, closes the figure when set.
+        """
+        buf = io.BytesIO()
+        self.save_ax(row, col, buf, close=close)
+        buf.seek(0)
+        img = Image.open(buf)
+
+        # at this point the image still has a title. We search for the white background pixels, and crop the image smaller.
+        img_array = np.array(img)
+        H, W, _ = img_array.shape
+        img_start = 0
+        img_end = H - 1
+        for h in range(0, H):
+            if not (img_array[h, 0] == np.array([255,255,255,255])).all():
+                img_start = h
+                break
+        for h in range(H-1, 0, -1):
+            if not (img_array[h, 0] == np.array([255,255,255,255])).all():
+                img_end = h + 1
+                break
+
+        return img.crop((0, img_start, W, img_end))
+
