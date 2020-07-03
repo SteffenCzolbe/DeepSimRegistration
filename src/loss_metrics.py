@@ -35,6 +35,7 @@ class NCC(nn.Module):
             u_J = J_sum / win_size
 
             # calculate cross corr components
+            ipdb.set_trace()
             cross = IJ_sum - u_J * I_sum - u_I * J_sum + u_I * u_J * win_size
             I_var = I2_sum - 2 * u_I * I_sum + u_I * u_I * win_size
             J_var = J2_sum - 2 * u_J * J_sum + u_J * u_J * win_size
@@ -55,7 +56,7 @@ class NCC(nn.Module):
 
         # calculate cc
         var0, var1, cross = compute_local_sums(y_true, y_pred)
-        cc = cross / ((var0 + 1e-6)**0.5 * (var1 + 1e-6)**0.5)
+        cc = cross / ((var0 + 1e-4)**0.5 * (var1 + 1e-4)**0.5) # inaccuracies can get pretty large here. add large eps.
 
         # mean and invert for minimization
         return -torch.mean(cc) + 1
@@ -83,10 +84,22 @@ class DeepSim(nn.Module):
         for feat0, feat1 in zip(feats0, feats1):
             # calculate cosine similarity
             prod_ab = torch.sum(feat0 * feat1, dim=1)
-            norm_a = torch.sum(feat0**2+ 1e-6, dim=1)**0.5
-            norm_b = torch.sum(feat1**2+ 1e-6, dim=1)**0.5
+            norm_a = (torch.sum(feat0**2, dim=1) + 1e-6)**0.5
+            norm_b = (torch.sum(feat1**2, dim=1) + 1e-6)**0.5
             cos_sim = prod_ab / (norm_a * norm_b)
             losses.append(torch.mean(cos_sim))
 
         # mean and invert for minimization
         return -torch.stack(losses).mean() + 1
+
+if __name__ == '__main__':
+    import numpy as np
+    import torchreg
+    torchreg.settings.set_ndims(2)
+    npz = np.load('invalid_loss_val.npz')
+    I_m = torch.tensor(npz['I_m'])
+    I_1 = torch.tensor(npz['I_1'])
+    ncc = NCC(window=9)
+    import ipdb
+    ipdb.set_trace()
+    ncc(I_m, I_1)
