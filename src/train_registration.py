@@ -16,7 +16,7 @@ def main(hparams):
     )
 
     # if 
-    if hasattr(hparams, 'gpus') and hparams.gpus == 1:
+    if hasattr(hparams, 'gpus') and hparams.gpus in [1, '1', [1]]:
         print('Setting to use GPU 0.')
         hparams.gpus = [0]
 
