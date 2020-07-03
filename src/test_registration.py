@@ -19,7 +19,7 @@ def main(hparams):
     trainer = pl.Trainer()
 
     # test (pass in the model)
-    #trainer.test(model)
+    trainer.test(model)
 
     # create grid animation
     test_set = model.test_dataloader().dataset
@@ -31,7 +31,7 @@ def main(hparams):
 
         fig = viz.Fig(1, 1, None, figsize=(3, 3))
         fig.plot_img(0, 0, I_0[0], vmin=0, vmax=1)
-        fig.plot_transform_vec(0, 0, -flow[0], interval=5, arrow_length=1.0, linewidth=1.0, overlay=True)
+        fig.plot_transform_vec(0, 0, -flow[0], interval=10, arrow_length=1.0, linewidth=2.0, overlay=True)
         # extract the axis we are interested in
         img = fig.save_ax_to_PIL(0, 0)
         images.append(img)
