@@ -1,5 +1,5 @@
 sbatch ./scripts/slurm/train_reg_phc.sh ncc 0.5 --job-name='ph ncc 0.5' 
-sbatch ./scripts/slurm/train_reg_phc.sh ncc 1.0 --job-name='ph ncc 1.0' 
+# sbatch ./scripts/slurm/train_reg_phc.sh ncc 1.0 --job-name='ph ncc 1.0' 
 sbatch ./scripts/slurm/train_reg_phc.sh ncc 2.0 --job-name='ph ncc 2.0' 
 sbatch ./scripts/slurm/train_reg_phc.sh ncc+supervised 0.5 --job-name='ph n+ 0.5' 
 sbatch ./scripts/slurm/train_reg_phc.sh ncc+supervised 1.0 --job-name='ph n+ 1.0' 

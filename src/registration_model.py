@@ -60,7 +60,20 @@ class RegistrationModel(CommonLightningModel):
             return self.ncc(I_m, I_1) + self.mse(S_m_onehot, S_1_onehot)
         else:
             raise ValueError(f'loss function "{self.hparams.loss}" unknow.')
-    
+
+    def nan_saveguard(self, sim_loss, diff_loss, I_m, I_1, S_m_onehot, S_1_onehot, flow):
+        if torch.isnan(sim_loss).any() or torch.isinf(sim_loss).any() or torch.isnan(diff_loss).any() or torch.isinf(diff_loss).any():
+            print(f'ERROR: Invalid value encountered: {sim_loss}, {diff_loss}')
+
+            np.savez('invalid_loss_val.npz', 
+                sim_loss=sim_loss.detach().cpu().numpy(), 
+                diff_loss=diff_loss.detach().cpu().numpy(), 
+                I_m=I_m.detach().cpu().numpy(),
+                I_1=I_1.detach().cpu().numpy(),
+                S_m_onehot=S_m_onehot.detach().cpu().numpy(),
+                S_1_onehot=S_1_onehot.detach().cpu().numpy(),
+                flow=flow.detach().cpu().numpy())
+        return
 
     def _step(self, batch, batch_idx, save_viz=False):
         """
@@ -83,6 +96,7 @@ class RegistrationModel(CommonLightningModel):
         similarity_loss = self.similarity_loss(I_m, I_1, S_m_onehot, S_1_onehot)
         diffusion_regularization = self.diffusion_reg(flow)
         loss = similarity_loss + self.hparams.lam * diffusion_regularization
+        self.nan_saveguard(similarity_loss, diffusion_regularization, I_m, I_1, S_m_onehot, S_1_onehot, flow)
 
         # calculate other (supervised) evaluation mesures
         with torch.no_grad():
