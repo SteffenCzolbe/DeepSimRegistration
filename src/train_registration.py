@@ -15,6 +15,11 @@ def main(hparams):
         monitor="val_loss", patience=100, strict=True, verbose=True, mode="min"
     )
 
+    # if 
+    if hasattr(hparams, 'gpus') and hparams.gpus == 1:
+        print('Setting to use GPU 0.')
+        hparams.gpus = [0]
+
     # trainer
     trainer = pl.Trainer.from_argparse_args(hparams)
 
