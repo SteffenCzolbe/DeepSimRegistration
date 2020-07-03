@@ -55,7 +55,7 @@ class NCC(nn.Module):
 
         # calculate cc
         var0, var1, cross = compute_local_sums(y_true, y_pred)
-        cc = cross / ((var0 + 1e-8)**0.5 * (var1 + 1e-8)**0.5)
+        cc = cross / ((var0 + 1e-6)**0.5 * (var1 + 1e-6)**0.5)
 
         # mean and invert for minimization
         return -torch.mean(cc) + 1
@@ -83,8 +83,8 @@ class DeepSim(nn.Module):
         for feat0, feat1 in zip(feats0, feats1):
             # calculate cosine similarity
             prod_ab = torch.sum(feat0 * feat1, dim=1)
-            norm_a = torch.sum(feat0**2+ 1e-8, dim=1)**0.5
-            norm_b = torch.sum(feat1**2+ 1e-8, dim=1)**0.5
+            norm_a = torch.sum(feat0**2+ 1e-6, dim=1)**0.5
+            norm_b = torch.sum(feat1**2+ 1e-6, dim=1)**0.5
             cos_sim = prod_ab / (norm_a * norm_b)
             losses.append(torch.mean(cos_sim))
 
