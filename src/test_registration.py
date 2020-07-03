@@ -13,6 +13,7 @@ def main(hparams):
     # load model
     model = RegistrationModel.load_from_checkpoint(
         checkpoint_path=hparams.weights)
+    model.eval()
 
     # init trainer
     trainer = pl.Trainer()

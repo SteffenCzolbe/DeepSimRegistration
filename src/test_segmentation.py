@@ -12,6 +12,7 @@ def main(hparams):
     # load model
     model = SegmentationModel.load_from_checkpoint(
         checkpoint_path=hparams.weights)
+    model.eval()
 
     # init trainer
     trainer = pl.Trainer()
