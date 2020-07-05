@@ -11,9 +11,11 @@ class NCC(nn.Module):
     Local (over window) normalized cross correlation loss. Normalized to window [0,2], with 0 being perfect match.
     """
 
-    def __init__(self, window=5):
+    def __init__(self, window=9, squared=False, eps=1e-6):
         super().__init__()
         self.win = window
+        self.squared = squared
+        self.eps = eps
 
     def forward(self, y_true, y_pred):
         def compute_local_sums(I, J):
@@ -55,7 +57,10 @@ class NCC(nn.Module):
 
         # calculate cc
         var0, var1, cross = compute_local_sums(y_true, y_pred)
-        cc = cross / ((var0 + 1e-4)**0.5 * (var1 + 1e-4)**0.5) # inaccuracies can get pretty large here. add large eps.
+        if self.squared:
+            cc = cross**2 / (var0 * var1).clamp(self.eps)
+        else:
+            cc = cross / (var0.clamp(self.eps)**0.5 * var1.clamp(self.eps)**0.5)
 
         # mean and invert for minimization
         return -torch.mean(cc) + 1
@@ -64,9 +69,10 @@ class DeepSim(nn.Module):
     """
     Deep similarity metric
     """
-    def __init__(self, seg_model):
+    def __init__(self, seg_model, eps=1e-6):
         super().__init__()
         self.seg_model = seg_model
+        self.eps = eps
 
         # fix params
         for param in self.seg_model.parameters():
@@ -83,8 +89,8 @@ class DeepSim(nn.Module):
         for feat0, feat1 in zip(feats0, feats1):
             # calculate cosine similarity
             prod_ab = torch.sum(feat0 * feat1, dim=1)
-            norm_a = (torch.sum(feat0**2, dim=1) + 1e-6)**0.5
-            norm_b = (torch.sum(feat1**2, dim=1) + 1e-6)**0.5
+            norm_a = torch.sum(feat0**2, dim=1).clamp(self.eps)**0.5
+            norm_b = torch.sum(feat1**2, dim=1).clamp(self.eps)**0.5
             cos_sim = prod_ab / (norm_a * norm_b)
             losses.append(torch.mean(cos_sim))
 
