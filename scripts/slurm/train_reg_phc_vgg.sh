@@ -23,4 +23,4 @@ export PYTHONFAULTHANDLER=1
 
 hostname
 echo CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES
-srun python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/transfer_platelet/$2/ --loss deepsim --deepsim_weights ./weights/platelet-em/segmentation/weights.ckpt --lam $2 --channels 64 128 256 --batch_size 5 --gpus 1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --max_epochs=5000
+srun python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/transfer_vgg/$2/ --loss deepsim --deepsim_weights vgg --lam $2 --channels 64 128 256 --batch_size 5 --gpus 1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --max_epochs=5000

@@ -6,7 +6,7 @@ import torchreg
 import torchreg.viz as viz
 from.common_lightning_model import CommonLightningModel
 from .models.voxelmorph import Voxelmorph
-from .loss_metrics import NCC, DeepSim
+from .loss_metrics import NCC, DeepSim, VGGFeatureExtractor
 from .segmentation_model import SegmentationModel
 import ipdb
 
@@ -34,7 +34,10 @@ class RegistrationModel(CommonLightningModel):
         if hparams.loss == 'deepsim':
             if not hparams.deepsim_weights:
                 raise ValueError('No weights specified for Deep Similarity Metric.')
-            feature_extractor = SegmentationModel.load_from_checkpoint(hparams.deepsim_weights)
+            elif hparams.deepsim_weights.lower() == 'vgg':
+                feature_extractor = VGGFeatureExtractor()
+            else:
+                feature_extractor = SegmentationModel.load_from_checkpoint(hparams.deepsim_weights)
             self.deepsim = DeepSim(feature_extractor)
 
         self.ncc = NCC(window=hparams.ncc_win_size)
@@ -61,20 +64,6 @@ class RegistrationModel(CommonLightningModel):
         else:
             raise ValueError(f'loss function "{self.hparams.loss}" unknow.')
 
-    def nan_saveguard(self, sim_loss, diff_loss, I_m, I_1, S_m_onehot, S_1_onehot, flow):
-        if torch.isnan(sim_loss).any() or torch.isinf(sim_loss).any() or torch.isnan(diff_loss).any() or torch.isinf(diff_loss).any():
-            print(f'ERROR: Invalid value encountered: {sim_loss}, {diff_loss}')
-
-            np.savez('invalid_loss_val.npz', 
-                sim_loss=sim_loss.detach().cpu().numpy(), 
-                diff_loss=diff_loss.detach().cpu().numpy(), 
-                I_m=I_m.detach().cpu().numpy(),
-                I_1=I_1.detach().cpu().numpy(),
-                S_m_onehot=S_m_onehot.detach().cpu().numpy(),
-                S_1_onehot=S_1_onehot.detach().cpu().numpy(),
-                flow=flow.detach().cpu().numpy())
-        return
-
     def _step(self, batch, batch_idx, save_viz=False):
         """
         unified step function.
@@ -96,7 +85,6 @@ class RegistrationModel(CommonLightningModel):
         similarity_loss = self.similarity_loss(I_m, I_1, S_m_onehot, S_1_onehot)
         diffusion_regularization = self.diffusion_reg(flow)
         loss = similarity_loss + self.hparams.lam * diffusion_regularization
-        self.nan_saveguard(similarity_loss, diffusion_regularization, I_m, I_1, S_m_onehot, S_1_onehot, flow)
 
         # calculate other (supervised) evaluation mesures
         with torch.no_grad():
@@ -157,7 +145,7 @@ class RegistrationModel(CommonLightningModel):
             "--ncc_win_size", type=int, default=9, help="Window-Size for the NCC loss function (Default: 9)"
             )
         parser.add_argument(
-            "--deepsim_weights", type=str, default=None, help="Path to deep feature model weights."
+            "--deepsim_weights", type=str, default=None, help="Path to deep feature model weights, OR: 'vgg'"
         )
         parser.add_argument(
             "--lam", type=float, default=0.5, help="Diffusion regularizer strength"
