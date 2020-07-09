@@ -10,6 +10,9 @@ def folder_to_tif_stack(folder, tif_out, crop_at_one=False):
     os.makedirs(os.path.dirname(tif_out), exist_ok=True)
     files = sorted(os.listdir(folder))
     images = [Image.open(os.path.join(folder, f)) for f in files]
+    # crop to size
+    images = list(map(lambda x: x.crop((4, 4, 692, 516)), images))
+    # clean up seg masks
     if crop_at_one:
         # map the individual segmentation masks to one class for all cells
         images = list(
