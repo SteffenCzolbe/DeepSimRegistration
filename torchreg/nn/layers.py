@@ -129,12 +129,12 @@ class AffineSpatialTransformer(nn.Module):
         coordinates = self.identity(src)
 
         # add homogenous coordinate
-        coordinates = torch.cat((coordinates, torch.ones(coordinates.shape[0], 1, *coordinates.shape[2:])), dim=1)
+        coordinates = torch.cat((coordinates, torch.ones(coordinates.shape[0], 1, *coordinates.shape[2:], device=coordinates.device, dtype=coordinates.dtype)), dim=1)
 
         # center the coordinate grid, so that rotation happens around the center of the domain
         size = coordinates.shape[2:]
         for i in range(self.ndims):
-            coordinates[:, i] -= size[i] / 2
+            coordinates[:, i] -= size[i] / 2.0
         
         # permute for batched matric multiplication
         coordinates = coordinates.permute(0,2,3,4,1) if self.ndims ==3 else coordinates.permute(0,2,3,1)
