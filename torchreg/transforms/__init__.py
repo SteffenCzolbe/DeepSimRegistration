@@ -1,4 +1,5 @@
-from .transforms import Compose, ToTensor, ToNumpy, RandomDiffeomorphic
+from .transforms import Compose, ToTensor, ToNumpy
+from .random_augmentation import RandomAffine, RandomDiffeomorphic
 from .torchvision_vectorized import (
     VectorizedToTensor,
     VectorizedCompose,

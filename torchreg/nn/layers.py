@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as nnf
 import numpy as np
 import torchreg.settings as settings
+from .dim_agnostic import interpol_mode
 
 """
 basic spatial transformer layers
@@ -24,7 +25,7 @@ class Identity(nn.Module):
         ]
         grids = torch.meshgrid(vectors)
         identity = torch.stack(grids)  # z, y, x
-        identity = identity.expand_as(flow)  # add batch
+        identity = identity.expand(flow.shape[0], *[-1] * (settings.get_ndims() + 1))  # add batch
         return identity
 
 
@@ -97,6 +98,58 @@ class SpatialTransformer(nn.Module):
         return self.grid_sampler(src, coordinates, mode=mode)
 
 
+class AffineSpatialTransformer(nn.Module):
+    """
+    N-D Spatial Transformer for affine input
+    """
+
+    def __init__(self, mode="bilinear"):
+        """
+        Instantiates the spatial transformer. 
+        A spatial transformer transforms a src image with a flow of displacement vectors.
+        
+        Parameters:
+            mode: interpolation mode
+        """
+        super().__init__()
+        self.identity = Identity()
+        self.grid_sampler = GridSampler(mode=mode)
+        self.ndims = settings.get_ndims()
+
+    def forward(self, src, affine, mode=None):
+        """
+        Transforms the src with the flow 
+        Parameters:
+            src: Tensor (B x C x D x H x W)
+            affine: Tensor  (B x 4 x 4) the affine transformation matrix
+            mode: interpolation mode. If not specified, take mode from init function
+        """
+        coordinates = self.identity(src)
+
+        # add homogenous coordinate
+        coordinates = torch.cat((coordinates, torch.ones(coordinates.shape[0], 1, *coordinates.shape[2:])), dim=1)
+
+        # center the coordinate grid, so that rotation happens around the center of the domain
+        size = coordinates.shape[2:]
+        for i in range(self.ndims):
+            coordinates[:, i] -= size[i] / 2
+        
+        # permute for batched matric multiplication
+        coordinates = coordinates.permute(0,2,3,4,1) if self.ndims ==3 else coordinates.permute(0,2,3,1)
+        # we need to do this for each member of the batch separately
+        for i in range(len(coordinates)):
+            coordinates[i] = torch.matmul(coordinates[i], affine[i])
+        coordinates = coordinates.permute(0,-1,1,2,3) if self.ndims ==3 else coordinates.permute(0,-1,1,2)
+        # de-homogenize
+        coordinates = coordinates[:, :self.ndims]
+
+        # un-center the coordinate grid
+        for i in range(self.ndims):
+            coordinates[:, i] += size[i] / 2
+
+        return self.grid_sampler(src, coordinates, mode=mode)
+
+
 class GridSampler(nn.Module):
     """
     A simple Grid sample operation
@@ -123,6 +176,9 @@ class GridSampler(nn.Module):
             mode: interpolation mode. If not specified, take mode from init function
         """
         mode = mode if mode else self.mode
+
+        # make mode dimentionality-agnostic
+        # mode = interpol_mode(mode)
 
         # clone the coordinate field as we will modift it.
         coordinates = coordinates.clone()
