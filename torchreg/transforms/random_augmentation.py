@@ -99,7 +99,7 @@ class RandomAffine(nn.Module):
 
         if self.flip:
             # draw random flip
-            flip = np.sign(np.random.normal(size=3))
+            flip = np.sign(np.random.normal(size=self.ndims))
             # add homogenous coordinate
             flip = np.append(flip, [1])
             # make affine transformation matrix
