@@ -71,6 +71,16 @@ class RegistrationModel(CommonLightningModel):
         # unpack batch
         (I_0, S_0), (I_1, S_1) = batch
 
+
+        if self.training:
+            with torch.no_grad():
+                # augment
+                self.augmentation.randomize()
+                I_0 = self.augmentation(I_0)
+                I_1 = self.augmentation(I_1)
+                S_0 = self.augmentation(S_0.float(), interpolation='nearest').round().long()
+                S_1 = self.augmentation(S_1.float(), interpolation='nearest').round().long()
+
         # predict flow
         flow = self.forward(I_0, I_1)
 

@@ -66,15 +66,7 @@ class CommonLightningModel(pl.LightningModule):
         """
         Implement one or multiple PyTorch DataLoaders for training.
         """
-        transform = transforms.VectorizedCompose(
-            [
-                transforms.VectorizedRandomHorizontalFlip(),
-                transforms.VectorizedRandomVerticalFlip(),
-                transforms.VectorizedRandomAffine(
-                    degrees=180, scale=(0.8, 1.2), shear=20, fillcolor=0
-                ),
-            ]
-        )
+        self.augmentation = transforms.RandomAffine(degrees=(-180, 180), translate=(-1, 1), scale=(0.8, 1.2), shear=(-0.03, 0.03), flip=True)
         data = TiffStackDataset(
             intensity_tif_image=self.dataset_config('train_intensity_image_file'),
             segmentation_tif_image=self.dataset_config('train_segmentation_image_file'),
@@ -82,7 +74,6 @@ class CommonLightningModel(pl.LightningModule):
             max_slice=self.dataset_config('train_image_slice_from_to')[1],
             slice_pairs=self.image_pairs,
             slice_pair_max_z_diff=(2,2),
-            transform=transform,
         )
         dataloader = torch.utils.data.DataLoader(
             data, batch_size=self.hparams.batch_size, drop_last=True
