@@ -84,18 +84,19 @@ class SpatialTransformer(nn.Module):
         self.identity = Identity()
         self.grid_sampler = GridSampler(mode=mode)
 
-    def forward(self, src, flow, mode=None):
+    def forward(self, src, flow, mode=None, padding_mode="border"):
         """
         Transforms the src with the flow 
         Parameters:
             src: Tensor (B x C x D x H x W)
             flow: Tensor  (B x C x D x H x W) of displacement vextors. Channel 0 indicates the flow in the depth dimension.
             mode: interpolation mode. If not specified, take mode from init function
+            padding_mode: 'zeros', 'boarder', 'reflection'
         """
 
         # map from displacement vectors to absolute coordinates
         coordinates = self.identity(flow) + flow
-        return self.grid_sampler(src, coordinates, mode=mode)
+        return self.grid_sampler(src, coordinates, mode=mode, padding_mode=padding_mode)
 
 
 class AffineSpatialTransformer(nn.Module):
@@ -116,13 +117,14 @@ class AffineSpatialTransformer(nn.Module):
         self.grid_sampler = GridSampler(mode=mode)
         self.ndims = settings.get_ndims()
 
-    def forward(self, src, affine, mode=None):
+    def forward(self, src, affine, mode=None, padding_mode="border"):
         """
         Transforms the src with the flow 
         Parameters:
             src: Tensor (B x C x D x H x W)
             affine: Tensor  (B x 4 x 4) the affine transformation matrix
             mode: interpolation mode. If not specified, take mode from init function
+            padding_mode: 'zeros', 'boarder', 'reflection'
         """
         coordinates = self.identity(src)
 
@@ -147,7 +149,7 @@ class AffineSpatialTransformer(nn.Module):
         for i in range(self.ndims):
             coordinates[:, i] += size[i] / 2
 
-        return self.grid_sampler(src, coordinates, mode=mode)
+        return self.grid_sampler(src, coordinates, mode=mode, padding_mode=padding_mode)
 
 
 class GridSampler(nn.Module):
@@ -167,13 +169,14 @@ class GridSampler(nn.Module):
         self.mode = mode
         self.ndims = settings.get_ndims()
 
-    def forward(self, values, coordinates, mode=None):
+    def forward(self, values, coordinates, mode=None, padding_mode="border"):
         """
         Transforms the src with the flow 
         Parameters:
             src: Tensor (B x C x D x H x W)
             flow: Tensor  (B x C x D x H x W) of displacement vectors. Channel 0 indicates the flow in the depth dimension.
             mode: interpolation mode. If not specified, take mode from init function
+            padding_mode: 'zeros', 'boarder', 'reflection'
         """
         mode = mode if mode else self.mode
 
@@ -201,6 +204,6 @@ class GridSampler(nn.Module):
             values,
             coordinates,
             mode=mode,
-            padding_mode="border",
+            padding_mode=padding_mode,
             align_corners=True,  # align = True is nessesary to behave similar to indexing the transformation.
         )

@@ -118,7 +118,7 @@ class RandomAffine(nn.Module):
         affine = affine.repeat(B, *[1]*(self.ndims + 1))
         
         # transform
-        return self.transform(batch, affine, mode=interpolation)
+        return self.transform(batch, affine, mode=interpolation, padding_mode="zeros")
 
     def apply(self, batch, interpolation='bilinear'):
         assert hasattr(self, "affine"), "The random data augmentation needs to be initialized by calling .randomize()"
@@ -184,13 +184,13 @@ class RandomDiffeomorphic(nn.Module):
         assert hasattr(self, "do_augment"), "The random data augmentation needs to be initialized by calling .randomize()"
         if not self.do_augment:
             return batch
-        return self.transform(batch, self.pos_flow.type_as(batch), mode=interpolation)
+        return self.transform(batch, self.pos_flow.type_as(batch), mode=interpolation, padding_mode="zeros")
 
     def apply_inverse(self, batch, interpolation='bilinear'):
         assert hasattr(self, "do_augment"), "The random data augmentation needs to be initialized by calling .randomize()"
         if not self.do_augment:
             return batch
-        return self.transform(batch, self.neg_flow.type_as(batch), mode=interpolation)
+        return self.transform(batch, self.neg_flow.type_as(batch), mode=interpolation, padding_mode="zeros")
 
     def forward(self, batch, interpolation='bilinear'):
         assert hasattr(self, "do_augment"), "The random data augmentation needs to be initialized by calling .randomize()"
