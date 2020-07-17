@@ -51,6 +51,13 @@ class SegmentationModel(CommonLightningModel):
         # unpack batch
         x, y_true = batch
 
+        if self.training:
+            with torch.no_grad():
+                # augment
+                self.augmentation.randomize()
+                x = self.augmentation(x)
+                y_true = self.augmentation(y_true.float(), interpolation='nearest').round().long()
+
         y_pred, y_pred_raw = self.forward(x)
 
         loss = self.cross_entropy_loss(y_pred_raw, y_true.squeeze(1))
