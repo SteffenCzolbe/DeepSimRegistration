@@ -40,6 +40,13 @@ class UNet(nn.Module):
             nn.LeakyReLU(0.2),
             tnn.Conv(
                 self.backbone.output_channels[-1],
+                self.backbone.output_channels[-1],
+                kernel_size=3,
+                padding=1,
+            ),
+            nn.LeakyReLU(0.2),
+            tnn.Conv(
+                self.backbone.output_channels[-1],
                 out_channels,
                 kernel_size=1,
                 padding=0,
