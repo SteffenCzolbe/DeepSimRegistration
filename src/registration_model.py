@@ -87,9 +87,9 @@ class RegistrationModel(CommonLightningModel):
         # morph image and segmentation
         I_m = self.transformer(I_0, flow)
         S_m = self.transformer(S_0.float(), flow, mode='nearest').round().long()
-        S_0_onehot = torch.nn.functional.one_hot(S_0[:, 0], num_classes=3).permute(0, -1, 1, 2).float()
+        S_0_onehot = torch.nn.functional.one_hot(S_0[:, 0], num_classes=self.dataset_config('classes')).unsqueeze(1).transpose(1, -1).squeeze(-1).float()
         S_m_onehot = self.transformer(S_0_onehot, flow)
-        S_1_onehot = torch.nn.functional.one_hot(S_1[:, 0], num_classes=3).permute(0, -1, 1, 2).float()
+        S_1_onehot = torch.nn.functional.one_hot(S_1[:, 0], num_classes=self.dataset_config('classes')).unsqueeze(1).transpose(1, -1).squeeze(-1).float()
 
         # calculate loss
         similarity_loss = self.similarity_loss(I_m, I_1, S_m_onehot, S_1_onehot)
@@ -102,7 +102,7 @@ class RegistrationModel(CommonLightningModel):
             accuracy = torch.mean((S_m == S_1).float())
 
         # visualize
-        if save_viz:
+        if save_viz and self.dataset_config('dataset_type') == 'tif':
             self.viz_results(I_0, I_m, I_1, S_0, S_m, S_1, flow)
 
         return {
