@@ -72,21 +72,22 @@ class SegmentationModel(CommonLightningModel):
         }
 
     def viz_results(self, x, y_true, y_pred, save=True):
-        # make figure
-        fig = viz.Fig(1, 3, f"Epoch {self.current_epoch}", figsize=(8, 3))
-        fig.plot_img(0, 0, x[0], vmin=0, vmax=1, title="Input")
-        fig.plot_img(0, 1, x[0], title="Prediction")
-        fig.plot_overlay_class_mask(0, 1, y_pred[0], num_classes=self.dataset_config('classes'), 
-            colors=self.dataset_config('class_colors'), alpha=0.5)
-        fig.plot_img(0, 2, x[0], title="Ground Truth")
-        fig.plot_overlay_class_mask(0, 2, y_true[0], num_classes=self.dataset_config('classes'), 
-            colors=self.dataset_config('class_colors'), alpha=0.5)
+        if self.dataset_config('dataset_type') == 'tif':
+            # make figure
+            fig = viz.Fig(1, 3, f"Epoch {self.current_epoch}", figsize=(8, 3))
+            fig.plot_img(0, 0, x[0], vmin=0, vmax=1, title="Input")
+            fig.plot_img(0, 1, x[0], title="Prediction")
+            fig.plot_overlay_class_mask(0, 1, y_pred[0], num_classes=self.dataset_config('classes'), 
+                colors=self.dataset_config('class_colors'), alpha=0.5)
+            fig.plot_img(0, 2, x[0], title="Ground Truth")
+            fig.plot_overlay_class_mask(0, 2, y_true[0], num_classes=self.dataset_config('classes'), 
+                colors=self.dataset_config('class_colors'), alpha=0.5)
 
-        if save:
-            os.makedirs(self.hparams.savedir, exist_ok=True)
-            fig.save(os.path.join(self.hparams.savedir, f"{self.current_epoch}.pdf"),)
-        else:
-            return fig
+            if save:
+                os.makedirs(self.hparams.savedir, exist_ok=True)
+                fig.save(os.path.join(self.hparams.savedir, f"{self.current_epoch}.pdf"),)
+            else:
+                return fig
 
     def extract_features(self, x):
         """

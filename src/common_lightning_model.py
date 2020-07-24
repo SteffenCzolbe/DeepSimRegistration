@@ -6,6 +6,7 @@ import pytorch_lightning as pl
 import torchreg
 import torchreg.transforms as transforms
 from .datasets.tif_stack_dataset import TiffStackDataset
+from .datasets.brain_mri_dataset import BrainMRIDataset
 
 
 class CommonLightningModel(pl.LightningModule):
@@ -31,7 +32,8 @@ class CommonLightningModel(pl.LightningModule):
 
     def dataset_config(self, key):
         if self.hparams.dataset == 'platelet-em':
-            config = {'channels' : 1,
+            config = {'dataset_type':'tif',
+                'channels' : 1,
                 'classes': 3,
                 'class_colors': [(0, 40, 97), (0, 40, 255), (255, 229, 0)],
                 'dim': 2,
@@ -45,7 +47,8 @@ class CommonLightningModel(pl.LightningModule):
                 'test_segmentation_image_file':"./data/platelet_em_reduced/labels-class/24-class.tif",
                 'test_image_slice_from_to':(12, 24),}
         elif self.hparams.dataset == 'phc-u373':
-            config = {'channels' : 1,
+            config = {'dataset_type':'tif',
+                'channels' : 1,
                 'classes': 2,
                 'class_colors': [(0, 0, 0), (27, 247, 156)],
                 'dim': 2,
@@ -58,61 +61,51 @@ class CommonLightningModel(pl.LightningModule):
                 'test_intensity_image_file':"./data/PhC-U373/images/02.tif",
                 'test_segmentation_image_file':"./data/PhC-U373/labels-class/02.tif",
                 'test_image_slice_from_to':(60, 115),}
+        elif self.hparams.dataset == 'brain-mri':
+            config = {'dataset_type':'nii',
+                'channels' : 1,
+                'classes': 24,
+                'dim': 3,
+                'path': '../brain_mris'}
         else:
-            raise ValueError(f'Dataset "{self.dataset}" not know.')
+            raise ValueError(f'Dataset "{self.hparams.dataset}" not known.')
         return config[key]
 
-    def train_dataloader(self):
+    def make_dataloader(self, split='train'):
         """
         Implement one or multiple PyTorch DataLoaders for training.
         """
-        self.augmentation = transforms.RandomAffine(degrees=(-180, 180), translate=(-1, 1), scale=(0.8, 1.2), shear=(-0.03, 0.03), flip=True)
-        data = TiffStackDataset(
-            intensity_tif_image=self.dataset_config('train_intensity_image_file'),
-            segmentation_tif_image=self.dataset_config('train_segmentation_image_file'),
-            min_slice=self.dataset_config('train_image_slice_from_to')[0],
-            max_slice=self.dataset_config('train_image_slice_from_to')[1],
-            slice_pairs=self.image_pairs,
-            slice_pair_max_z_diff=(2,2),
-        )
+        if self.dataset_config('dataset_type') == 'tif':
+            self.augmentation = transforms.RandomAffine(degrees=(-180, 180), translate=(-1, 1), scale=(0.8, 1.2), shear=(-0.03, 0.03), flip=True)
+            data = TiffStackDataset(
+                intensity_tif_image=self.dataset_config(f'{split}_intensity_image_file'),
+                segmentation_tif_image=self.dataset_config(f'{split}_segmentation_image_file'),
+                min_slice=self.dataset_config(f'{split}_image_slice_from_to')[0],
+                max_slice=self.dataset_config(f'{split}_image_slice_from_to')[1],
+                slice_pairs=self.image_pairs,
+                slice_pair_max_z_diff=(2,2),
+            )
+        elif self.dataset_config('dataset_type') == 'nii':
+            self.augmentation = transforms.RandomAffine(degrees=(-5, 5), translate=None, scale=None, shear=None, flip=True)
+            data = BrainMRIDataset(
+                path=self.dataset_config('path'),
+                split=split,
+                pairs=self.image_pairs,
+            )
+
         dataloader = torch.utils.data.DataLoader(
             data, batch_size=self.hparams.batch_size, drop_last=True
         )
         return dataloader
+
+    def train_dataloader(self):
+        return self.make_dataloader('train')
 
     def val_dataloader(self):
-        """
-        Implement one or multiple PyTorch DataLoaders for validation.
-        """
-        data = TiffStackDataset(
-            intensity_tif_image=self.dataset_config('val_intensity_image_file'),
-            segmentation_tif_image=self.dataset_config('val_segmentation_image_file'),
-            min_slice=self.dataset_config('val_image_slice_from_to')[0],
-            max_slice=self.dataset_config('val_image_slice_from_to')[1],
-            slice_pairs=self.image_pairs,
-            slice_pair_max_z_diff=(0,1),
-        )
-        dataloader = torch.utils.data.DataLoader(
-            data, batch_size=self.hparams.batch_size, drop_last=True
-        )
-        return dataloader
+        return self.make_dataloader('val')
 
     def test_dataloader(self):
-        """
-        Implement one or multiple PyTorch DataLoaders for testing.
-        """
-        data = TiffStackDataset(
-            intensity_tif_image=self.dataset_config('test_intensity_image_file'),
-            segmentation_tif_image=self.dataset_config('test_segmentation_image_file'),
-            min_slice=self.dataset_config('test_image_slice_from_to')[0],
-            max_slice=self.dataset_config('test_image_slice_from_to')[1],
-            slice_pairs=self.image_pairs,
-            slice_pair_max_z_diff=(0,1),
-        )
-        dataloader = torch.utils.data.DataLoader(
-            data, batch_size=self.hparams.batch_size, drop_last=True
-        )
-        return dataloader
+        return self.make_dataloader('test')
 
     def configure_optimizers(self):
         """
