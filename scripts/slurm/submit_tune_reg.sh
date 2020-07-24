@@ -29,6 +29,8 @@
 # sbatch ./scripts/slurm/train_reg_platelet.sh deepsim 1.0 --job-name='pl d 1.0' 
 
 # Tune brain-mri
+sbatch ./scripts/slurm/train_seg_brains.sh
+sbatch ./scripts/slurm/train_seg_brains_more_layers.sh
 sbatch --job-name='b ncc 0.5' ./scripts/slurm/train_reg_brains.sh ncc 0.5 
 sbatch --job-name='b ncc 1' ./scripts/slurm/train_reg_brains.sh ncc 1 
 sbatch --job-name='b ncc 2' ./scripts/slurm/train_reg_brains.sh ncc 2 

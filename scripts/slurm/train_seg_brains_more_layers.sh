@@ -11,7 +11,7 @@
 #SBATCH --ntasks=1 --cpus-per-task=1 --mem=30000M
 
 # we run on the gpu partition and we allocate some titanx gpu
-#SBATCH -p gpu --gres=gpu:titanx:1
+#SBATCH -p gpu --gres=gpu:titanrtx:1
 
 #Runtime
 #Note that a program will be killed once it exceeds this time!
