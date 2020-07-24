@@ -23,4 +23,4 @@ export PYTHONFAULTHANDLER=1
 
 hostname
 echo CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES
-srun python3 -m src.train_segmentation --dataset braim-mri --max_steps 100000 --channels 32 64 128 256 --batch_size 1 --accumulate_grad_batches 4 --gpus -1 --lr 0.0001 --bnorm --dropout
+srun python3 -m src.train_segmentation --dataset brain-mri --max_steps 100000 --channels 32 64 128 256 --batch_size 1 --accumulate_grad_batches 4 --gpus -1 --lr 0.0001 --bnorm --dropout
