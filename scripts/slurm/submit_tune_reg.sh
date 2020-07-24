@@ -28,6 +28,13 @@
 # sbatch ./scripts/slurm/train_reg_platelet.sh deepsim 0.5 --job-name='pl d 0.5' 
 # sbatch ./scripts/slurm/train_reg_platelet.sh deepsim 1.0 --job-name='pl d 1.0' 
 
+# Tune brain-mri
+sbatch --job-name='b ncc 0.5' ./scripts/slurm/train_reg_brains.sh ncc 0.5 
+sbatch --job-name='b ncc 1' ./scripts/slurm/train_reg_brains.sh ncc 1 
+sbatch --job-name='b ncc 2' ./scripts/slurm/train_reg_brains.sh ncc 2 
+sbatch --job-name='b ncc 4' ./scripts/slurm/train_reg_brains.sh ncc 4 
+sbatch --job-name='b+ ncc 1' ./scripts/slurm/train_reg_brains_more_layers.sh ncc 1 
+
 # Tune transfer-learning
 #sbatch ./scripts/slurm/train_reg_phc_transfer.sh deepsim 0.125 --job-name='ph d 0.125' 
 #sbatch ./scripts/slurm/train_reg_phc_transfer.sh deepsim 0.25 --job-name='ph d 0.25' 
