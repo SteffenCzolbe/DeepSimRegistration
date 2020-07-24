@@ -75,6 +75,7 @@ class CommonLightningModel(pl.LightningModule):
         """
         Implement one or multiple PyTorch DataLoaders for training.
         """
+        torchreg.settings.set_ndims(self.dataset_config('dim'))
         if self.dataset_config('dataset_type') == 'tif':
             self.augmentation = transforms.RandomAffine(degrees=(-180, 180), translate=(-1, 1), scale=(0.8, 1.2), shear=(-0.03, 0.03), flip=True)
             data = TiffStackDataset(
