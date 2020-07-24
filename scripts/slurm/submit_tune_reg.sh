@@ -12,9 +12,9 @@
 # sbatch ./scripts/slurm/train_reg_phc.sh deepsim 0.25 --job-name='ph d 0.25' 
 # sbatch ./scripts/slurm/train_reg_phc.sh deepsim 0.5 --job-name='ph d 0.5' 
 # sbatch ./scripts/slurm/train_reg_phc.sh deepsim 1.0 --job-name='ph d 1.0' 
-sbatch ./scripts/slurm/train_reg_phc_more_layers.sh ncc 0.5
-sbatch ./scripts/slurm/train_reg_phc_more_layers.sh ncc+supervised 0.25 
-sbatch ./scripts/slurm/train_reg_phc_more_layers.sh deepsim 0.25 
+# sbatch ./scripts/slurm/train_reg_phc_more_layers.sh ncc 0.5
+# sbatch ./scripts/slurm/train_reg_phc_more_layers.sh ncc+supervised 0.25 
+# sbatch ./scripts/slurm/train_reg_phc_more_layers.sh deepsim 0.25 
 
 # Tune platelet-em
 # sbatch ./scripts/slurm/train_reg_platelet.sh ncc 0.5 --job-name='pl ncc 0.5' 
