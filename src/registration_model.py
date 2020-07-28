@@ -64,6 +64,15 @@ class RegistrationModel(CommonLightningModel):
         else:
             raise ValueError(f'loss function "{self.hparams.loss}" unknow.')
 
+    def augment(self, I_0, I_1, S0, S1):
+        with torch.no_grad():
+            self.augmentation.randomize()
+            I_0 = self.augmentation(I_0)
+            I_1 = self.augmentation(I_1)
+            S_0 = self.augmentation(S_0.float(), interpolation='nearest').round().long()
+            S_1 = self.augmentation(S_1.float(), interpolation='nearest').round().long()
+        return I_0, I_1, S0, S1
+
     def _step(self, batch, batch_idx, save_viz=False):
         """
         unified step function.
@@ -71,15 +80,9 @@ class RegistrationModel(CommonLightningModel):
         # unpack batch
         (I_0, S_0), (I_1, S_1) = batch
 
-
+        # augment
         if self.training:
-            with torch.no_grad():
-                # augment
-                self.augmentation.randomize()
-                I_0 = self.augmentation(I_0)
-                I_1 = self.augmentation(I_1)
-                S_0 = self.augmentation(S_0.float(), interpolation='nearest').round().long()
-                S_1 = self.augmentation(S_1.float(), interpolation='nearest').round().long()
+            I_0, I_1, S0, S1 = self.augment(I_0, I_1, S0, S1)
 
         # predict flow
         flow = self.forward(I_0, I_1)
