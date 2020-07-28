@@ -26,7 +26,7 @@ def main(hparams):
     test_set = model.test_dataloader().dataset
     import ipdb; ipdb.set_trace()
 
-    x, y_true = test_set[1]
+    x, y_true = test_set[110]
     with torch.no_grad():
         y_pred, _ = model.forward(x.unsqueeze(0))
     y_pred = y_pred[0]
