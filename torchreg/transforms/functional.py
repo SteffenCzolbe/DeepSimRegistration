@@ -6,6 +6,7 @@ Fine-grained transforms of 3D images
 import torch
 import numpy as np
 import torchreg.settings as settings
+import nibabel as nib
 
 
 def volumetric_image_to_tensor(img, dtype=torch.float32):
@@ -38,16 +39,45 @@ def image_to_numpy(tensor):
         permuted = permuted[..., 0]
     return permuted
 
+def load_nii_as_tensor(path, dtype=torch.float, return_affine=False):
+    """
+    loads a tensor from an nii file.
 
-def landmarks_to_tensor(landmarks):
-    """
-    transforms a 2d np.array indexed as N x C to a torch.tensor indexed as C x N
-    """
-    return torch.as_tensor(np.array(landmarks.T), dtype=torch.float32)
+    Parameters:
+        path: file path to load
+        dtype: torch datatype
+        return_affine: set to True to additionally return the affine world to vox matrix. Default False
 
+    Return:
+        Torch Tensor, C x H x W x D
+    """
+    nii = nib.load(path)
+    array = nii.get_fdata()
+    tensor = volumetric_image_to_tensor(array, dtype=dtype)
+    affine = nii.affine
+    return (tensor, affine) if return_affine else tensor
 
-def landmarks_to_numpy(tensor):
+def save_tensor_as_nii(path, tensor, affine=None, dtype=np.float):
     """
-    transforms a 2d np.array indexed as N x C to a torch.tensor indexed as C x N
+    saves a tensor to an nii file.
+
+    Parameters:
+        path: file path to save
+        tensor: Image volume, C x H x D x W
+        affine: world to vox matrix. If none, the identity is chosen
+        dtype: numpy dtype to cast to
+
+    Return:
+        Torch Tensor, C x H x W x D
     """
-    return tensor.detach().cpu().numpy().T
+    if affine is None:
+        affine = np.eye(4)
+    else:
+        affine = np.array(affine)
+
+    array = image_to_numpy(tensor).astype(dtype)
+
+    nii = nib.Nifti1Image(array, affine=affine)
+    nib.save(nii, path)
+    return
+    

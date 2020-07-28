@@ -36,9 +36,7 @@ class NiiDataset(Dataset):
         return img, seg
 
     def load_nii(self, path, dtype=torch.float):
-        nii = nib.load(path)
-        array = nii.get_fdata()
-        tensor = f.volumetric_image_to_tensor(array, dtype=dtype)
+        tensor = f.load_nii_as_tensor(path, dtype=dtype)
         return tensor
 
 
