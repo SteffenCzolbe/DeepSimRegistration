@@ -24,13 +24,13 @@ def main(hparams):
 
     # segment tiff image stack
     test_set = model.test_dataloader().dataset
+    fir i in range(10):
+        x, y_true = test_set[110]
+        with torch.no_grad():
+            y_pred, _ = model.forward(x.unsqueeze(0))
+        y_pred = y_pred[0]
 
-    x, y_true = test_set[110]
-    with torch.no_grad():
-        y_pred, _ = model.forward(x.unsqueeze(0))
-    y_pred = y_pred[0]
-
-    print('accuracy: ', torch.mean((y_true == y_pred).float()))
+        print(f'accuracy of {i}: ', torch.mean((y_true == y_pred).float()))
 
     os.makedirs(os.path.dirname(hparams.out), exist_ok=True)
     affine = np.array([[  -1.,    0.,    0.,   80.],
