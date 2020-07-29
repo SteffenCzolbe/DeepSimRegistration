@@ -24,7 +24,6 @@ def main(hparams):
 
     # segment tiff image stack
     test_set = model.test_dataloader().dataset
-    import ipdb; ipdb.set_trace()
 
     x, y_true = test_set[110]
     with torch.no_grad():
