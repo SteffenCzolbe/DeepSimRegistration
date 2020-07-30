@@ -53,6 +53,7 @@ case $DATASET in
 esac
 
 echo 'Setting job max time to '$TIME
+echo executing sbatch --job-name=$JOBNAME --time=$TIME --gres=$GRES ./scripts/slurm/slurm_script.sh $@
 
 # comment given to sbatch here will overwrite defaults set in the slurm script
 sbatch --job-name=$JOBNAME --time=$TIME --gres=$GRES ./scripts/slurm/slurm_script.sh $@
