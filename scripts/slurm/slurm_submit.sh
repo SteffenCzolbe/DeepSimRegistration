@@ -1,0 +1,1 @@
+sbatch --job-name='submitted via script' --time=0-00:01:00 ./scripts/slurm/slurm_script.sh $1
