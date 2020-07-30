@@ -2,13 +2,13 @@
 
 # usage:
 # submit a slurm-job via
-# $ sbatch ./scripts/slurm/slurm_script.sh <script to run>
+# $ sbatch ./scripts/slurm/slurm_script.sh <script to run> <arg1> <arg2> ...
 
 # set job name
 #SBATCH --job-name='my job'
 
 # normal cpu stuff: allocate cpus, memory
-#SBATCH --ntasks=1 --cpus-per-task=1 --mem=30000M
+#SBATCH --ntasks=1 --cpus-per-task=4 --mem=30000M
 
 # we run on the gpu partition and we allocate some titanx gpu
 #SBATCH -p gpu --gres=gpu:titanrtx:1
@@ -24,4 +24,4 @@ export PYTHONFAULTHANDLER=1
 echo Host: 
 hostname
 echo CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES
-$1
+$@
