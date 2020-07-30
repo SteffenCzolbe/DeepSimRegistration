@@ -13,17 +13,23 @@ key="$1"
 case $key in
     --dataset)
     DATASET="$2"
+    POSITIONAL+=("$1")
     shift # past argument
+    POSITIONAL+=("$1")
     shift # past value
     ;;
     --loss)
     LOSS="$2"
+    POSITIONAL+=("$1")
     shift # past argument
+    POSITIONAL+=("$1")
     shift # past value
     ;;
     --lam)
     LAM="$2"
+    POSITIONAL+=("$1")
     shift # past argument
+    POSITIONAL+=("$1")
     shift # past value
     ;;
     *)    # unknown option
