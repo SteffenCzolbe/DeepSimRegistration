@@ -23,8 +23,11 @@ export PYTHONFAULTHANDLER=1
 
 echo Host: 
 hostname
+echo
 echo CUDA_VISIBLE_DEVICES:
 echo $CUDA_VISIBLE_DEVICES
+echo
 echo running command:
 echo $@
+echo
 $@
