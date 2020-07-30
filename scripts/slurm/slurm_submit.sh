@@ -36,20 +36,23 @@ done
 set -- "${POSITIONAL[@]}" # restore parameters
 
 # build parameters for slurm
-JOBNAME=$LOSS$LAM
+JOBNAME=$LOSS-$LAM
 case $DATASET in
     brain-mri)
     TIME=5-00:00:00
+    GRES=gpu:titanrtx:1
     ;;
     platelet-em)
     TIME=1-00:00:00
+    GRES=gpu:titanx:1
     ;;
     phc-u373)
     TIME=1-00:00:00
+    GRES=gpu:titanx:1
     ;;
 esac
 
 echo 'Setting job max time to '$TIME
 
 # comment given to sbatch here will overwrite defaults set in the slurm script
-sbatch --job-name=$JOBNAME --time=$TIME ./scripts/slurm/slurm_script.sh $@
+sbatch --job-name=$JOBNAME --time=$TIME --gres=$GRES ./scripts/slurm/slurm_script.sh $@
