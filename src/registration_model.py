@@ -31,7 +31,7 @@ class RegistrationModel(CommonLightningModel):
             dropout=self.hparams.dropout,
         )
 
-        if hparams.loss.lower() == 'deepsim':
+        if hparams.loss.lower() in ['deepsim', 'deepsim-transfer']:
             if not hparams.deepsim_weights:
                 raise ValueError('No weights specified for Deep Similarity Metric.')
             else:
@@ -56,7 +56,7 @@ class RegistrationModel(CommonLightningModel):
         return self.net(moving, fixed)
 
     def similarity_loss(self, I_m, I_1, S_m_onehot, S_1_onehot):
-        if self.hparams.loss.lower() == 'deepsim':
+        if self.hparams.loss.lower() in ['deepsim', 'deepsim-transfer']:
             return self.deepsim(I_m, I_1)
         elif self.hparams.loss.lower() == 'vgg':
             return self.vgg_loss(I_m, I_1)
@@ -157,13 +157,13 @@ class RegistrationModel(CommonLightningModel):
         common_parser = CommonLightningModel.add_common_model_args()
         parser = argparse.ArgumentParser(parents=[common_parser, parent_parser], add_help=False)
         parser.add_argument(
-            "--loss", type=str, default='ncc', help="Similarity Loss function. Options: 'l2', 'ncc', 'deepsim', 'ncc+supervised', 'vgg' (Default: ncc)"
+            "--loss", type=str, default='ncc', help="Similarity Loss function. Options: 'l2', 'ncc', 'deepsim', 'deepsim-transfer', 'ncc+supervised', 'vgg' (Default: ncc)"
         )
         parser.add_argument(
             "--ncc_win_size", type=int, default=9, help="Window-Size for the NCC loss function (Default: 9)"
             )
         parser.add_argument(
-            "--deepsim_weights", type=str, default=None, help="Path to deep feature model weights"
+            "--deepsim_weights", type=str, default=None, help="Path to deep feature model weights, required for loss='deepsim' and 'deepsim-transfer'"
         )
         parser.add_argument(
             "--lam", type=float, default=0.5, help="Diffusion regularizer strength"
