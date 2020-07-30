@@ -22,9 +22,12 @@ jedi==0.17.0
 kiwisolver==1.2.0
 Markdown==3.2.2
 matplotlib==3.2.1
+nibabel==3.0.1
 numpy==1.18.4
 oauthlib==3.1.0
 opencv-python-headless==4.2.0.34
+packaging==20.4
+pandas==1.0.5
 parso==0.7.0
 pathspec==0.8.0
 pexpect==4.8.0
@@ -40,6 +43,7 @@ Pygments==2.6.1
 pyparsing==2.4.7
 python-dateutil==2.8.1
 pytorch-lightning==0.7.6
+pytz==2020.1
 PyYAML==5.3.1
 regex==2020.5.14
 requests==2.23.0
@@ -49,7 +53,7 @@ six==1.14.0
 tensorboard==2.2.1
 tensorboard-plugin-wit==1.6.0.post3
 toml==0.10.1
-torch==1.5.0
+torch==1.6.0
 torchvision==0.6.0
 tqdm==4.46.0
 traitlets==4.3.3
