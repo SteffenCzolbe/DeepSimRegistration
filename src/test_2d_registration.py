@@ -15,6 +15,8 @@ def main(hparams):
         checkpoint_path=hparams.weights)
     model.eval()
 
+    print(f'Evaluating model for dataset {model.hparams.dataset}, loss {model.hparams.loss}, lambda {model.hparams.lam}')
+
     # init trainer
     trainer = pl.Trainer()
 

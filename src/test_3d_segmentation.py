@@ -22,12 +22,14 @@ def main(hparams):
         checkpoint_path=hparams.weights)
     model.eval()
     model = model.to(device)
+    
+    print(f'Evaluating model for dataset {model.hparams.dataset}')
 
     # init trainer
     trainer = pl.Trainer()
 
     # test (pass in the model)
-    #trainer.test(model)
+    trainer.test(model)
 
     # segment tiff image stack
     test_set = model.test_dataloader().dataset
@@ -40,14 +42,14 @@ def main(hparams):
 
         print(f'accuracy of {i}: ', torch.mean((y_true == y_pred).float()))
 
-    os.makedirs(os.path.dirname(hparams.out), exist_ok=True)
-    affine = np.array([[  -1.,    0.,    0.,   80.],
-                        [   0.,    0.,    1., -112.],
-                        [   0.,   -1.,    0.,   96.],
-                        [   0.,    0.,    0.,    1.]])
-    f.save_tensor_as_nii(os.path.join(hparams.out, 'image.nii.gz'), x, affine=affine, dtype=np.float32)
-    f.save_tensor_as_nii(os.path.join(hparams.out, 'gt.nii.gz'), y_true, affine=affine, dtype=np.uint8)
-    f.save_tensor_as_nii(os.path.join(hparams.out, 'seg.nii.gz'), y_pred, affine=affine, dtype=np.uint8)
+        os.makedirs(os.path.dirname(hparams.out), exist_ok=True)
+        affine = np.array([[  -1.,    0.,    0.,   80.],
+                            [   0.,    0.,    1., -112.],
+                            [   0.,   -1.,    0.,   96.],
+                            [   0.,    0.,    0.,    1.]])
+        f.save_tensor_as_nii(os.path.join(hparams.out, f'{i}image.nii.gz'), x, affine=affine, dtype=np.float32)
+        f.save_tensor_as_nii(os.path.join(hparams.out, f'{i}gt.nii.gz'), y_true, affine=affine, dtype=np.uint8)
+        f.save_tensor_as_nii(os.path.join(hparams.out, f'{i}seg.nii.gz'), y_pred, affine=affine, dtype=np.uint8)
 
 if __name__ == "__main__":
     # commandline parser
