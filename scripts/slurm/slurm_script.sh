@@ -2,10 +2,10 @@
 
 # usage:
 # submit a slurm-job via
-# $ sbatch ./scripts/slurm/slurm_script.sh <script to run> <arg1> <arg2> ...
+# $ sbatch slurm_script.sh <script to run> <arg1> <arg2> ...
 
 # set job name
-#SBATCH --job-name='my job'
+#SBATCH --job-name='unnamed job'
 
 # normal cpu stuff: allocate cpus, memory
 #SBATCH --ntasks=1 --cpus-per-task=4 --mem=30000M
@@ -23,5 +23,8 @@ export PYTHONFAULTHANDLER=1
 
 echo Host: 
 hostname
-echo CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES
+echo CUDA_VISIBLE_DEVICES:
+echo $CUDA_VISIBLE_DEVICES
+echo running command:
+echo $@
 $@
