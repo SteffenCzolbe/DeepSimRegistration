@@ -9,12 +9,19 @@ import torchreg.transforms.functional as f
 import os
 import numpy as np
 
+def same_values(a, b):
+    a = a.to('cpu')
+    b = b.to('cpu')
+    assert torch.allclose(a, b), f"{a}, {b}"
 
 def main(hparams):
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
     # load model
     model = SegmentationModel.load_from_checkpoint(
         checkpoint_path=hparams.weights)
     model.eval()
+    model = model.to(device)
 
     # init trainer
     trainer = pl.Trainer()
@@ -26,6 +33,7 @@ def main(hparams):
     test_set = model.test_dataloader().dataset
     for i in range(10):
         x, y_true = test_set[i]
+        x, y_true = x.to(device), y_true.to(device)
         with torch.no_grad():
             y_pred, _ = model.forward(x.unsqueeze(0))
         y_pred = y_pred[0]
