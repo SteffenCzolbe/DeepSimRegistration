@@ -8,7 +8,7 @@
 #SBATCH --job-name='unnamed job'
 
 # normal cpu stuff: allocate cpus, memory
-#SBATCH --ntasks=1 --cpus-per-task=4 --mem=30000M
+#SBATCH --ntasks=1 --cpus-per-task=2 --mem=30000M
 
 # we run on the gpu partition and we allocate some titanx gpu
 #SBATCH -p gpu --gres=gpu:titanrtx:1
