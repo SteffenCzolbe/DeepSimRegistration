@@ -5,7 +5,6 @@
 # $ slurm_submit.sh <script to run> <arg1> <arg2> ...
 
 # parse some parameters of the submitted script to set slurm commands appropriately
-TASK=$3
 POSITIONAL=()
 while [[ $# -gt 0 ]]
 do
@@ -36,7 +35,12 @@ done
 set -- "${POSITIONAL[@]}" # restore parameters
 
 # build parameters for slurm
-JOBNAME=$LOSS-$LAM
+TASK=$3
+if [[ $TASK == "src.train_segmentation" ]]; then 
+    JOBNAME=seg $DATASET
+else
+    JOBNAME=$LOSS-$LAM
+fi
 case $DATASET in
     brain-mri)
     TIME=5-00:00:00
@@ -52,8 +56,8 @@ case $DATASET in
     ;;
 esac
 
-echo 'Setting job max time to '$TIME
-echo executing sbatch --job-name=$JOBNAME --time=$TIME --gres=$GRES ./scripts/slurm/slurm_script.sh $@
+echo "Setting job max time to "$TIME
+echo "Scheduling Job " --job-name=$JOBNAME --time=$TIME --gres=$GRES ./scripts/slurm/slurm_script.sh $@
 
 # comment given to sbatch here will overwrite defaults set in the slurm script
 sbatch --job-name=$JOBNAME --time=$TIME --gres=$GRES ./scripts/slurm/slurm_script.sh $@
