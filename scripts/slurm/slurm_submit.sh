@@ -37,7 +37,7 @@ set -- "${POSITIONAL[@]}" # restore parameters
 # build parameters for slurm
 TASK=$3
 if [[ $TASK == "src.train_segmentation" ]]; then 
-    JOBNAME="seg "$DATASET
+    JOBNAME="seg-"$DATASET
 else
     JOBNAME=$LOSS-$LAM
 fi
