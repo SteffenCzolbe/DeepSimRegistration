@@ -15,7 +15,7 @@ else
     WRAPPER_FUNC=
 fi
 
-if TUNE_PLATELET; then
+if $TUNE_PLATELET; then
     # l2
     for LAM in 0.005 0.01 0.02 0.04 0.08
     do
@@ -53,7 +53,7 @@ if TUNE_PLATELET; then
     done
 fi
 
-if TUNE_PHC; then
+if $TUNE_PHC; then
     # l2
     for LAM in 0.005 0.01 0.02 0.04 0.08
     do
@@ -91,7 +91,7 @@ if TUNE_PHC; then
     done
 fi
 
-if TUNE_BRAIN; then
+if $TUNE_BRAIN; then
     # l2
     for LAM in 0.01 0.02 0.04
     do
