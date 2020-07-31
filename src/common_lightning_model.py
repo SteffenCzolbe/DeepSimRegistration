@@ -195,6 +195,7 @@ class CommonLightningModel(pl.LightningModule):
                     self._step(batch, None, save_viz=True)
                     self.last_viz = self.current_epoch
         """
+        import ipdb; ipdb.set_trace()
         output = self.mean_dicts(outputs)
         return {
             "val_loss": output["loss"],
