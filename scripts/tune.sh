@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # hyperparameter tuning.
-TUNE_PLATELET=true
-TUNE_PHC=true
+TUNE_PLATELET=false
+TUNE_PHC=false
 TUNE_BRAIN=true
 
 
@@ -101,18 +101,18 @@ if $TUNE_BRAIN; then
     # ncc
     for LAM in 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss l2 --ncc_win_size 9 --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=150000
+    $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss ncc --ncc_win_size 9 --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=150000
     done
 
     # ncc+supervised
     for LAM in 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss l2 --ncc_win_size 9 --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=150000
+    $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss ncc+supervised --ncc_win_size 9 --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=150000
     done
 
     # deepsim
-    for LAM in 0.25 0.5 1
-    do
-    $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss deepsim --ncc_win_size 9 --deepsim_weights ./weights/brain-mri/segmentation/weights.ckpt --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=150000
-    done
+    #for LAM in 0.25 0.5 1
+    #do
+    #$WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss deepsim --ncc_win_size 9 --deepsim_weights ./weights/brain-mri/segmentation/weights.ckpt --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=150000
+    #done
 fi
