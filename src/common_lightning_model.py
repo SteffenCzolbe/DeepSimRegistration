@@ -171,14 +171,12 @@ class CommonLightningModel(pl.LightningModule):
         Needs to return a dictionary with the entry 'loss'
         """
         # data-handling does not differ from training
-        import ipdb; ipdb.set_trace()
         return self._step(batch, batch_idx)
     
     def validation_epoch_end(self, outputs):
         """
         Called at the end of the train epoch with the outputs of all training steps.
         """
-        import ipdb; ipdb.set_trace()
         def map_to_device(obj, device):
             if isinstance(obj, tuple):
                 return tuple(map_to_device(list(obj), device))
