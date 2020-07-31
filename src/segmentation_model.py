@@ -7,7 +7,6 @@ import torchreg.transforms.functional as ttf
 import torchreg.viz as viz
 from.common_lightning_model import CommonLightningModel
 from .models.UNet import UNet
-import ipdb
 
 class SegmentationModel(CommonLightningModel):
     """
