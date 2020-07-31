@@ -52,7 +52,7 @@ class NiiAtlasDataset(NiiDataset):
     ):
         super().__init__(image_nii_files, image_nii_label_files, min_intensity, max_intensity)
         self.atlas = self.normalize_intensity(self.load_nii(atlas_nii_file))
-        self.atlas_seg = self.load_nii(atlas_nii_label_file, dtype=np.int)
+        self.atlas_seg = self.load_nii(atlas_nii_label_file, dtype=torch.long)
     
     def __getitem__(self, idx):
         img, seg = super().__getitem__(idx)
