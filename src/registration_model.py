@@ -69,14 +69,14 @@ class RegistrationModel(CommonLightningModel):
         else:
             raise ValueError(f'loss function "{self.hparams.loss}" unknow.')
 
-    def augment(self, I_0, I_1, S0, S1):
+    def augment(self, I_0, I_1, S_0, S_1):
         with torch.no_grad():
             self.augmentation.randomize()
             I_0 = self.augmentation(I_0)
             I_1 = self.augmentation(I_1)
             S_0 = self.augmentation(S_0.float(), interpolation='nearest').round().long()
             S_1 = self.augmentation(S_1.float(), interpolation='nearest').round().long()
-        return I_0, I_1, S0, S1
+        return I_0, I_1, S_0, S_1
 
     def _step(self, batch, batch_idx, save_viz=False):
         """
@@ -87,7 +87,7 @@ class RegistrationModel(CommonLightningModel):
 
         # augment
         if self.training:
-            I_0, I_1, S0, S1 = self.augment(I_0, I_1, S0, S1)
+            I_0, I_1, S_0, S_1 = self.augment(I_0, I_1, S_0, S_1)
 
         # predict flow
         flow = self.forward(I_0, I_1)
