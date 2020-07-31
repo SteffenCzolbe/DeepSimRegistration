@@ -53,7 +53,7 @@ six==1.14.0
 tensorboard==2.2.1
 tensorboard-plugin-wit==1.6.0.post3
 toml==0.10.1
-torch==1.6.0
+torch==1.5.1
 torchvision==0.6.0
 tqdm==4.46.0
 traitlets==4.3.3
