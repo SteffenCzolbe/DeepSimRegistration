@@ -8,7 +8,6 @@ from.common_lightning_model import CommonLightningModel
 from .models.voxelmorph import Voxelmorph
 from .loss_metrics import NCC, DeepSim, VGGFeatureExtractor
 from .segmentation_model import SegmentationModel
-import ipdb
 
 class RegistrationModel(CommonLightningModel):
     """
