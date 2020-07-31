@@ -42,25 +42,28 @@ set -- "${POSITIONAL[@]}" # restore parameters
 
 # build parameters for slurm
 TASK=$3
-if [[ $TASK == "src.train_segmentation" ]]; then 
-    JOBNAME="seg-"$DATASET
-else
-    JOBNAME=$LOSS-$LAM
-fi
 case $DATASET in
     brain-mri)
     TIME=5-00:00:00
     GRES=gpu:titanrtx:1
+    DATASET_SHORT=br
     ;;
     platelet-em)
     TIME=1-00:00:00
     GRES=gpu:titanx:1
+    DATASET_SHORT=pl
     ;;
     phc-u373)
     TIME=1-00:00:00
     GRES=gpu:titanx:1
+    DATASET_SHORT=ph
     ;;
 esac
+if [[ $TASK == "src.train_segmentation" ]]; then 
+    JOBNAME="seg-"$DATASET
+else
+    JOBNAME=$DATASET_SHORT-$LOSS-$LAM
+fi
 
 echo "Setting job max time to "$TIME
 echo "Scheduling Job " --job-name=$JOBNAME --time=$TIME --gres=$GRES ./scripts/slurm/slurm_script.sh $@
