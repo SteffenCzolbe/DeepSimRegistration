@@ -53,7 +53,7 @@ def load_nii_as_tensor(path, dtype=torch.float, return_affine=False):
     """
     nii = nib.load(path)
     array = nii.get_fdata()
-    tensor = volumetric_image_to_tensor(array, dtype=dtype)
+    tensor = volumetric_image_to_tensor(array, dtype=dtype).contiguous()
     affine = nii.affine
     return (tensor, affine) if return_affine else tensor
 
