@@ -4,6 +4,7 @@ import numpy as np
 from tqdm import tqdm
 from src.registration_model import RegistrationModel
 import torch
+from .config import *
 
 
 # read logs
@@ -21,37 +22,47 @@ def test_model(model):
             scores.append(score["dice_overlap"].item())
     return scores
 
-# read datasets
-datasets = os.listdir('./weights/')
-
 # set up sup-plots
-fig = plt.figure()
-axs = fig.subplots(1, len(datasets)) 
-colors = plt.get_cmap('tab20').colors[1::2]
+fig = plt.figure(figsize=(10,4))
+axs = fig.subplots(1, len(DATASET_ORDER)) 
+plt.subplots_adjust(bottom=0.2)
 plt.rcParams['boxplot.medianprops.color'] = 'k'
 plt.rcParams['boxplot.medianprops.linewidth'] = 3.0
 
-for i, dataset in enumerate(datasets):
-    loss_functions = sorted(os.listdir(os.path.join('./weights/', dataset, 'registration')))
+for i, dataset in enumerate(DATASET_ORDER):
+    # set dataset title
+    axs[i].set_title(PLOT_CONFIG[dataset]['display_name'])
     mean_dice_overlaps = []
-    for loss_function in tqdm(loss_functions):
+    labels = []
+    colors = []
+    for loss_function in tqdm(LOSS_FUNTION_ORDER):
+        path = os.path.join('./weights/', dataset, 'registration', loss_function)
+        if not os.path.isdir(path):
+            continue
         # load model
-        checkpoint_path = os.path.join('./weights/', dataset, 'registration', loss_function, 'weights.ckpt')
+        checkpoint_path = os.path.join(path, 'weights.ckpt')
         model = RegistrationModel.load_from_checkpoint(
             checkpoint_path=checkpoint_path)
+        # test model
         mean_dice_overlaps.append(test_model(model))
+        #mean_dice_overlaps.append(list(np.random.normal(0.8, 0.2, 50)))
+        labels.append(LOSS_FUNTION_CONFIG[loss_function]['display_name'])
+        colors.append(LOSS_FUNTION_CONFIG[loss_function]['primary_color'])
 
     # plot
     # plot boxes.
-    bplot = axs[i].boxplot(np.array(mean_dice_overlaps).T,
-                vert=True,  # vertical box alignment
-                patch_artist=True,  # fill with color
-                labels=loss_functions) # will be used to label x-ticks
-    # color boxes
-    for patch, color in zip(bplot['boxes'], colors):
-        patch.set_facecolor(color)
-    # set dataset title
-    axs[i].set_title(dataset)
+    if len(labels) > 0:
+        bplot = axs[i].boxplot(np.array(mean_dice_overlaps).T,
+                    vert=True,  # vertical box alignment
+                    patch_artist=True,  # fill with color
+                    labels=labels) # will be used to label x-ticks
+        # color boxes
+        for patch, color in zip(bplot['boxes'], colors):
+            patch.set_facecolor(color)
+
+        # rotate labels
+        for tick in axs[i].get_xticklabels():
+            tick.set_rotation(70)
 
 
 # add labels
