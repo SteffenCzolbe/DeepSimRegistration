@@ -177,7 +177,7 @@ class CommonLightningModel(pl.LightningModule):
         """
         Called at the end of the train epoch with the outputs of all training steps.
         """
-        """
+        import ipdb; ipdb.set_trace()
         def map_to_device(obj, device):
             if isinstance(obj, tuple):
                 return tuple(map_to_device(list(obj), device))
@@ -194,8 +194,6 @@ class CommonLightningModel(pl.LightningModule):
                     print('Creating Visualization..')
                     self._step(batch, None, save_viz=True)
                     self.last_viz = self.current_epoch
-        """
-        import ipdb; ipdb.set_trace()
         output = self.mean_dicts(outputs)
         return {
             "val_loss": output["loss"],
