@@ -45,7 +45,8 @@ class CommonLightningModel(pl.LightningModule):
                 'val_image_slice_from_to':(0, 12),
                 'test_intensity_image_file':"./data/platelet_em_reduced/images/24-images.tif",
                 'test_segmentation_image_file':"./data/platelet_em_reduced/labels-class/24-class.tif",
-                'test_image_slice_from_to':(12, 24),}
+                'test_image_slice_from_to':(12, 24),
+                'reduce_lr_patience': 200,}
         elif self.hparams.dataset == 'phc-u373':
             config = {'dataset_type':'tif',
                 'channels' : 1,
@@ -60,13 +61,15 @@ class CommonLightningModel(pl.LightningModule):
                 'val_image_slice_from_to':(0, 50),
                 'test_intensity_image_file':"./data/PhC-U373/images/02.tif",
                 'test_segmentation_image_file':"./data/PhC-U373/labels-class/02.tif",
-                'test_image_slice_from_to':(60, 115),}
+                'test_image_slice_from_to':(60, 115),
+                'reduce_lr_patience': 200,}
         elif self.hparams.dataset == 'brain-mri':
             config = {'dataset_type':'nii',
                 'channels' : 1,
                 'classes': 24,
                 'dim': 3,
-                'path': '../brain_mris'}
+                'path': '../brain_mris',
+                'reduce_lr_patience': 2,}
         else:
             raise ValueError(f'Dataset "{self.hparams.dataset}" not known.')
         return config[key]
@@ -113,7 +116,7 @@ class CommonLightningModel(pl.LightningModule):
         configure optimizers, scheduler, etc
         """
         opt = torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
-        sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, "min", factor=0.1, patience=200, verbose=True)
+        sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, "min", factor=0.1, patience=self.dataset_config('reduce_lr_patience'), verbose=True)
         return {'optimizer': opt, 'lr_scheduler': {'scheduler': sched, 'interval': 'epoch', 'monitor': 'val_loss', 'reduce_on_plateau':True}}
 
     def forward(self, x):
