@@ -26,9 +26,11 @@ class CommonLightningModel(pl.LightningModule):
         torchreg.settings.set_ndims(self.dataset_config('dim'))
 
         # set-up data visualization
-        self.viz_every_n_epochs = self.hparams.viz_every_n_epochs
-        self.last_viz = -self.viz_every_n_epochs
-        self.viz_batch = next(iter(self.val_dataloader()))
+        self.viz_during_training = self.dataset_config('dataset_type') == 'tif'
+        if self.viz_during_training:
+            self.viz_every_n_epochs = self.hparams.viz_every_n_epochs
+            self.last_viz = -self.viz_every_n_epochs
+            self.viz_batch = next(iter(self.val_dataloader()))
 
     def dataset_config(self, key):
         if self.hparams.dataset == 'platelet-em':
@@ -182,15 +184,15 @@ class CommonLightningModel(pl.LightningModule):
                 return list(map(lambda o: map_to_device(o, device), obj))
             else:
                 return obj.to(device)
-        # visualize output
-        if self.current_epoch - self.last_viz >= self.viz_every_n_epochs:
-            device = next(iter(self.parameters())).device
-            if device.type == 'cpu' or (device.type == 'cuda' and device.index == 0):
-                batch = map_to_device(self.viz_batch, device)
-                print('Creating Visualization..')
-                import ipdb; ipdb.set_trace()
-                self._step(batch, None, save_viz=True)
-                self.last_viz = self.current_epoch
+        if self.viz_during_training:
+            # visualize output
+            if self.current_epoch - self.last_viz >= self.viz_every_n_epochs:
+                device = next(iter(self.parameters())).device
+                if device.type == 'cpu' or (device.type == 'cuda' and device.index == 0):
+                    batch = map_to_device(self.viz_batch, device)
+                    print('Creating Visualization..')
+                    self._step(batch, None, save_viz=True)
+                    self.last_viz = self.current_epoch
         
         output = self.mean_dicts(outputs)
         return {
