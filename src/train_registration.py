@@ -12,8 +12,11 @@ def main(hparams):
 
     # create early stopping
     hparams.early_stopping_callback = pl.callbacks.EarlyStopping(
-        monitor="val_loss", patience=100, strict=True, verbose=True, mode="min"
+        monitor="val_loss", patience=300, strict=True, verbose=True, mode="min"
     )
+
+    # add some hints for better experiments tracking
+    hparams.task='registration'
 
     # if 
     if hasattr(hparams, 'gpus') and hparams.gpus in [1, '1', [1]]:
