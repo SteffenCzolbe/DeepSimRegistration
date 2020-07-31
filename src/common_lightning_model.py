@@ -188,6 +188,7 @@ class CommonLightningModel(pl.LightningModule):
             if device.type == 'cpu' or (device.type == 'cuda' and device.index == 0):
                 batch = map_to_device(self.viz_batch, device)
                 print('Creating Visualization..')
+                import ipdb; ipdb.set_trace()
                 self._step(batch, None, save_viz=True)
                 self.last_viz = self.current_epoch
         
