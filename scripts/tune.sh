@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # hyperparameter tuning.
-TUNE_PLATELET=true
-TUNE_PHC=true
-TUNE_BRAIN=true
+TUNE_PLATELET=false
+TUNE_PHC=false
+TUNE_BRAIN=false
 
 
 # Check if slurm compute cluster available. Submit as slurm job if possible.
@@ -41,7 +41,7 @@ if $TUNE_PLATELET; then
     done
 
     # deepsim transfer
-    for LAM in 0.5 1 2
+    for LAM in 0.625 0.125 0.25 0.5
     do
     $WRAPPER_FUNC python3 -m src.train_registration --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim_transfer/$LAM/ --loss deepsim-transfer --deepsim_weights ./weights/phc-u373/segmentation/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
@@ -55,7 +55,7 @@ fi
 
 if $TUNE_PHC; then
     # l2
-    for LAM in 0.005 0.01 0.02 0.04 0.08
+    for LAM in  0.000625  0.00125  0.0025 0.005 0.01
     do
     $WRAPPER_FUNC python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/l2/$LAM/ --loss l2 --ncc_win_size 9 --lam $LAM --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --distributed_backend ddp --max_epochs=3000
     done
@@ -73,19 +73,19 @@ if $TUNE_PHC; then
     done
 
     # deepsim
-    for LAM in 0.125 0.5 1
+    for LAM in 0.015625 0.03125 0.0625 0.125 0.25 0.5
     do
     $WRAPPER_FUNC python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim/$LAM/ --loss deepsim --deepsim_weights ./weights/phc-u373/segmentation/weights.ckpt --lam $LAM --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim transfer
-    for LAM in 0.06175 0.125 0.5
+    for LAM in 0.06175 0.125 0.25
     do
     $WRAPPER_FUNC python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim_transfer/$LAM/ --loss deepsim-transfer --deepsim_weights ./weights/platelet-em/segmentation/weights.ckpt --lam $LAM --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --distributed_backend ddp --max_epochs=3000
     done
 
     # vgg
-    for LAM in 0.125 0.5 1
+    for LAM in 0.125 0.25 0.5
     do
     $WRAPPER_FUNC python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/vgg/$LAM/ --loss vgg --lam $LAM --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --distributed_backend ddp --max_epochs=3000
     done
@@ -116,3 +116,22 @@ if $TUNE_BRAIN; then
     $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss deepsim --ncc_win_size 9 --deepsim_weights ./weights/brain-mri/segmentation/weights.ckpt --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=150000
     done
 fi
+
+
+# deepsim transfer
+for LAM in 0.625 0.125 0.25
+do
+$WRAPPER_FUNC python3 -m src.train_registration --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim_transfer/$LAM/ --loss deepsim-transfer --deepsim_weights ./weights/phc-u373/segmentation/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+done
+
+# l2
+for LAM in  0.000625  0.00125  0.0025
+do
+$WRAPPER_FUNC python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/l2/$LAM/ --loss l2 --ncc_win_size 9 --lam $LAM --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --distributed_backend ddp --max_epochs=3000
+done
+
+# deepsim
+for LAM in 0.015625 0.03125 0.0625 0.125 0.25
+do
+$WRAPPER_FUNC python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim/$LAM/ --loss deepsim --deepsim_weights ./weights/phc-u373/segmentation/weights.ckpt --lam $LAM --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --distributed_backend ddp --max_epochs=3000
+done
