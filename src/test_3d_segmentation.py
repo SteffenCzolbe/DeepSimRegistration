@@ -9,11 +9,6 @@ import torchreg.transforms.functional as f
 import os
 import numpy as np
 
-def same_values(a, b):
-    a = a.to('cpu')
-    b = b.to('cpu')
-    assert torch.allclose(a, b), f"{a}, {b}"
-
 def main(hparams):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
