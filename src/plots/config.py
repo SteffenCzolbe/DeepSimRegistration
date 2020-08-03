@@ -8,7 +8,7 @@ PLOT_CONFIG = {'phc-u373':{'display_name':'PhC-U373',
                'brain-mri':{'display_name':'Brain-MRI',
                            'smoothing_factor': 0.1},
                            }
-LOSS_FUNTION_ORDER = ['ncc', 'ncc+supervised', 'deepsim', 'transfer', 'vgg']
+LOSS_FUNTION_ORDER = ['l2', 'ncc', 'ncc+supervised', 'deepsim', 'transfer', 'vgg']
 LOSS_FUNTION_CONFIG = {'l2':{'display_name': 'MSE',
                              'primary_color': plt.get_cmap('tab20c').colors[0]},
                        'ncc':{'display_name': 'NCC',
