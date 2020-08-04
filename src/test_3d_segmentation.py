@@ -24,7 +24,7 @@ def main(hparams):
     trainer = pl.Trainer()
 
     # test (pass in the model)
-    trainer.test(model)
+    # trainer.test(model)
 
     # segment tiff image stack
     test_set = model.test_dataloader().dataset
