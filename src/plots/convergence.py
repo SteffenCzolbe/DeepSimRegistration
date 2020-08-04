@@ -40,7 +40,7 @@ def smooth(ys, smoothing_factor=0.6):
 
 
 # set up sup-plots
-fig = plt.figure(figsize=(10,3))
+fig = plt.figure(figsize=(12,3.5))
 axs = fig.subplots(1, len(DATASET_ORDER)) 
 plt.subplots_adjust(bottom=0.15)
 
