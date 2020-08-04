@@ -14,6 +14,7 @@ def test_model(model):
         model.eval()
         model = model.to(device)
         test_set = model.test_dataloader().dataset
+
         scores = []
         for i in range(len(test_set)):
             (I_0, S_0), (I_1, S_1) = test_set[i]
@@ -35,7 +36,7 @@ for i, dataset in enumerate(DATASET_ORDER):
     mean_dice_overlaps = []
     labels = []
     colors = []
-    for loss_function in tqdm(LOSS_FUNTION_ORDER):
+    for loss_function in tqdm(LOSS_FUNTION_ORDER, desc=f'testing loss-finctions on {dataset}'):
         path = os.path.join('./weights/', dataset, 'registration', loss_function)
         if not os.path.isdir(path):
             continue
@@ -49,7 +50,6 @@ for i, dataset in enumerate(DATASET_ORDER):
         labels.append(LOSS_FUNTION_CONFIG[loss_function]['display_name'])
         colors.append(LOSS_FUNTION_CONFIG[loss_function]['primary_color'])
 
-    # plot
     # plot boxes.
     if len(labels) > 0:
         bplot = axs[i].boxplot(np.array(mean_dice_overlaps).T,
@@ -68,5 +68,6 @@ for i, dataset in enumerate(DATASET_ORDER):
 # add labels
 fig.text(0.06, 0.5, 'Mean Dice Overlap', ha='center', va='center', rotation='vertical')
 
-plt.savefig('./src/plots/test_score.pdf')
-plt.savefig('./src/plots/test_score.png')
+os.makedirs('./out/plots/', exist_ok=True)
+plt.savefig('./out/plots/test_score.pdf')
+plt.savefig('./out/plots/test_score.png')
