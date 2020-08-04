@@ -42,12 +42,15 @@ class CommonLightningModel(pl.LightningModule):
                 'train_intensity_image_file':"./data/platelet_em_reduced/images/50-images.tif",
                 'train_segmentation_image_file':"./data/platelet_em_reduced/labels-class/50-class.tif",
                 'train_image_slice_from_to':(0, -1),
+                'train_slice_diff':(2, 2),
                 'val_intensity_image_file':"./data/platelet_em_reduced/images/24-images.tif",
                 'val_segmentation_image_file':"./data/platelet_em_reduced/labels-class/24-class.tif",
                 'val_image_slice_from_to':(0, 12),
+                'val_slice_diff':(0, 1),
                 'test_intensity_image_file':"./data/platelet_em_reduced/images/24-images.tif",
                 'test_segmentation_image_file':"./data/platelet_em_reduced/labels-class/24-class.tif",
                 'test_image_slice_from_to':(12, 24),
+                'test_slice_diff':(0, 1),
                 'reduce_lr_patience': 200,}
         elif self.hparams.dataset == 'phc-u373':
             config = {'dataset_type':'tif',
@@ -58,12 +61,15 @@ class CommonLightningModel(pl.LightningModule):
                 'train_intensity_image_file':"./data/PhC-U373/images/01.tif",
                 'train_segmentation_image_file':"./data/PhC-U373/labels-class/01.tif",
                 'train_image_slice_from_to':(0, -1),
+                'train_slice_diff':(2, 2),
                 'val_intensity_image_file':"./data/PhC-U373/images/02.tif",
                 'val_segmentation_image_file':"./data/PhC-U373/labels-class/02.tif",
                 'val_image_slice_from_to':(0, 50),
+                'val_slice_diff':(0, 1),
                 'test_intensity_image_file':"./data/PhC-U373/images/02.tif",
                 'test_segmentation_image_file':"./data/PhC-U373/labels-class/02.tif",
                 'test_image_slice_from_to':(60, 115),
+                'test_slice_diff':(0, 1),
                 'reduce_lr_patience': 200,}
         elif self.hparams.dataset == 'brain-mri':
             config = {'dataset_type':'nii',
@@ -89,7 +95,7 @@ class CommonLightningModel(pl.LightningModule):
                 min_slice=self.dataset_config(f'{split}_image_slice_from_to')[0],
                 max_slice=self.dataset_config(f'{split}_image_slice_from_to')[1],
                 slice_pairs=self.image_pairs,
-                slice_pair_max_z_diff=(2,2),
+                slice_pair_max_z_diff=self.dataset_config(f'{split}_slice_diff'),
             )
         elif self.dataset_config('dataset_type') == 'nii':
             self.augmentation = transforms.RandomAffine(degrees=(-5, 5), translate=None, scale=None, shear=None, flip=True)
