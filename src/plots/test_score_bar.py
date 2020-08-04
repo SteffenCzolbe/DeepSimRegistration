@@ -30,6 +30,7 @@ plt.subplots_adjust(bottom=0.2)
 plt.rcParams['boxplot.medianprops.color'] = 'k'
 plt.rcParams['boxplot.medianprops.linewidth'] = 3.0
 
+
 for i, dataset in enumerate(DATASET_ORDER):
     # set dataset title
     axs[i].set_title(PLOT_CONFIG[dataset]['display_name'])
@@ -45,19 +46,18 @@ for i, dataset in enumerate(DATASET_ORDER):
         model = RegistrationModel.load_from_checkpoint(
             checkpoint_path=checkpoint_path)
         # test model
-        mean_dice_overlaps.append(test_model(model))
+        mean_dice_overlaps.append(np.mean(test_model(model)))
         labels.append(LOSS_FUNTION_CONFIG[loss_function]['display_name'])
         colors.append(LOSS_FUNTION_CONFIG[loss_function]['primary_color'])
 
-    # plot boxes.
+    # plot bars.
     if len(labels) > 0:
-        bplot = axs[i].boxplot(np.array(mean_dice_overlaps).T,
-                    vert=True,  # vertical box alignment
-                    patch_artist=True,  # fill with color
-                    labels=labels) # will be used to label x-ticks
-        # color boxes
-        for patch, color in zip(bplot['boxes'], colors):
-            patch.set_facecolor(color)
+        bplot = axs[i].bar(np.arange(len(mean_dice_overlaps)) + 0.5, mean_dice_overlaps,
+                    tick_label=labels, color=colors)
+        data_range = np.max(mean_dice_overlaps) - np.min(mean_dice_overlaps)
+        ymin = np.min(mean_dice_overlaps) - 0.5 * data_range
+        ymax = np.max(mean_dice_overlaps) + 0.1 * data_range
+        axs[i].set_ylim([ymin,ymax])
 
         # rotate labels
         for tick in axs[i].get_xticklabels():
@@ -68,5 +68,5 @@ for i, dataset in enumerate(DATASET_ORDER):
 fig.text(0.06, 0.5, 'Mean Dice Overlap', ha='center', va='center', rotation='vertical')
 
 os.makedirs('./out/plots/', exist_ok=True)
-plt.savefig('./out/plots/test_score.pdf')
-plt.savefig('./out/plots/test_score.png')
+plt.savefig('./out/plots/test_score_bar.pdf')
+plt.savefig('./out/plots/test_score_bar.png')
