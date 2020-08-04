@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import os
 from tensorboard.backend.event_processing import event_accumulator
+from tqdm import tqdm
 from .config import *
 
 
@@ -45,7 +46,7 @@ plt.subplots_adjust(bottom=0.15)
 
 for i, dataset in enumerate(DATASET_ORDER):
     axs[i].set_title(PLOT_CONFIG[dataset]['display_name'])
-    for loss_function in LOSS_FUNTION_ORDER:
+    for loss_function in tqdm(LOSS_FUNTION_ORDER, desc=f'plotting convergence of loss-finctions on {dataset}'):
         path = os.path.join('./weights/', dataset, 'registration', loss_function)
         if not os.path.isdir(path):
             continue
@@ -62,5 +63,6 @@ handles = [LOSS_FUNTION_CONFIG[loss_function]['handle'] for loss_function in LOS
 labels = [LOSS_FUNTION_CONFIG[loss_function]['display_name'] for loss_function in LOSS_FUNTION_ORDER]
 axs[-1].legend(handles, labels, loc='lower right')
 
-plt.savefig('./src/plots/convergence.pdf')
-plt.savefig('./src/plots/convergence.png')
+os.makedirs('./out/plots/', exist_ok=True)
+plt.savefig('./out/plots/convergence.pdf')
+plt.savefig('./out/plots/convergence.png')
