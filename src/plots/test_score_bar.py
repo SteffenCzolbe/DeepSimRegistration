@@ -5,6 +5,7 @@ from tqdm import tqdm
 from src.registration_model import RegistrationModel
 import torch
 from .config import *
+from .run_models import run_models
 
 
 # read logs
@@ -29,7 +30,7 @@ axs = fig.subplots(1, len(DATASET_ORDER))
 plt.subplots_adjust(bottom=0.2)
 plt.rcParams['boxplot.medianprops.color'] = 'k'
 plt.rcParams['boxplot.medianprops.linewidth'] = 3.0
-
+results = run_models(use_cached=True)
 
 for i, dataset in enumerate(DATASET_ORDER):
     # set dataset title
@@ -37,18 +38,11 @@ for i, dataset in enumerate(DATASET_ORDER):
     mean_dice_overlaps = []
     labels = []
     colors = []
-    for loss_function in tqdm(LOSS_FUNTION_ORDER, desc=f'testing loss-finctions on {dataset}'):
-        path = os.path.join('./weights/', dataset, 'registration', loss_function)
-        if not os.path.isdir(path):
-            continue
-        # load model
-        checkpoint_path = os.path.join(path, 'weights.ckpt')
-        model = RegistrationModel.load_from_checkpoint(
-            checkpoint_path=checkpoint_path)
-        # test model
-        mean_dice_overlaps.append(np.mean(test_model(model)))
-        labels.append(LOSS_FUNTION_CONFIG[loss_function]['display_name'])
-        colors.append(LOSS_FUNTION_CONFIG[loss_function]['primary_color'])
+    for loss_function in LOSS_FUNTION_ORDER:
+        if loss_function in results[dataset].keys():
+            mean_dice_overlaps.append(results[dataset][loss_function]["dice_overlap"].mean())
+            labels.append(LOSS_FUNTION_CONFIG[loss_function]['display_name'])
+            colors.append(LOSS_FUNTION_CONFIG[loss_function]['primary_color'])
 
     # plot bars.
     if len(labels) > 0:
