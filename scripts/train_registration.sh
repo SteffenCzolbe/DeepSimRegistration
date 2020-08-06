@@ -26,3 +26,7 @@ $WRAPPER_FUNC python3 -m src.train_registration --dataset phc-u373 --savedir ./o
 $WRAPPER_FUNC python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/vgg/ --loss vgg --lam 0.125 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --distributed_backend ddp --max_epochs=3000
 
 # TODO: brain-mri
+$WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss l2 --lam 0.01 --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=150000
+$WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss ncc --ncc_win_size 9 --lam 0.5 --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=150000
+$WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss ncc+supervised --ncc_win_size 9 --lam 0.5 --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=150000
+$WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss deepsim --deepsim_weights ./weights/brain-mri/segmentation/weights.ckpt --lam 0.25 --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=150000
