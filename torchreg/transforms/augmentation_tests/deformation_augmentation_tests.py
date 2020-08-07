@@ -25,6 +25,7 @@ def load_png(path):
 
 def save_png(path, batch):
     array = transforms.functional.image_to_numpy(batch[0])
+    array = np.clip(array, 0, 256)
     Image.fromarray(array.astype(np.uint8)).save(path)
 
 if __name__ == '__main__':

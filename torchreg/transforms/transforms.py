@@ -6,7 +6,6 @@ Multiple transforms can be combined with torchvision.transforms.Compose
 import torch
 import numpy as np
 from .functional import *
-from torchvision.transforms import Compose
 import torchreg.settings as settings
 
 
