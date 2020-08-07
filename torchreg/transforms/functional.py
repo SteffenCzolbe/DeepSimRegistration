@@ -66,9 +66,6 @@ def save_tensor_as_nii(path, tensor, affine=None, dtype=np.float):
         tensor: Image volume, C x H x D x W
         affine: world to vox matrix. If none, the identity is chosen
         dtype: numpy dtype to cast to
-
-    Return:
-        Torch Tensor, C x H x W x D
     """
     if affine is None:
         affine = np.eye(4)
@@ -79,5 +76,19 @@ def save_tensor_as_nii(path, tensor, affine=None, dtype=np.float):
 
     nii = nib.Nifti1Image(array, affine=affine)
     nib.save(nii, path)
+    return
+
+def save_tensor_as_np(path, tensor, dtype=np.float):
+    """
+    saves a tensor to an np file.
+
+    Parameters:
+        path: file path to save
+        tensor: Image volume, C x H x D x W
+        dtype: numpy dtype to cast to
+    """
+    array = image_to_numpy(tensor).astype(dtype)
+    with open(path, 'wb') as f:
+        np.save(f, array)
     return
     

@@ -43,7 +43,7 @@ class RegistrationModel(CommonLightningModel):
         self.ncc = NCC(window=hparams.ncc_win_size)
         self.mse = torch.nn.MSELoss()
         self.diffusion_reg = torchreg.metrics.GradNorm()
-        self.dice_overlap = torchreg.metrics.DiceOverlap(classes=list(range(3)))
+        self.dice_overlap = torchreg.metrics.DiceOverlap(classes=list(range(self.dataset_config('classes'))))
         self.transformer = torchreg.nn.SpatialTransformer()
 
     def forward(self, moving, fixed):
