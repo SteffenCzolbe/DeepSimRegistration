@@ -13,3 +13,7 @@ python3 -m src.test_2d_registration --weights ./weights/platelet-em/registration
 python3 -m src.test_2d_registration --weights ./weights/platelet-em/registration/vgg/weights.ckpt --out ./out/platelet-em/registration/vgg.tif
 
 # TODO add brains
+python3 -m src.test_3d_registration --weights ./weights/brain-mri/registration/l2/weights.ckpt --out ./out/brain-mri/registration/l2/
+python3 -m src.test_3d_registration --weights ./weights/brain-mri/registration/ncc/weights.ckpt --out ./out/brain-mri/registration/ncc/
+python3 -m src.test_3d_registration --weights ./weights/brain-mri/registration/ncc+supervised/weights.ckpt --out ./out/brain-mri/registration/ncc+supervised/
+python3 -m src.test_3d_registration --weights ./weights/brain-mri/registration/deepsim/weights.ckpt --out ./out/brain-mri/registration/deepsim/
