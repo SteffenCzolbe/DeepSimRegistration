@@ -5,6 +5,28 @@ import torchreg.nn as tnn
 import torchreg.settings as settings
 import numpy as np
 
+class Compose(nn.Module):
+    """
+    Composes multiple augmentaions
+
+    Args:
+        submodules: a list of augmentations
+    """
+    def __init__(self, submodules):
+        self.submodules = submodules
+
+    def randomize(self):
+        """
+        randomizes the transformations
+        """
+        for submodule in self.submodules:
+            submodule.randomize()
+
+    def forward(self, batch):
+        for submodule in self.submodules:
+            batch = submodule(batch)
+        return batch
+
 class RandomAffine(nn.Module):
     """Random affine transformation of the image keeping center invariant
 
@@ -195,3 +217,69 @@ class RandomDiffeomorphic(nn.Module):
     def forward(self, batch, interpolation='bilinear'):
         assert hasattr(self, "do_augment"), "The random data augmentation needs to be initialized by calling .randomize()"
         return self.apply(batch, interpolation=interpolation)
+
+
+class GaussianNoise(nn.Module):
+    """
+    Composes multiple augmentaions
+
+    Args:
+        std: standard dev of noise
+    """
+    def __init__(self, std):
+        super().__init__()
+        self.std = std
+
+    def randomize(self):
+        """
+        randomizes the transformation
+        """
+        pass
+
+    def forward(self, batch):
+        noise = torch.normal(0, self.std, batch.shape).to(batch.device)
+        return batch + noise
+
+class RandomIntenityShift(nn.Module):
+    """
+    Composes multiple augmentaions
+
+    Args:
+        instensity_change_std: std of the magnitude of the effect
+        size_std: Std of the filter size
+        filter_count: Amount of filter to apply.
+        downsize: downsamling factor of the internal computation. Higher numbers speed up the process.
+    """
+    def __init__(self, instensity_change_std, size_std, filter_count, downsize=16):
+        super().__init__()
+        self.instensity_change_std = instensity_change_std
+        self.size_std = size_std / downsize
+        self.filter_count = filter_count
+        self.downsize = downsize
+        self.identity = tnn.Identity()
+
+    def randomize(self):
+        """
+        randomizes the transformation
+        """
+        pass
+
+    def forward(self, batch):
+        # create white canvas
+        size = torch.tensor(batch.shape[2:]) // self.downsize
+        canvas = torch.zeros(1, 1, *size, device = batch.device)
+
+        for _ in range(self.filter_count):
+            # set mu and std of effect
+            mu = torch.rand(len(size)) * size.float()
+            std = torch.normal(mean=self.size_std, std=self.size_std/2, size=(len(size),)).abs()
+
+            # calculate distribution on the canvas
+            x = self.identity(canvas).unsqueeze(-1).transpose(1, -1)
+            distribution = torch.exp(-torch.sum((x - mu)**2 / std, dim=-1))
+            distribution /= torch.max(distribution)
+
+            # upscale and apply to image
+            intensity_change = torch.normal(mean=0, std=self.instensity_change_std, size=())
+            canvas += intensity_change * distribution
+        return batch + F.interpolate(canvas, size=batch.shape[2:], mode='bilinear' if len(size) == 2 else 'trilinear', align_corners=True)
