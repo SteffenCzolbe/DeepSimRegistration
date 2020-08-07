@@ -1,14 +1,14 @@
 import matplotlib.pyplot as plt
 
-DATASET_ORDER = ['phc-u373', 'platelet-em', 'brain-mri']
+DATASET_ORDER = ['platelet-em', 'phc-u373', 'brain-mri']
 PLOT_CONFIG = {'phc-u373':{'display_name':'PhC-U373',
                            'smoothing_factor': 0.97},
                'platelet-em':{'display_name':'Platelet-EM',
                            'smoothing_factor': 0.995},
                'brain-mri':{'display_name':'Brain-MRI',
-                           'smoothing_factor': 0.1},
+                           'smoothing_factor': 0.0},
                            }
-LOSS_FUNTION_ORDER = ['l2', 'ncc', 'ncc+supervised', 'deepsim', 'transfer', 'vgg']
+LOSS_FUNTION_ORDER = ['l2', 'ncc', 'ncc+supervised', 'deepsim'] #, 'transfer', 'vgg']
 LOSS_FUNTION_CONFIG = {'l2':{'display_name': 'MSE',
                              'primary_color': plt.get_cmap('tab20c').colors[0]},
                        'ncc':{'display_name': 'NCC',
