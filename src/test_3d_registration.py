@@ -27,10 +27,10 @@ def main(hparams):
     print(f'Evaluating model for dataset {model.hparams.dataset}, loss {model.hparams.loss}, lambda {model.hparams.lam}')
 
     # init trainer
-    trainer = pl.Trainer()
+    trainer = pl.Trainer(gpus=1 if torch.cuda.is_available() else 0)
 
     # test (pass in the model)
-    # trainer.test(model)
+    trainer.test(model)
 
     # create grid animation
     test_set = model.test_dataloader().dataset
