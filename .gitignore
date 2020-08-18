@@ -1,5 +1,5 @@
 venv
-lightning_logs
+lightning_logs*
 experiment_logs
 tmp*
 *.pdf
