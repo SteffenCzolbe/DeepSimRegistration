@@ -35,7 +35,7 @@ def run_models(use_cached=True):
         results = {}
         for dataset in DATASET_ORDER:
             results[dataset] = {}
-            for loss_function in tqdm(LOSS_FUNTION_ORDER, desc=f'testing loss-finctions on {dataset}'):
+            for loss_function in tqdm(LOSS_FUNTION_ORDER, desc=f'testing loss-functions on {dataset}'):
                 path = os.path.join('./weights/', dataset, 'registration', loss_function)
                 if not os.path.isdir(path):
                     continue
