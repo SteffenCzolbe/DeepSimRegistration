@@ -7,6 +7,7 @@ import torchreg
 import torchreg.transforms as transforms
 from .datasets.tif_stack_dataset import TiffStackDataset
 from .datasets.brain_mri_dataset import BrainMRIDataset
+from .datasets.heart_mri_dataset import HeartMRIDataset
 
 
 class CommonLightningModel(pl.LightningModule):
@@ -78,6 +79,13 @@ class CommonLightningModel(pl.LightningModule):
                 'dim': 3,
                 'path': '../brain_mris',
                 'reduce_lr_patience': 2,}
+        elif self.hparams.dataset == 'heart-mri':
+            config = {'dataset_type':'nii',
+                'channels' : 1,
+                'classes': 5,
+                'dim': 3,
+                'path': '../heart_mris',
+                'reduce_lr_patience': 20,}
         else:
             raise ValueError(f'Dataset "{self.hparams.dataset}" not known.')
         return config[key]
@@ -98,12 +106,20 @@ class CommonLightningModel(pl.LightningModule):
                 slice_pair_max_z_diff=self.dataset_config(f'{split}_slice_diff'),
             )
         elif self.dataset_config('dataset_type') == 'nii':
-            self.augmentation = transforms.RandomAffine(degrees=(-5, 5), translate=None, scale=None, shear=None, flip=True)
-            data = BrainMRIDataset(
-                path=self.dataset_config('path'),
-                split=split,
-                pairs=self.image_pairs,
-            )
+            if self.hparams.dataset == 'brain-mri':
+                self.augmentation = transforms.RandomAffine(degrees=(-5, 5), translate=None, scale=None, shear=None, flip=True)
+                data = BrainMRIDataset(
+                    path=self.dataset_config('path'),
+                    split=split,
+                    pairs=self.image_pairs,
+                )
+            elif self.hparams.dataset == 'heart-mri':
+                self.augmentation = transforms.RandomAffine(degrees=(-180, 180), translate=(-1, 1), scale=(0.9, 1.1), shear=None, flip=True)
+                data = HeartMRIDataset(
+                    path=self.dataset_config('path'),
+                    split=split,
+                    pairs=self.image_pairs,
+                )
 
         dataloader = torch.utils.data.DataLoader(
             data, batch_size=self.hparams.batch_size, drop_last=True
