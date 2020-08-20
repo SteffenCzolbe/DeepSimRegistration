@@ -17,7 +17,8 @@ def HeartMRIDataset(path: str, split: str, pairs=False):
     if pairs:
         raise NotImplementedException('Heart-MRI dataset is not for registration.')
     if split == 'test':
-        raise NotImplementedException('Heart-MRI dataset has no test set.')
+        print('WARNING: Heart-MRI dataset has no test set. Returning validation set instead.')
+        split = 'val'
 
     subjects = sorted(glob.glob(os.path.join(path, 'processed', '*')))
     image_nii_files = list(map(lambda s: os.path.join(s, 'axial.nii.gz'), subjects))

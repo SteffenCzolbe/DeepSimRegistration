@@ -28,7 +28,7 @@ def main(hparams):
 
     # segment tiff image stack
     test_set = model.test_dataloader().dataset
-    for i in range(10):
+    for i in range(min(10, len(test_set))):
         x, y_true = test_set[i]
         x, y_true = x.to(device), y_true.to(device)
         with torch.no_grad():
