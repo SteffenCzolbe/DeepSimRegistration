@@ -7,6 +7,7 @@ def main(hparams):
     # load model
     if hparams.load_from_checkpoint:
         model = RegistrationModel.load_from_checkpoint(hparams.load_from_checkpoint)
+        hparams.resume_from_checkpoint = hparams.load_from_checkpoint
     else:
         model = RegistrationModel(hparams)
 
