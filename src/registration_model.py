@@ -44,6 +44,7 @@ class RegistrationModel(CommonLightningModel):
         self.mse = torch.nn.MSELoss()
         self.diffusion_reg = torchreg.metrics.GradNorm()
         self.dice_overlap = torchreg.metrics.DiceOverlap(classes=list(range(self.dataset_config('classes'))))
+        self.dice_overlap_per_class = torchreg.metrics.DiceOverlap(classes=list(range(self.dataset_config('classes'))), mean_over_classes=False)
         self.transformer = torchreg.nn.SpatialTransformer()
 
     def forward(self, moving, fixed):
@@ -77,9 +78,15 @@ class RegistrationModel(CommonLightningModel):
             S_1 = self.augmentation(S_1.float(), interpolation='nearest').round().long()
         return I_0, I_1, S_0, S_1
 
-    def _step(self, batch, batch_idx, save_viz=False):
+    def _step(self, batch, batch_idx, save_viz=False, eval_per_class=False):
         """
         unified step function.
+
+        Parameters:
+            batch: the batch
+            batch_idx: int, batch index no (unused)
+            save_viz: save a visualization of this batch. Default False.
+            eval_per_class: add a dice-overlap score per class. Default False.
         """
         # unpack batch
         (I_0, S_0), (I_1, S_1) = batch
@@ -107,6 +114,8 @@ class RegistrationModel(CommonLightningModel):
         with torch.no_grad():
             dice_overlap = self.dice_overlap(S_m, S_1)
             accuracy = torch.mean((S_m == S_1).float())
+            if eval_per_class:
+                dice_overlap_per_class = self.dice_overlap_per_class(S_m, S_1)
 
         # visualize
         if save_viz and self.dataset_config('dataset_type') == 'tif':
@@ -118,6 +127,7 @@ class RegistrationModel(CommonLightningModel):
             "similarity_loss": similarity_loss,
             "dice_overlap": dice_overlap,
             "accuracy": accuracy,
+            "dice_overlap_per_class": dice_overlap_per_class if eval_per_class else None
         }
 
     def viz_results(self, I_0, I_m, I_1, S_0, S_m, S_1, flow, save=True):

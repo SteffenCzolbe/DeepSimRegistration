@@ -23,7 +23,7 @@ def test_model(model):
         for i in range(len(test_set)):
             (I_0, S_0), (I_1, S_1) = test_set[i]
             batch = (I_0.unsqueeze(0).to(device), S_0.unsqueeze(0).to(device)), (I_1.unsqueeze(0).to(device), S_1.unsqueeze(0).to(device))
-            score = model._step(batch, None)
+            score = model._step(batch, None, eval_per_class=True)
             scores.append(score)
     return map_dicts(scores)
 
