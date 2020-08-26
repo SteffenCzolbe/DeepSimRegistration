@@ -162,8 +162,9 @@ class CommonLightningModel(pl.LightningModule):
         means measures over minibatches
         """
         ret = {}
-        for k in list_of_dics[0].keys():
-            ret[k] = torch.stack([d[k] for d in list_of_dics]).mean()
+        for k, v in list_of_dics[0].items():
+            if v is not None:
+                ret[k] = torch.stack([d[k] for d in list_of_dics]).mean()
         return ret
 
     def training_step(self, batch, batch_idx):
