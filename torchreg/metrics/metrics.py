@@ -197,15 +197,17 @@ class PixelArea(nn.Module):
 
 
 class DiceOverlap(nn.Module):
-    def __init__(self, classes):
+    def __init__(self, classes, mean_over_classes=True):
         """
         calculates the mean dice overlap of the given classes
         This loss metric is not suitable for training. Use the SoftdiceOverlap for training instead.
         Parameters:
             classes: list of classes to consider, e.g. [0, 1]
+            mean_over_classes: should the mean dive overlap over the classes be returned, or one value per class? Default True.
         """
         super(DiceOverlap, self).__init__()
         self.classes = classes
+        self.mean_over_classes = mean_over_classes
 
     def cast_to_int(self, t):
         if t.dtype == torch.float:
@@ -224,7 +226,9 @@ class DiceOverlap(nn.Module):
             union = mask0.sum() + mask1.sum()
             dice_overlap = 2.0 * intersection / (union + 1e-6)
             dice_overlaps.append(dice_overlap)
-        return torch.stack(dice_overlaps).mean()
+
+        dice_overlaps = torch.stack(dice_overlaps)
+        return dice_overlaps.mean() if self.mean_over_classes else dice_overlaps
 
 
 class SoftDiceOverlap(nn.Module):

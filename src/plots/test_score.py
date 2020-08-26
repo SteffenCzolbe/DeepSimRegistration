@@ -19,12 +19,14 @@ for i, dataset in enumerate(DATASET_ORDER):
     axs[i].set_title(PLOT_CONFIG[dataset]['display_name'])
     mean_dice_overlaps = []
     labels = []
+    label_colors = []
     colors = []
     for loss_function in LOSS_FUNTION_ORDER:
         # test model
         if loss_function in results[dataset].keys():
             mean_dice_overlaps.append(results[dataset][loss_function]["dice_overlap"])
             labels.append(LOSS_FUNTION_CONFIG[loss_function]['display_name'])
+            label_colors.append('dimgrey' if results[dataset][loss_function]['statistically_significantly_worse_than_deepsim'] else 'black')
             colors.append(LOSS_FUNTION_CONFIG[loss_function]['primary_color'])
 
     # plot boxes.
@@ -38,8 +40,9 @@ for i, dataset in enumerate(DATASET_ORDER):
             patch.set_facecolor(color)
 
         # rotate labels
-        for tick in axs[i].get_xticklabels():
+        for tick, color in zip(axs[i].get_xticklabels(), label_colors):
             tick.set_rotation(70)
+            tick.set_color(color)
 
 
 # add labels
