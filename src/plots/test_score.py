@@ -10,7 +10,7 @@ from .run_models import run_models
 # set up sup-plots
 fig = plt.figure(figsize=(12,4))
 axs = fig.subplots(1, len(DATASET_ORDER)) 
-plt.subplots_adjust(bottom=0.2)
+plt.subplots_adjust(bottom=0.3)
 plt.rcParams['boxplot.medianprops.color'] = 'k'
 plt.rcParams['boxplot.medianprops.linewidth'] = 3.0
 results = run_models(use_cached=True)
@@ -25,8 +25,18 @@ for i, dataset in enumerate(DATASET_ORDER):
         # test model
         if loss_function in results[dataset].keys():
             mean_dice_overlaps.append(results[dataset][loss_function]["dice_overlap"])
-            labels.append(LOSS_FUNTION_CONFIG[loss_function]['display_name'])
-            label_colors.append('dimgrey' if results[dataset][loss_function]['statistically_significantly_worse_than_deepsim'] else 'black')
+            pval = results[dataset][loss_function].get('statistically_significantly_worse_than_deepsim_pval', 1)
+            if pval < 0.005:
+                stars = '***'
+            elif pval < 0.01:
+                stars = '**'
+            elif pval < 0.05:
+                stars = '*'
+            else:
+                stars = ''
+            labels.append(LOSS_FUNTION_CONFIG[loss_function]['display_name'] + stars)
+            # label_colors.append('dimgrey' if results[dataset][loss_function]['statistically_significantly_worse_than_deepsim'] else 'black')
+            label_colors.append('black')
             colors.append(LOSS_FUNTION_CONFIG[loss_function]['primary_color'])
 
     # plot boxes.

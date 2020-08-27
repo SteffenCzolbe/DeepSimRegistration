@@ -6,6 +6,11 @@ import numpy as np
 import io
 from PIL import Image
 
+# import latex-package for better typesetting
+import matplotlib
+matplotlib.rc('text', usetex=True)
+matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
+
 
 class Fig:
     def __init__(self, rows=1, cols=1, title=None, figsize=None):
@@ -18,7 +23,7 @@ class Fig:
         """
         # instantiate plot
         self.fig, self.axs = plt.subplots(
-            nrows=rows, ncols=cols, dpi=300, figsize=figsize
+            nrows=rows, ncols=cols, dpi=300, figsize=figsize, frameon=False
         )
 
         # set title
@@ -59,19 +64,23 @@ class Fig:
         self.axs[row, col].title.set_text(title)
         return self
 
-    def plot_contour(self, row, col, mask, width=3, rgba=(36, 255, 12, 255)):
+    def plot_contour(self, row, col, mask, contour_class, width=3, rgba=(36, 255, 12, 255)):
         """
         imposes a contour-line overlay onto a plot
-        Overlay needs to be of the form 1 x H x W, with classes 0 and 1
         Parameters:
             row: the row to plot the image
             col: the clolumn to plot the image
             mask: Tensor of shape C x H x W
+            contour_class: the class to make a contour of
             width: thickness of contours.
             rgba: color of the contour lines. RGB or RGBA formats
         """
         # convert to numpy
         mask = transforms.image_to_numpy(mask)
+
+        # get mask
+        mask = (mask == contour_class)
+
         if len(rgba) == 3:
             # add alpha-channel
             rgba = (*rgba, 255)
@@ -96,14 +105,19 @@ class Fig:
             col: the clolumn to plot the image
             class_mask: Tensor of shape 1 x H x W
             num_classes: number of classes
-            colors: list of colors to plot. RGB. eg: [(0,0,255)]
+            colors: list of colors to plot. RGB. or RGBA eg: [(0,0,255)]
             alpha: alpha-visibility of the overlay. Default 0.4
         """
         # one-hot encode the classes
         class_masks = torch.nn.functional.one_hot(class_mask[0].long(), num_classes=num_classes).detach().cpu().numpy()
-        img = np.zeros((*class_masks.shape[:2], 3))
+        img = np.zeros((*class_masks.shape[:2], 4))
         for c in range(num_classes):
-            img[class_masks[:,:,c] == 1] = np.array(colors[c]) / 255
+            color = colors[c]
+            if color is None:
+                color = (0,0,0,0)
+            if len(color) == 3:
+                color = (*color, 255)
+            img[class_masks[:,:,c] == 1] = np.array(color) / 255
         # back to tensor for the next function
         img = torch.tensor(img).permute(-1, 0, 1)
         self.plot_overlay(row, col, img, alpha=alpha)
@@ -113,7 +127,7 @@ class Fig:
         """
         imposes an overlay onto a plot
         Overlay needs to be of the form C x H x W
-        C needs to be either C=1 or C=3
+        C needs to be either C=1 or C=3 or C=4
         Parameters:
             row: the row to plot the image
             col: the clolumn to plot the image
@@ -127,7 +141,7 @@ class Fig:
         if len(mask.shape) == 2:
             # plot greyscale image
             self.axs[row, col].imshow(mask, cmap='jet', vmin=vmin, vmax=vmax, interpolation='none', alpha=alpha)
-        elif len(mask.shape) == 3:
+        elif len(mask.shape) in [3, 4]:
             # last channel is color channel
             self.axs[row, col].imshow(mask, alpha=alpha)
         return self
@@ -150,6 +164,11 @@ class Fig:
         idty = Identity()
         inv_transform = inv_flow + idty(inv_flow.unsqueeze(0))[0]
 
+        # make sure it's not running out of bounds
+        H, W = inv_transform.shape[-2:]
+        inv_transform[0, :, :] = torch.clamp(inv_transform[0, :, :], 0, H-1)
+        inv_transform[1, :, :] = torch.clamp(inv_transform[1, :, :], 0, W-1)
+
         # convert to numpy
         inv_transform = transforms.image_to_numpy(inv_transform)
 
@@ -159,6 +178,10 @@ class Fig:
             self.axs[row, col].set_aspect("equal")
             self.axs[row, col].title.set_text(title)
 
+        # record position before plotting, to set it back afterwards
+        # under some circumstances, the grid plotting can change the position of the subplot. we want to stop this
+        bbox = self.axs[row, col].get_position()
+
         for r in range(0, inv_transform.shape[0], interval):
             self.axs[row, col].plot(
                 inv_transform[r, :, 1], inv_transform[r, :, 0], color.lower(), linewidth=linewidth
@@ -167,6 +190,9 @@ class Fig:
             self.axs[row, col].plot(
                 inv_transform[:, c, 1], inv_transform[:, c, 0], color.lower(), linewidth=linewidth
             )
+
+        # set position back
+        self.axs[row, col].set_position(bbox, which='both')
         return self
 
     def plot_transform_vec(

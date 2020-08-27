@@ -29,6 +29,7 @@ plt.ylim(0, 1)
 results = run_models(use_cached=True)
 
 dice_overlap_of_classes = []
+median_dice_overlap_of_classes = []
 labels = []
 label_colors = []
 colors = []
@@ -38,8 +39,8 @@ class_to_name_dict = json.loads(open('./src/plots/brain_mri_labels.json').read()
 # order by decreasing scores of first loss function
 mean_dice_overlaps = results[dataset][LOSS_FUNTION_ORDER[0]]['dice_overlap_per_class'].mean(axis=0)
 classes = np.argsort(-mean_dice_overlaps).tolist()
-# remove unwanted classes: background (0), 5th ventricle (21), hyperintensity (23)
-for rm_class in [0, 21, 23]:
+# remove unwanted classes: background (0), 5th ventricle (21), hyperintensity (23), vessel (19)
+for rm_class in [0, 21, 23, 19]:
     classes.remove(rm_class)
 
 # aggregate data
@@ -47,12 +48,14 @@ for c in classes:
     for loss_function in LOSS_FUNTION_ORDER:
         if loss_function in results[dataset].keys():
             dice_overlap_of_classes.append(results[dataset][loss_function]["dice_overlap_per_class"][:, c])
+            median_dice_overlap_of_classes.append(np.mean(results[dataset][loss_function]["dice_overlap_per_class"][:, c]))
             colors.append(LOSS_FUNTION_CONFIG[loss_function]['primary_color'])
     # set tick labels
+    deepsim_best = np.argmax(median_dice_overlap_of_classes[-4:]) == 3
     col_count = len(results[dataset].keys())
     for _ in range((col_count // 2) + 1):
         labels.append('')
-    labels.append(class_to_name_dict[str(c)])
+    labels.append(class_to_name_dict[str(c)] + ('*' if deepsim_best else ''))
     for _ in range(col_count - (col_count // 2) - 1):
         labels.append('')
     # pad emplty col
