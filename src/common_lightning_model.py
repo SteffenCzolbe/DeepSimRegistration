@@ -76,6 +76,30 @@ class CommonLightningModel(pl.LightningModule):
             config = {'dataset_type':'nii',
                 'channels' : 1,
                 'classes': 24,
+                'class_colors': {0: None,
+                                 1: None,
+                                 2: None,
+                                 3: (114, 167, 252), # light blue
+                                 4: None, #(114, 167, 252), # light blue
+                                 5: None,
+                                 6: None,
+                                 7: (176, 32, 186), # purple
+                                 8: None,
+                                 9: (237, 5, 59), # red
+                                 10: None,
+                                 11: (114, 167, 252), # light blue
+                                 12: (114, 167, 252), # light blue
+                                 13: None,
+                                 14: (255, 137, 10), # orange
+                                 15: None,
+                                 16: None,
+                                 17: None,
+                                 18: None,
+                                 19: None,
+                                 20: None,
+                                 21: None,
+                                 22: None,
+                                 23: None},
                 'dim': 3,
                 'path': '../brain_mris',
                 'reduce_lr_patience': 2,}
