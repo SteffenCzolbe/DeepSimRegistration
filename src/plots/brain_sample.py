@@ -60,7 +60,8 @@ DATASET_ORDER = ['brain-mri']
 fig = viz.Fig(1, 6, None, figsize=(10, 6))
 for i, dataset in enumerate(DATASET_ORDER):
 
-    for j, loss_function in enumerate(LOSS_FUNTION_ORDER):
+    j = 2
+    for loss_function in LOSS_FUNTION_ORDER:
         path = os.path.join('./weights/', dataset, 'registration', loss_function)
         if not os.path.isdir(path):
             continue
@@ -72,7 +73,8 @@ for i, dataset in enumerate(DATASET_ORDER):
         I_0, S_0, I_m, S_m, I_1, S_1, inv_flow = get_img(model, 0)
 
         # plot aligned image
-        plot_brainmri(fig, i, j+2, I_m, S_m, inv_flow=inv_flow, title=LOSS_FUNTION_CONFIG[loss_function]['display_name'])
+        plot_brainmri(fig, i, j, I_m, S_m, inv_flow=inv_flow, title=LOSS_FUNTION_CONFIG[loss_function]['display_name'])
+        j += 1
 
     # plot moved and fixed image
     plot_brainmri(fig, i, 0, I_0, S_0, title='$I_0$')
