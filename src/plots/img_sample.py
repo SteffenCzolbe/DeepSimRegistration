@@ -90,9 +90,6 @@ def plot_brainmri(fig, row, col, I, S, inv_flow=None):
 
     torchreg.settings.set_ndims(3) # back to 3d
 
-
-DATASET_ORDER = ['brain-mri', 'platelet-em', 'phc-u373']
-
 fig = viz.Fig(5, 8, None, figsize=(8, 5))
 # adjust subplot spacing
 fig.fig.subplots_adjust(hspace=0.05, wspace=0.05)
