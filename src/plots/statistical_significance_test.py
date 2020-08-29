@@ -10,6 +10,7 @@ for dataset in results.keys():
     for loss_function in results[dataset].keys():
         if loss_function == 'deepsim':
             results[dataset][loss_function]['statistically_significantly_worse_than_deepsim'] = False
+            results[dataset][loss_function]['statistically_significantly_worse_than_deepsim_pval'] = 1
             continue
 
         # perform one-sided Wilcoxon signed rank test for paired sample.
