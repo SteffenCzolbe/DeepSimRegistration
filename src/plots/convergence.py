@@ -16,7 +16,7 @@ def read_tb_scalar_logs(dir, scalar):
     # sort by timestamp, newer first (newer logs overwrite older ones in case of overlaps)
     log_files = list(reversed(sorted(log_files)))
     records = []
-    max_step=None
+    max_step=39000
     for log_file in log_files:
         records += list(reversed(read_tb_scalar_log(log_file, scalar, max_step=max_step)))
         max_step = records[-1][0] - 1
