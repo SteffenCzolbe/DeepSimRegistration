@@ -7,11 +7,11 @@ matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
 
 DATASET_ORDER = ['brain-mri', 'platelet-em', 'phc-u373']
 PLOT_CONFIG = {'phc-u373':{'display_name':'PhC-U373',
-                           'smoothing_factor': 0.97},
+                           'smoothing_factor': 0.98},
                'platelet-em':{'display_name':'Platelet-EM',
-                           'smoothing_factor': 0.995},
+                           'smoothing_factor': 0.997},
                'brain-mri':{'display_name':'Brain-MRI',
-                           'smoothing_factor': 0.0},
+                           'smoothing_factor': 0.8},
                            }
 LOSS_FUNTION_ORDER = ['l2', 'ncc', 'ncc+supervised', 'vgg', 'deepsim'] #, 'transfer', ]
 LOSS_FUNTION_CONFIG = {'l2':{'display_name': 'MSE',
