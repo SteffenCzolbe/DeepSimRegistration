@@ -6,14 +6,35 @@ from .config import *
 
 
 # read logs
-def read_tb_scalar_log(dir, scalar):
+def read_tb_scalar_logs(dir, scalar):
     """
     searches for the tensorboard log in directory dir, and reads sclar log called scalar.
     """
     files = os.listdir(dir)
-    file = list(filter(lambda s: 'events.out' in s, files))[0]
+    log_files = list(map(lambda f: os.path.join(dir, f), filter(lambda s: 'events.out' in s, files)))
+    
+    # sort by timestamp, newer first (newer logs overwrite older ones in case of overlaps)
+    log_files = list(reversed(sorted(log_files)))
+    records = []
+    max_step=None
+    for log_file in log_files:
+        records += list(reversed(read_tb_scalar_log(log_file, scalar, max_step=max_step)))
+        max_step = records[-1][0] - 1
 
-    ea = event_accumulator.EventAccumulator(os.path.join(dir, file),
+    # back to ascending order
+    records = list(reversed(records))
+
+    # extract x, y for plotting
+    x = list(map(lambda t: t[0], records))
+    y = list(map(lambda t: t[1], records))
+    return x, y
+
+# read logs
+def read_tb_scalar_log(file, scalar, max_step=None):
+    """
+    reads the tensorboard log.
+    """
+    ea = event_accumulator.EventAccumulator(file,
         size_guidance={
             event_accumulator.COMPRESSED_HISTOGRAMS: 500,
             event_accumulator.IMAGES: 4,
@@ -23,13 +44,15 @@ def read_tb_scalar_log(dir, scalar):
         })
     ea.Reload() # loads events from file
     events = ea.Scalars(scalar)
-    x = []
-    y = []
-    for event in events:
-        x.append(event.step)
-        y.append(event.value)
 
-    return x, y
+    records = []
+    for event in events:
+        if max_step is None or event.step < max_step:
+            records.append((event.step, event.value))
+        else:
+            break
+
+    return records
 
 def smooth(ys, smoothing_factor=0.6):
     new_y = [ys[0]]
@@ -50,7 +73,7 @@ for i, dataset in enumerate(DATASET_ORDER):
         path = os.path.join('./weights/', dataset, 'registration', loss_function)
         if not os.path.isdir(path):
             continue
-        x, y = read_tb_scalar_log(path, 'train/dice_overlap')
+        x, y = read_tb_scalar_logs(path, 'train/dice_overlap')
         y = smooth(y, PLOT_CONFIG[dataset]['smoothing_factor'])
         c = LOSS_FUNTION_CONFIG[loss_function]['primary_color']
         line = axs[i].plot(x, y, color=c, linewidth=2) # some trickery required to show lines on the legend of subplots not containing them
