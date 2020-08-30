@@ -6,11 +6,6 @@ import numpy as np
 import io
 from PIL import Image
 
-# import latex-package for better typesetting
-import matplotlib
-matplotlib.rc('text', usetex=True)
-matplotlib.rcParams['text.latex.preamble']=[r"\usepackage{amsmath}"]
-
 
 class Fig:
     def __init__(self, rows=1, cols=1, title=None, figsize=None):
