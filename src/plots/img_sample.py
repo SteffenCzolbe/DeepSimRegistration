@@ -86,7 +86,7 @@ def plot_brainmri(fig, row, col, I, S, inv_flow=None):
     for c in classes_to_annotate:
         fig.plot_contour(row, col, S[0], contour_class=c, width=1, rgba=model.dataset_config('class_colors')[c])
     if inv_flow is not None:
-        fig.plot_transform_grid(row, col, inv_flow[0], interval=7, linewidth=0.1, color='#FFFFFFFF' , overlay=True)
+        fig.plot_transform_grid(row, col, inv_flow[0], interval=10, linewidth=0.15, color='#FFFFFFFF' , overlay=True)
 
     torchreg.settings.set_ndims(3) # back to 3d
 
