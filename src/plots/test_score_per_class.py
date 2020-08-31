@@ -55,7 +55,11 @@ for c in classes:
     col_count = len(results[dataset].keys())
     for _ in range((col_count // 2) + 1):
         labels.append('')
-    labels.append(class_to_name_dict[str(c)] + ('*' if deepsim_best else ''))
+    if deepsim_best:
+        labels.append(r'\textbf{' +class_to_name_dict[str(c)] + '}')
+    else:
+        labels.append(class_to_name_dict[str(c)])
+    
     for _ in range(col_count - (col_count // 2) - 1):
         labels.append('')
     # pad emplty col
