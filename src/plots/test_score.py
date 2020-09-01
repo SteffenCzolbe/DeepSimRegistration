@@ -26,7 +26,7 @@ for i, dataset in enumerate(DATASET_ORDER):
         if loss_function in results[dataset].keys():
             mean_dice_overlaps.append(results[dataset][loss_function]["dice_overlap"])
             pval = results[dataset][loss_function].get('statistically_significantly_worse_than_deepsim_pval', 1)
-            if pval < 0.005:
+            if pval < 0.001:
                 stars = '***'
             elif pval < 0.01:
                 stars = '**'
