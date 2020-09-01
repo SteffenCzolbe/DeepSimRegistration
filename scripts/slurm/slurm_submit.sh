@@ -44,7 +44,7 @@ set -- "${POSITIONAL[@]}" # restore parameters
 TASK=$3
 case $DATASET in
     brain-mri)
-    TIME=9-00:00:00
+    TIME=8-00:00:00
     GRES=gpu:titanrtx:1
     DATASET_SHORT=br
     ;;

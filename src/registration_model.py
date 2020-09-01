@@ -40,7 +40,8 @@ class RegistrationModel(CommonLightningModel):
                 feature_extractor = VGGFeatureExtractor()
                 self.vgg_loss = DeepSim(feature_extractor)
 
-        self.ncc = NCC(window=hparams.ncc_win_size)
+        squared_ncc = hparams.loss.lower() in ['ncc2', 'ncc2+supervised']
+        self.ncc = NCC(window=hparams.ncc_win_size, squared=squared_ncc)
         self.mse = torch.nn.MSELoss()
         self.diffusion_reg = torchreg.metrics.GradNorm()
         self.dice_overlap = torchreg.metrics.DiceOverlap(classes=list(range(self.dataset_config('classes'))))
@@ -60,9 +61,9 @@ class RegistrationModel(CommonLightningModel):
             return self.deepsim(I_m, I_1)
         elif self.hparams.loss.lower() == 'vgg':
             return self.vgg_loss(I_m, I_1)
-        elif self.hparams.loss.lower() == 'ncc':
+        elif self.hparams.loss.lower() in ['ncc', 'ncc2']:
             return self.ncc(I_m, I_1)
-        elif self.hparams.loss.lower() == 'ncc+supervised':
+        elif self.hparams.loss.lower() in ['ncc+supervised', 'ncc2+supervised']:
             return self.ncc(I_m, I_1) + self.mse(S_m_onehot, S_1_onehot)
         elif self.hparams.loss.lower() == 'l2':
             return self.mse(I_m, I_1)
@@ -166,7 +167,7 @@ class RegistrationModel(CommonLightningModel):
         common_parser = CommonLightningModel.add_common_model_args()
         parser = argparse.ArgumentParser(parents=[common_parser, parent_parser], add_help=False)
         parser.add_argument(
-            "--loss", type=str, default='ncc', help="Similarity Loss function. Options: 'l2', 'ncc', 'deepsim', 'deepsim-transfer', 'ncc+supervised', 'vgg' (Default: ncc)"
+            "--loss", type=str, default='ncc', help="Similarity Loss function. Options: 'l2', 'ncc', 'ncc2', 'deepsim', 'deepsim-transfer', 'ncc+supervised', 'vgg' (Default: ncc)"
         )
         parser.add_argument(
             "--ncc_win_size", type=int, default=9, help="Window-Size for the NCC loss function (Default: 9)"
