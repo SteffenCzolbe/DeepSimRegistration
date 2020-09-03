@@ -86,6 +86,17 @@ class RegistrationModel(CommonLightningModel):
             S_1 = self.augmentation(S_1.float(), interpolation="nearest").round().long()
         return I_0, I_1, S_0, S_1
 
+    def segmentation_to_onehot(self, S):
+        return (
+            torch.nn.functional.one_hot(
+                S[:, 0], num_classes=self.dataset_config("classes")
+            )
+            .unsqueeze(1)
+            .transpose(1, -1)
+            .squeeze(-1)
+            .float()
+        )
+
     def _step(self, batch, batch_idx, save_viz=False, eval_per_class=False):
         """
         unified step function.
@@ -109,25 +120,9 @@ class RegistrationModel(CommonLightningModel):
         # morph image and segmentation
         I_m = self.transformer(I_0, flow)
         S_m = self.transformer(S_0.float(), flow, mode="nearest").round().long()
-        S_0_onehot = (
-            torch.nn.functional.one_hot(
-                S_0[:, 0], num_classes=self.dataset_config("classes")
-            )
-            .unsqueeze(1)
-            .transpose(1, -1)
-            .squeeze(-1)
-            .float()
-        )
+        S_0_onehot = self.segmentation_to_onehot(S_0)
         S_m_onehot = self.transformer(S_0_onehot, flow)
-        S_1_onehot = (
-            torch.nn.functional.one_hot(
-                S_1[:, 0], num_classes=self.dataset_config("classes")
-            )
-            .unsqueeze(1)
-            .transpose(1, -1)
-            .squeeze(-1)
-            .float()
-        )
+        S_1_onehot = self.segmentation_to_onehot(S_1)
 
         # calculate loss
         similarity_loss = self.similarity_loss(I_m, I_1, S_m_onehot, S_1_onehot)
