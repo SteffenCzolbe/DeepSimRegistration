@@ -68,7 +68,7 @@ class NCC(nn.Module):
         cc = cross * cross / (var0 * var1 + 1e-5)
 
         # mean and invert for minimization
-        return - torch.mean(cc)
+        return -torch.mean(cc)
 
 
 class MaskedNCC(nn.Module):

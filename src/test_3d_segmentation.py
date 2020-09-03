@@ -9,16 +9,16 @@ import torchreg.transforms.functional as f
 import os
 import numpy as np
 
+
 def main(hparams):
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # load model
-    model = SegmentationModel.load_from_checkpoint(
-        checkpoint_path=hparams.weights)
+    model = SegmentationModel.load_from_checkpoint(checkpoint_path=hparams.weights)
     model.eval()
     model = model.to(device)
-    
-    print(f'Evaluating model for dataset {model.hparams.dataset}')
+
+    print(f"Evaluating model for dataset {model.hparams.dataset}")
 
     # init trainer
     trainer = pl.Trainer()
@@ -35,26 +35,52 @@ def main(hparams):
             y_pred, _ = model.forward(x.unsqueeze(0))
         y_pred = y_pred[0]
 
-        print(f'accuracy of {i}: ', torch.mean((y_true == y_pred).float()))
+        print(f"accuracy of {i}: ", torch.mean((y_true == y_pred).float()))
 
         os.makedirs(os.path.dirname(hparams.out), exist_ok=True)
-        affine = np.array([[  -1.,    0.,    0.,   80.],
-                            [   0.,    0.,    1., -112.],
-                            [   0.,   -1.,    0.,   96.],
-                            [   0.,    0.,    0.,    1.]])
-        f.save_tensor_as_nii(os.path.join(hparams.out, f'{i}image.nii.gz'), x, affine=affine, dtype=np.float32)
-        f.save_tensor_as_nii(os.path.join(hparams.out, f'{i}gt.nii.gz'), y_true, affine=affine, dtype=np.uint8)
-        f.save_tensor_as_nii(os.path.join(hparams.out, f'{i}seg.nii.gz'), y_pred, affine=affine, dtype=np.uint8)
+        affine = np.array(
+            [
+                [-1.0, 0.0, 0.0, 80.0],
+                [0.0, 0.0, 1.0, -112.0],
+                [0.0, -1.0, 0.0, 96.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ]
+        )
+        f.save_tensor_as_nii(
+            os.path.join(hparams.out, f"{i}image.nii.gz"),
+            x,
+            affine=affine,
+            dtype=np.float32,
+        )
+        f.save_tensor_as_nii(
+            os.path.join(hparams.out, f"{i}gt.nii.gz"),
+            y_true,
+            affine=affine,
+            dtype=np.uint8,
+        )
+        f.save_tensor_as_nii(
+            os.path.join(hparams.out, f"{i}seg.nii.gz"),
+            y_pred,
+            affine=affine,
+            dtype=np.uint8,
+        )
+
 
 if __name__ == "__main__":
     # commandline parser
     parser = argparse.ArgumentParser()
     # add PROGRAM level args
     parser.add_argument(
-        "--weights", type=str,default='./weights/brain-mri/segmentation/weights.ckpt',  help="model checkpoint to initialize with"
+        "--weights",
+        type=str,
+        default="./weights/brain-mri/segmentation/weights.ckpt",
+        help="model checkpoint to initialize with",
     )
     parser.add_argument(
-        "--out", type=str, default='./out/brain-mri/segmentation/', help="path to save the segmentation in"
+        "--out",
+        type=str,
+        default="./out/brain-mri/segmentation/",
+        help="path to save the segmentation in",
     )
 
     hparams = parser.parse_args()

@@ -59,17 +59,19 @@ class NCC(nn.Module):
         # calculate cc
         var0, var1, cross = compute_local_sums(y_true, y_pred)
         if self.squared:
-            cc = cross**2 / (var0 * var1).clamp(self.eps)
+            cc = cross ** 2 / (var0 * var1).clamp(self.eps)
         else:
-            cc = cross / (var0.clamp(self.eps)**0.5 * var1.clamp(self.eps)**0.5)
+            cc = cross / (var0.clamp(self.eps) ** 0.5 * var1.clamp(self.eps) ** 0.5)
 
         # mean and invert for minimization
         return -torch.mean(cc) + 1
+
 
 class DeepSim(nn.Module):
     """
     Deep similarity metric
     """
+
     def __init__(self, seg_model, eps=1e-6):
         super().__init__()
         self.seg_model = seg_model
@@ -90,18 +92,20 @@ class DeepSim(nn.Module):
         for feat0, feat1 in zip(feats0, feats1):
             # calculate cosine similarity
             prod_ab = torch.sum(feat0 * feat1, dim=1)
-            norm_a = torch.sum(feat0**2, dim=1).clamp(self.eps)**0.5
-            norm_b = torch.sum(feat1**2, dim=1).clamp(self.eps)**0.5
+            norm_a = torch.sum(feat0 ** 2, dim=1).clamp(self.eps) ** 0.5
+            norm_b = torch.sum(feat1 ** 2, dim=1).clamp(self.eps) ** 0.5
             cos_sim = prod_ab / (norm_a * norm_b)
             losses.append(torch.mean(cos_sim))
 
         # mean and invert for minimization
         return -torch.stack(losses).mean() + 1
 
+
 class VGGFeatureExtractor(nn.Module):
     """
     pretrained VGG-net as a feature extractor
     """
+
     def __init__(self, requires_grad=False, pretrained=True):
         super().__init__()
         vgg_pretrained_features = models.vgg16(pretrained=pretrained).features
@@ -121,7 +125,7 @@ class VGGFeatureExtractor(nn.Module):
 
     def forward(self, x):
         # pad x to RGB input
-        x = torch.cat([x,x,x], dim=1)
+        x = torch.cat([x, x, x], dim=1)
         h = self.slice1(x)
         h_relu1_2 = h
         h = self.slice2(h)
@@ -129,18 +133,21 @@ class VGGFeatureExtractor(nn.Module):
         h = self.slice3(h)
         h_relu3_3 = h
         return [h_relu1_2, h_relu2_2, h_relu3_3]
-    
+
     def extract_features(self, x):
         return self(x)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     import numpy as np
     import torchreg
+
     torchreg.settings.set_ndims(2)
-    npz = np.load('invalid_loss_val.npz')
-    I_m = torch.tensor(npz['I_m'])
-    I_1 = torch.tensor(npz['I_1'])
+    npz = np.load("invalid_loss_val.npz")
+    I_m = torch.tensor(npz["I_m"])
+    I_1 = torch.tensor(npz["I_1"])
     ncc = NCC(window=9)
     import ipdb
+
     ipdb.set_trace()
     ncc(I_m, I_1)

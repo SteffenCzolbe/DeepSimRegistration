@@ -5,8 +5,9 @@ import torch
 import torchreg
 import torchreg.transforms.functional as ttf
 import torchreg.viz as viz
-from.common_lightning_model import CommonLightningModel
+from .common_lightning_model import CommonLightningModel
 from .models.UNet import UNet
+
 
 class SegmentationModel(CommonLightningModel):
     """
@@ -22,8 +23,8 @@ class SegmentationModel(CommonLightningModel):
 
         # set net
         self.net = UNet(
-            in_channels=self.dataset_config('channels'),
-            out_channels=self.dataset_config('classes'),
+            in_channels=self.dataset_config("channels"),
+            out_channels=self.dataset_config("classes"),
             enc_feat=self.hparams.channels,
             dec_feat=self.hparams.channels[::-1],
             bnorm=self.hparams.bnorm,
@@ -31,7 +32,9 @@ class SegmentationModel(CommonLightningModel):
         )
 
         self.cross_entropy_loss = torch.nn.CrossEntropyLoss()
-        self.dice_overlap = torchreg.metrics.DiceOverlap(classes=list(range(self.dataset_config('classes'))))
+        self.dice_overlap = torchreg.metrics.DiceOverlap(
+            classes=list(range(self.dataset_config("classes")))
+        )
 
     def forward(self, x):
         """
@@ -48,7 +51,7 @@ class SegmentationModel(CommonLightningModel):
             # augment
             self.augmentation.randomize()
             x = self.augmentation(x)
-            y = self.augmentation(y.float(), interpolation='nearest').round().long()
+            y = self.augmentation(y.float(), interpolation="nearest").round().long()
         return x, y
 
     def _step(self, batch, batch_idx, save_viz=False):
@@ -77,20 +80,34 @@ class SegmentationModel(CommonLightningModel):
         }
 
     def viz_results(self, x, y_true, y_pred, save=True):
-        if self.dataset_config('dataset_type') == 'tif':
+        if self.dataset_config("dataset_type") == "tif":
             # make figure
             fig = viz.Fig(1, 3, f"Epoch {self.current_epoch}", figsize=(8, 3))
             fig.plot_img(0, 0, x[0], vmin=0, vmax=1, title="Input")
             fig.plot_img(0, 1, x[0], title="Prediction")
-            fig.plot_overlay_class_mask(0, 1, y_pred[0], num_classes=self.dataset_config('classes'), 
-                colors=self.dataset_config('class_colors'), alpha=0.5)
+            fig.plot_overlay_class_mask(
+                0,
+                1,
+                y_pred[0],
+                num_classes=self.dataset_config("classes"),
+                colors=self.dataset_config("class_colors"),
+                alpha=0.5,
+            )
             fig.plot_img(0, 2, x[0], title="Ground Truth")
-            fig.plot_overlay_class_mask(0, 2, y_true[0], num_classes=self.dataset_config('classes'), 
-                colors=self.dataset_config('class_colors'), alpha=0.5)
+            fig.plot_overlay_class_mask(
+                0,
+                2,
+                y_true[0],
+                num_classes=self.dataset_config("classes"),
+                colors=self.dataset_config("class_colors"),
+                alpha=0.5,
+            )
 
             if save:
                 os.makedirs(self.hparams.savedir, exist_ok=True)
-                fig.save(os.path.join(self.hparams.savedir, f"{self.current_epoch}.pdf"),)
+                fig.save(
+                    os.path.join(self.hparams.savedir, f"{self.current_epoch}.pdf"),
+                )
             else:
                 return fig
 
@@ -112,17 +129,19 @@ class SegmentationModel(CommonLightningModel):
         Adds model specific command-line args
         """
         common_parser = CommonLightningModel.add_common_model_args()
-        parser = argparse.ArgumentParser(parents=[common_parser, parent_parser], add_help=False)
-        parser.add_argument(
-            "--channels", nargs='+', type=int, default=[64, 128, 256, 512], help="U-Net encoder channels. Decoder uses the reverse. Defaukt: [64, 128, 256, 512]"
+        parser = argparse.ArgumentParser(
+            parents=[common_parser, parent_parser], add_help=False
         )
         parser.add_argument(
-            "--bnorm", action='store_true', help="use batchnormalization."
+            "--channels",
+            nargs="+",
+            type=int,
+            default=[64, 128, 256, 512],
+            help="U-Net encoder channels. Decoder uses the reverse. Defaukt: [64, 128, 256, 512]",
         )
         parser.add_argument(
-            "--dropout", action='store_true', help="use dropout"
+            "--bnorm", action="store_true", help="use batchnormalization."
         )
-        parser.add_argument(
-            "--savedir", type=str, help="Directory to save images in"
-        )
+        parser.add_argument("--dropout", action="store_true", help="use dropout")
+        parser.add_argument("--savedir", type=str, help="Directory to save images in")
         return parser
