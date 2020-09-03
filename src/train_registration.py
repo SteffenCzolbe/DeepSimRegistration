@@ -17,11 +17,11 @@ def main(hparams):
     )
 
     # add some hints for better experiments tracking
-    hparams.task='registration'
+    hparams.task = "registration"
 
-    # if 
-    if hasattr(hparams, 'gpus') and hparams.gpus in [1, '1', [1]]:
-        print('Setting to use GPU 0.')
+    # if
+    if hasattr(hparams, "gpus") and hparams.gpus in [1, "1", [1]]:
+        print("Setting to use GPU 0.")
         hparams.gpus = [0]
 
     # trainer

@@ -39,6 +39,7 @@ def image_to_numpy(tensor):
         permuted = permuted[..., 0]
     return permuted
 
+
 def load_nii_as_tensor(path, dtype=torch.float, return_affine=False):
     """
     loads a tensor from an nii file.
@@ -56,6 +57,7 @@ def load_nii_as_tensor(path, dtype=torch.float, return_affine=False):
     tensor = volumetric_image_to_tensor(array, dtype=dtype).contiguous()
     affine = nii.affine
     return (tensor, affine) if return_affine else tensor
+
 
 def save_tensor_as_nii(path, tensor, affine=None, dtype=np.float):
     """
@@ -78,6 +80,7 @@ def save_tensor_as_nii(path, tensor, affine=None, dtype=np.float):
     nib.save(nii, path)
     return
 
+
 def save_tensor_as_np(path, tensor, dtype=np.float):
     """
     saves a tensor to an np file.
@@ -88,7 +91,7 @@ def save_tensor_as_np(path, tensor, dtype=np.float):
         dtype: numpy dtype to cast to
     """
     array = image_to_numpy(tensor).astype(dtype)
-    with open(path, 'wb') as f:
+    with open(path, "wb") as f:
         np.save(f, array)
     return
-    
+

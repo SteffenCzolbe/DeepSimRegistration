@@ -30,7 +30,6 @@ class DataManager:
     revd = dict([reversed(i) for i in color_class_map.items()])
     color_class_map.update(revd)
 
-
     def name(self, obj):
         if isinstance(obj, int):
             # class to name lookup
@@ -124,6 +123,7 @@ def class_to_rgb(class_array):
             rgb_img[h, w, :] = color
     return Image.fromarray(rgb_img)
 
+
 def onehot_to_rgb(onehot):
     """
     transforms a one-hot aray into an RGB segmentation image
@@ -146,7 +146,9 @@ def onehot_to_rgb(onehot):
     return Image.fromarray(rgb_img)
 
 
-def transform_tiff_stack(all_classes, slice_no, reduced_classes_savepath, reduced_classes_rgb_savepath):
+def transform_tiff_stack(
+    all_classes, slice_no, reduced_classes_savepath, reduced_classes_rgb_savepath
+):
     """
     transforms a RGB tif image stack into one hot and class images
     Parameters:
@@ -160,12 +162,16 @@ def transform_tiff_stack(all_classes, slice_no, reduced_classes_savepath, reduce
     for i in tqdm(range(slice_no)):
         image_stack.seek(i)
         img = np.array(image_stack)
-        img[img>1] = 2
+        img[img > 1] = 2
         class_images.append(Image.fromarray(img))
         rgb_images.append(class_to_rgb(img))
 
-    class_images[0].save(reduced_classes_savepath, save_all=True, append_images=class_images[1:])
-    rgb_images[0].save(reduced_classes_rgb_savepath, save_all=True, append_images=rgb_images[1:])
+    class_images[0].save(
+        reduced_classes_savepath, save_all=True, append_images=class_images[1:]
+    )
+    rgb_images[0].save(
+        reduced_classes_rgb_savepath, save_all=True, append_images=rgb_images[1:]
+    )
 
 
 if __name__ == "__main__":

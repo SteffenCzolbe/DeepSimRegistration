@@ -24,123 +24,151 @@ class CommonLightningModel(pl.LightningModule):
         self.image_pairs = dataset_image_pairs
 
         # set dimensionalty for torchreg layers
-        torchreg.settings.set_ndims(self.dataset_config('dim'))
+        torchreg.settings.set_ndims(self.dataset_config("dim"))
 
         # set-up data visualization
-        self.viz_during_training = self.dataset_config('dataset_type') == 'tif'
+        self.viz_during_training = self.dataset_config("dataset_type") == "tif"
         if self.viz_during_training:
             self.viz_every_n_epochs = self.hparams.viz_every_n_epochs
             self.last_viz = -self.viz_every_n_epochs
             self.viz_batch = next(iter(self.val_dataloader()))
 
     def dataset_config(self, key):
-        if self.hparams.dataset == 'platelet-em':
-            config = {'dataset_type':'tif',
-                'channels' : 1,
-                'classes': 3,
-                'class_colors': [(0, 40, 97), (0, 40, 255), (255, 229, 0)],
-                'dim': 2,
-                'train_intensity_image_file':"./data/platelet_em_reduced/images/50-images.tif",
-                'train_segmentation_image_file':"./data/platelet_em_reduced/labels-class/50-class.tif",
-                'train_image_slice_from_to':(0, -1),
-                'train_slice_diff':(2, 2),
-                'val_intensity_image_file':"./data/platelet_em_reduced/images/24-images.tif",
-                'val_segmentation_image_file':"./data/platelet_em_reduced/labels-class/24-class.tif",
-                'val_image_slice_from_to':(0, 12),
-                'val_slice_diff':(0, 1),
-                'test_intensity_image_file':"./data/platelet_em_reduced/images/24-images.tif",
-                'test_segmentation_image_file':"./data/platelet_em_reduced/labels-class/24-class.tif",
-                'test_image_slice_from_to':(12, 24),
-                'test_slice_diff':(0, 1),
-                'reduce_lr_patience': 200,}
-        elif self.hparams.dataset == 'phc-u373':
-            config = {'dataset_type':'tif',
-                'channels' : 1,
-                'classes': 2,
-                'class_colors': [(0, 0, 0), (27, 247, 156)],
-                'dim': 2,
-                'train_intensity_image_file':"./data/PhC-U373/images/01.tif",
-                'train_segmentation_image_file':"./data/PhC-U373/labels-class/01.tif",
-                'train_image_slice_from_to':(0, -1),
-                'train_slice_diff':(2, 2),
-                'val_intensity_image_file':"./data/PhC-U373/images/02.tif",
-                'val_segmentation_image_file':"./data/PhC-U373/labels-class/02.tif",
-                'val_image_slice_from_to':(0, 50),
-                'val_slice_diff':(0, 1),
-                'test_intensity_image_file':"./data/PhC-U373/images/02.tif",
-                'test_segmentation_image_file':"./data/PhC-U373/labels-class/02.tif",
-                'test_image_slice_from_to':(60, 115),
-                'test_slice_diff':(0, 1),
-                'reduce_lr_patience': 200,}
-        elif self.hparams.dataset == 'brain-mri':
-            config = {'dataset_type':'nii',
-                'channels' : 1,
-                'classes': 24,
-                'class_colors': {0: None,
-                                 1: None,
-                                 2: None,
-                                 3: (114, 167, 252), # light blue
-                                 4: None, #(114, 167, 252), # light blue
-                                 5: None,
-                                 6: None,
-                                 7: (176, 32, 186), # purple
-                                 8: None,
-                                 9: (237, 5, 59), # red
-                                 10: None,
-                                 11: (114, 167, 252), # light blue
-                                 12: (114, 167, 252), # light blue
-                                 13: None,
-                                 14: (255, 137, 10), # orange
-                                 15: None,
-                                 16: None,
-                                 17: None,
-                                 18: None,
-                                 19: None,
-                                 20: None,
-                                 21: None,
-                                 22: None,
-                                 23: None},
-                'dim': 3,
-                'path': '../brain_mris',
-                'reduce_lr_patience': 2,}
-        elif self.hparams.dataset == 'heart-mri':
-            config = {'dataset_type':'nii',
-                'channels' : 1,
-                'classes': 5,
-                'dim': 3,
-                'path': '../heart_mris',
-                'reduce_lr_patience': 20,}
+        if self.hparams.dataset == "platelet-em":
+            config = {
+                "dataset_type": "tif",
+                "channels": 1,
+                "classes": 3,
+                "class_colors": [(0, 40, 97), (0, 40, 255), (255, 229, 0)],
+                "dim": 2,
+                "train_intensity_image_file": "./data/platelet_em_reduced/images/50-images.tif",
+                "train_segmentation_image_file": "./data/platelet_em_reduced/labels-class/50-class.tif",
+                "train_image_slice_from_to": (0, -1),
+                "train_slice_diff": (2, 2),
+                "val_intensity_image_file": "./data/platelet_em_reduced/images/24-images.tif",
+                "val_segmentation_image_file": "./data/platelet_em_reduced/labels-class/24-class.tif",
+                "val_image_slice_from_to": (0, 12),
+                "val_slice_diff": (0, 1),
+                "test_intensity_image_file": "./data/platelet_em_reduced/images/24-images.tif",
+                "test_segmentation_image_file": "./data/platelet_em_reduced/labels-class/24-class.tif",
+                "test_image_slice_from_to": (12, 24),
+                "test_slice_diff": (0, 1),
+                "reduce_lr_patience": 200,
+            }
+        elif self.hparams.dataset == "phc-u373":
+            config = {
+                "dataset_type": "tif",
+                "channels": 1,
+                "classes": 2,
+                "class_colors": [(0, 0, 0), (27, 247, 156)],
+                "dim": 2,
+                "train_intensity_image_file": "./data/PhC-U373/images/01.tif",
+                "train_segmentation_image_file": "./data/PhC-U373/labels-class/01.tif",
+                "train_image_slice_from_to": (0, -1),
+                "train_slice_diff": (2, 2),
+                "val_intensity_image_file": "./data/PhC-U373/images/02.tif",
+                "val_segmentation_image_file": "./data/PhC-U373/labels-class/02.tif",
+                "val_image_slice_from_to": (0, 50),
+                "val_slice_diff": (0, 1),
+                "test_intensity_image_file": "./data/PhC-U373/images/02.tif",
+                "test_segmentation_image_file": "./data/PhC-U373/labels-class/02.tif",
+                "test_image_slice_from_to": (60, 115),
+                "test_slice_diff": (0, 1),
+                "reduce_lr_patience": 200,
+            }
+        elif self.hparams.dataset == "brain-mri":
+            config = {
+                "dataset_type": "nii",
+                "channels": 1,
+                "classes": 24,
+                "class_colors": {
+                    0: None,
+                    1: None,
+                    2: None,
+                    3: (114, 167, 252),  # light blue
+                    4: None,  # (114, 167, 252), # light blue
+                    5: None,
+                    6: None,
+                    7: (176, 32, 186),  # purple
+                    8: None,
+                    9: (237, 5, 59),  # red
+                    10: None,
+                    11: (114, 167, 252),  # light blue
+                    12: (114, 167, 252),  # light blue
+                    13: None,
+                    14: (255, 137, 10),  # orange
+                    15: None,
+                    16: None,
+                    17: None,
+                    18: None,
+                    19: None,
+                    20: None,
+                    21: None,
+                    22: None,
+                    23: None,
+                },
+                "dim": 3,
+                "path": "../brain_mris",
+                "reduce_lr_patience": 2,
+            }
+        elif self.hparams.dataset == "heart-mri":
+            config = {
+                "dataset_type": "nii",
+                "channels": 1,
+                "classes": 5,
+                "dim": 3,
+                "path": "../heart_mris",
+                "reduce_lr_patience": 20,
+            }
         else:
             raise ValueError(f'Dataset "{self.hparams.dataset}" not known.')
         return config[key]
 
-    def make_dataloader(self, split='train'):
+    def make_dataloader(self, split="train"):
         """
         Implement one or multiple PyTorch DataLoaders for training.
         """
-        torchreg.settings.set_ndims(self.dataset_config('dim'))
-        if self.dataset_config('dataset_type') == 'tif':
-            self.augmentation = transforms.RandomAffine(degrees=(-180, 180), translate=(-1, 1), scale=(0.8, 1.2), shear=(-0.03, 0.03), flip=True)
-            data = TiffStackDataset(
-                intensity_tif_image=self.dataset_config(f'{split}_intensity_image_file'),
-                segmentation_tif_image=self.dataset_config(f'{split}_segmentation_image_file'),
-                min_slice=self.dataset_config(f'{split}_image_slice_from_to')[0],
-                max_slice=self.dataset_config(f'{split}_image_slice_from_to')[1],
-                slice_pairs=self.image_pairs,
-                slice_pair_max_z_diff=self.dataset_config(f'{split}_slice_diff'),
+        torchreg.settings.set_ndims(self.dataset_config("dim"))
+        if self.dataset_config("dataset_type") == "tif":
+            self.augmentation = transforms.RandomAffine(
+                degrees=(-180, 180),
+                translate=(-1, 1),
+                scale=(0.8, 1.2),
+                shear=(-0.03, 0.03),
+                flip=True,
             )
-        elif self.dataset_config('dataset_type') == 'nii':
-            if self.hparams.dataset == 'brain-mri':
-                self.augmentation = transforms.RandomAffine(degrees=(-5, 5), translate=None, scale=None, shear=None, flip=True)
+            data = TiffStackDataset(
+                intensity_tif_image=self.dataset_config(
+                    f"{split}_intensity_image_file"
+                ),
+                segmentation_tif_image=self.dataset_config(
+                    f"{split}_segmentation_image_file"
+                ),
+                min_slice=self.dataset_config(f"{split}_image_slice_from_to")[0],
+                max_slice=self.dataset_config(f"{split}_image_slice_from_to")[1],
+                slice_pairs=self.image_pairs,
+                slice_pair_max_z_diff=self.dataset_config(f"{split}_slice_diff"),
+            )
+        elif self.dataset_config("dataset_type") == "nii":
+            if self.hparams.dataset == "brain-mri":
+                self.augmentation = transforms.RandomAffine(
+                    degrees=(-5, 5), translate=None, scale=None, shear=None, flip=True
+                )
                 data = BrainMRIDataset(
-                    path=self.dataset_config('path'),
+                    path=self.dataset_config("path"),
                     split=split,
                     pairs=self.image_pairs,
                 )
-            elif self.hparams.dataset == 'heart-mri':
-                self.augmentation = transforms.RandomAffine(degrees=(-180, 180), translate=(-1, 1), scale=(0.9, 1.1), shear=None, flip=True)
+            elif self.hparams.dataset == "heart-mri":
+                self.augmentation = transforms.RandomAffine(
+                    degrees=(-180, 180),
+                    translate=(-1, 1),
+                    scale=(0.9, 1.1),
+                    shear=None,
+                    flip=True,
+                )
                 data = HeartMRIDataset(
-                    path=self.dataset_config('path'),
+                    path=self.dataset_config("path"),
                     split=split,
                     pairs=self.image_pairs,
                 )
@@ -151,21 +179,35 @@ class CommonLightningModel(pl.LightningModule):
         return dataloader
 
     def train_dataloader(self):
-        return self.make_dataloader('train')
+        return self.make_dataloader("train")
 
     def val_dataloader(self):
-        return self.make_dataloader('val')
+        return self.make_dataloader("val")
 
     def test_dataloader(self):
-        return self.make_dataloader('test')
+        return self.make_dataloader("test")
 
     def configure_optimizers(self):
         """
         configure optimizers, scheduler, etc
         """
         opt = torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
-        sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, "min", factor=0.1, patience=self.dataset_config('reduce_lr_patience'), verbose=True)
-        return {'optimizer': opt, 'lr_scheduler': {'scheduler': sched, 'interval': 'epoch', 'monitor': 'val_loss', 'reduce_on_plateau':True}}
+        sched = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            opt,
+            "min",
+            factor=0.1,
+            patience=self.dataset_config("reduce_lr_patience"),
+            verbose=True,
+        )
+        return {
+            "optimizer": opt,
+            "lr_scheduler": {
+                "scheduler": sched,
+                "interval": "epoch",
+                "monitor": "val_loss",
+                "reduce_on_plateau": True,
+            },
+        }
 
     def forward(self, x):
         """
@@ -219,11 +261,12 @@ class CommonLightningModel(pl.LightningModule):
         """
         # data-handling does not differ from training
         return self._step(batch, batch_idx)
-    
+
     def validation_epoch_end(self, outputs):
         """
         Called at the end of the train epoch with the outputs of all training steps.
         """
+
         def map_to_device(obj, device):
             if isinstance(obj, tuple):
                 return tuple(map_to_device(list(obj), device))
@@ -231,13 +274,16 @@ class CommonLightningModel(pl.LightningModule):
                 return list(map(lambda o: map_to_device(o, device), obj))
             else:
                 return obj.to(device)
+
         if self.viz_during_training:
             # visualize output
             if self.current_epoch - self.last_viz >= self.viz_every_n_epochs:
                 device = next(iter(self.parameters())).device
-                if device.type == 'cpu' or (device.type == 'cuda' and device.index == 0):
+                if device.type == "cpu" or (
+                    device.type == "cuda" and device.index == 0
+                ):
                     batch = map_to_device(self.viz_batch, device)
-                    print('Creating Visualization..')
+                    print("Creating Visualization..")
                     self._step(batch, None, save_viz=True)
                     self.last_viz = self.current_epoch
         output = self.mean_dicts(outputs)
@@ -278,6 +324,9 @@ class CommonLightningModel(pl.LightningModule):
         )
         parser.add_argument("--batch_size", type=int, default=8, help="batchsize")
         parser.add_argument(
-            "--viz_every_n_epochs", type=int, default=25, help="Visualization every n epochs. Default 25."
+            "--viz_every_n_epochs",
+            type=int,
+            default=25,
+            help="Visualization every n epochs. Default 25.",
         )
         return parser

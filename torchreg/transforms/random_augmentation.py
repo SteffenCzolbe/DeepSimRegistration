@@ -5,6 +5,7 @@ import torchreg.nn as tnn
 import torchreg.settings as settings
 import numpy as np
 
+
 class Compose(nn.Module):
     """
     Composes multiple augmentaions
@@ -12,6 +13,7 @@ class Compose(nn.Module):
     Args:
         submodules: a list of augmentations
     """
+
     def __init__(self, submodules):
         self.submodules = submodules
 
@@ -26,6 +28,7 @@ class Compose(nn.Module):
         for submodule in self.submodules:
             batch = submodule(batch)
         return batch
+
 
 class RandomAffine(nn.Module):
     """Random affine transformation of the image keeping center invariant
@@ -49,7 +52,14 @@ class RandomAffine(nn.Module):
         flip (boolean), random flips along axis
     """
 
-    def __init__(self, degrees=(-180, 180), translate=(-0.5, 0.5), scale=(0.9, 1.1), shear=(-0.03, 0.03), flip=True):
+    def __init__(
+        self,
+        degrees=(-180, 180),
+        translate=(-0.5, 0.5),
+        scale=(0.9, 1.1),
+        shear=(-0.03, 0.03),
+        flip=True,
+    ):
         super().__init__()
         self.degrees = degrees
         self.translate = translate
@@ -61,7 +71,6 @@ class RandomAffine(nn.Module):
         self.itenditity = tnn.Identity()
         self.transform = tnn.AffineSpatialTransformer()
 
-
     def randomize(self):
         """
         randomizes the affine transformation
@@ -70,22 +79,38 @@ class RandomAffine(nn.Module):
             rotate = np.random.uniform(*self.degrees, size=self.ndims)
             rotate = np.deg2rad(rotate)
             if self.ndims == 2:
-                rotate_matrix = np.array([[np.cos(rotate[0]), -np.sin(rotate[0]), 0],
-                                          [np.sin(rotate[0]), np.cos(rotate[0]), 0],
-                                          [0, 0, 1]])
+                rotate_matrix = np.array(
+                    [
+                        [np.cos(rotate[0]), -np.sin(rotate[0]), 0],
+                        [np.sin(rotate[0]), np.cos(rotate[0]), 0],
+                        [0, 0, 1],
+                    ]
+                )
             else:
-                rx = np.array([[1, 0, 0, 0],
-                               [0, np.cos(rotate[0]), -np.sin(rotate[0]), 0],
-                               [0, np.sin(rotate[0]), np.cos(rotate[0]), 0],
-                               [0, 0, 0, 1]])
-                ry = np.array([[np.cos(rotate[1]), 0, np.sin(rotate[1]), 0],
-                               [0, 1, 0, 0],
-                               [-np.sin(rotate[1]), 0, np.cos(rotate[1]), 0],
-                               [0, 0, 0, 1]])
-                rz = np.array([[np.cos(rotate[2]), -np.sin(rotate[2]), 0, 0],
-                               [np.sin(rotate[2]), np.cos(rotate[2]), 0, 0],
-                               [0, 0, 1, 0],
-                               [0, 0, 0, 1]])
+                rx = np.array(
+                    [
+                        [1, 0, 0, 0],
+                        [0, np.cos(rotate[0]), -np.sin(rotate[0]), 0],
+                        [0, np.sin(rotate[0]), np.cos(rotate[0]), 0],
+                        [0, 0, 0, 1],
+                    ]
+                )
+                ry = np.array(
+                    [
+                        [np.cos(rotate[1]), 0, np.sin(rotate[1]), 0],
+                        [0, 1, 0, 0],
+                        [-np.sin(rotate[1]), 0, np.cos(rotate[1]), 0],
+                        [0, 0, 0, 1],
+                    ]
+                )
+                rz = np.array(
+                    [
+                        [np.cos(rotate[2]), -np.sin(rotate[2]), 0, 0],
+                        [np.sin(rotate[2]), np.cos(rotate[2]), 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1],
+                    ]
+                )
                 rotate_matrix = rx.dot(ry).dot(rz)
         else:
             rotate_matrix = np.eye(self.ndims + 1)
@@ -130,28 +155,39 @@ class RandomAffine(nn.Module):
             flip_matrix = np.eye(self.ndims + 1)
 
         # combine all transformations
-        self.affine = rotate_matrix.dot(translate_matrix).dot(scale_matrix).dot(shear_matrix).dot(flip_matrix)
+        self.affine = (
+            rotate_matrix.dot(translate_matrix)
+            .dot(scale_matrix)
+            .dot(shear_matrix)
+            .dot(flip_matrix)
+        )
         return
 
     def apply_affine(self, batch, interpolation, affine):
         # to tensor and expand to batch size
         affine = torch.tensor(affine).type_as(batch)
         B = batch.shape[0]
-        affine = affine.repeat(B, *[1]*(self.ndims + 1))
-        
+        affine = affine.repeat(B, *[1] * (self.ndims + 1))
+
         # transform
         return self.transform(batch, affine, mode=interpolation, padding_mode="zeros")
 
-    def apply(self, batch, interpolation='bilinear'):
-        assert hasattr(self, "affine"), "The random data augmentation needs to be initialized by calling .randomize()"
+    def apply(self, batch, interpolation="bilinear"):
+        assert hasattr(
+            self, "affine"
+        ), "The random data augmentation needs to be initialized by calling .randomize()"
         return self.apply_affine(batch, interpolation, self.affine)
 
-    def apply_inverse(self, batch, interpolation='bilinear'):
-        assert hasattr(self, "affine"), "The random data augmentation needs to be initialized by calling .randomize()"
+    def apply_inverse(self, batch, interpolation="bilinear"):
+        assert hasattr(
+            self, "affine"
+        ), "The random data augmentation needs to be initialized by calling .randomize()"
         return self.apply_affine(batch, interpolation, np.linalg.inv(self.affine))
 
-    def forward(self, batch, interpolation='bilinear'):
-        assert hasattr(self, "affine"), "The random data augmentation needs to be initialized by calling .randomize()"
+    def forward(self, batch, interpolation="bilinear"):
+        assert hasattr(
+            self, "affine"
+        ), "The random data augmentation needs to be initialized by calling .randomize()"
         return self.apply(batch, interpolation=interpolation)
 
 
@@ -199,23 +235,39 @@ class RandomDiffeomorphic(nn.Module):
         self.pos_flow = self.integrate(flow)
         self.neg_flow = self.integrate(-flow)
 
-    def apply(self, batch, interpolation='bilinear'):
+    def apply(self, batch, interpolation="bilinear"):
         """
         apply the transformation, must be previously randomized.
         """
-        assert hasattr(self, "do_augment"), "The random data augmentation needs to be initialized by calling .randomize()"
+        assert hasattr(
+            self, "do_augment"
+        ), "The random data augmentation needs to be initialized by calling .randomize()"
         if not self.do_augment:
             return batch
-        return self.transform(batch, self.pos_flow.type_as(batch), mode=interpolation, padding_mode="zeros")
+        return self.transform(
+            batch,
+            self.pos_flow.type_as(batch),
+            mode=interpolation,
+            padding_mode="zeros",
+        )
 
-    def apply_inverse(self, batch, interpolation='bilinear'):
-        assert hasattr(self, "do_augment"), "The random data augmentation needs to be initialized by calling .randomize()"
+    def apply_inverse(self, batch, interpolation="bilinear"):
+        assert hasattr(
+            self, "do_augment"
+        ), "The random data augmentation needs to be initialized by calling .randomize()"
         if not self.do_augment:
             return batch
-        return self.transform(batch, self.neg_flow.type_as(batch), mode=interpolation, padding_mode="zeros")
+        return self.transform(
+            batch,
+            self.neg_flow.type_as(batch),
+            mode=interpolation,
+            padding_mode="zeros",
+        )
 
-    def forward(self, batch, interpolation='bilinear'):
-        assert hasattr(self, "do_augment"), "The random data augmentation needs to be initialized by calling .randomize()"
+    def forward(self, batch, interpolation="bilinear"):
+        assert hasattr(
+            self, "do_augment"
+        ), "The random data augmentation needs to be initialized by calling .randomize()"
         return self.apply(batch, interpolation=interpolation)
 
 
@@ -226,6 +278,7 @@ class GaussianNoise(nn.Module):
     Args:
         std: standard dev of noise
     """
+
     def __init__(self, std):
         super().__init__()
         self.std = std
@@ -240,6 +293,7 @@ class GaussianNoise(nn.Module):
         noise = torch.normal(0, self.std, batch.shape).to(batch.device)
         return batch + noise
 
+
 class RandomIntenityShift(nn.Module):
     """
     Composes multiple augmentaions
@@ -250,6 +304,7 @@ class RandomIntenityShift(nn.Module):
         filter_count: Amount of filter to apply.
         downsize: downsamling factor of the internal computation. Higher numbers speed up the process.
     """
+
     def __init__(self, instensity_change_std, size_std, filter_count, downsize=16):
         super().__init__()
         self.instensity_change_std = instensity_change_std
@@ -267,19 +322,29 @@ class RandomIntenityShift(nn.Module):
     def forward(self, batch):
         # create white canvas
         size = torch.tensor(batch.shape[2:]) // self.downsize
-        canvas = torch.zeros(1, 1, *size, device = batch.device)
+        canvas = torch.zeros(1, 1, *size, device=batch.device)
 
         for _ in range(self.filter_count):
             # set mu and std of effect
             mu = torch.rand(len(size)) * size.float()
-            std = torch.normal(mean=self.size_std, std=self.size_std/2, size=(len(size),)).abs()
+            std = torch.normal(
+                mean=self.size_std, std=self.size_std / 2, size=(len(size),)
+            ).abs()
 
             # calculate distribution on the canvas
             x = self.identity(canvas).unsqueeze(-1).transpose(1, -1)
-            distribution = torch.exp(-torch.sum((x - mu)**2 / std, dim=-1))
+            distribution = torch.exp(-torch.sum((x - mu) ** 2 / std, dim=-1))
             distribution /= torch.max(distribution)
 
             # upscale and apply to image
-            intensity_change = torch.normal(mean=0, std=self.instensity_change_std, size=())
+            intensity_change = torch.normal(
+                mean=0, std=self.instensity_change_std, size=()
+            )
             canvas += intensity_change * distribution
-        return batch + F.interpolate(canvas, size=batch.shape[2:], mode='bilinear' if len(size) == 2 else 'trilinear', align_corners=True)
+        return batch + F.interpolate(
+            canvas,
+            size=batch.shape[2:],
+            mode="bilinear" if len(size) == 2 else "trilinear",
+            align_corners=True,
+        )
+

@@ -6,13 +6,14 @@ import numpy as np
 from typing import List
 import nibabel as nib
 
+
 class NiiDataset(Dataset):
     def __init__(
         self,
         image_nii_files: List[str],
         image_nii_label_files: List[str],
         min_intensity: float,
-        max_intensity: float
+        max_intensity: float,
     ):
         super().__init__()
         self.fnames = list(zip(image_nii_files, image_nii_label_files))
@@ -48,12 +49,14 @@ class NiiAtlasDataset(NiiDataset):
         image_nii_files: List[str],
         image_nii_label_files: List[str],
         min_intensity: float,
-        max_intensity: float
+        max_intensity: float,
     ):
-        super().__init__(image_nii_files, image_nii_label_files, min_intensity, max_intensity)
+        super().__init__(
+            image_nii_files, image_nii_label_files, min_intensity, max_intensity
+        )
         self.atlas = self.normalize_intensity(self.load_nii(atlas_nii_file))
         self.atlas_seg = self.load_nii(atlas_nii_label_file, dtype=torch.long)
-    
+
     def __getitem__(self, idx):
         img, seg = super().__getitem__(idx)
         return (img, seg), (self.atlas, self.atlas_seg)

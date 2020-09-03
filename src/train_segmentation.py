@@ -16,7 +16,7 @@ def main(hparams):
     )
 
     # add some hints for better experiments tracking
-    hparams.task='segmentation'
+    hparams.task = "segmentation"
 
     # trainer
     trainer = pl.Trainer.from_argparse_args(hparams)

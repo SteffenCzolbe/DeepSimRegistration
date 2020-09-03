@@ -25,7 +25,9 @@ class Identity(nn.Module):
         ]
         grids = torch.meshgrid(vectors)
         identity = torch.stack(grids)  # z, y, x
-        identity = identity.expand(flow.shape[0], *[-1] * (settings.get_ndims() + 1))  # add batch
+        identity = identity.expand(
+            flow.shape[0], *[-1] * (settings.get_ndims() + 1)
+        )  # add batch
         return identity
 
 
@@ -129,21 +131,41 @@ class AffineSpatialTransformer(nn.Module):
         coordinates = self.identity(src)
 
         # add homogenous coordinate
-        coordinates = torch.cat((coordinates, torch.ones(coordinates.shape[0], 1, *coordinates.shape[2:], device=coordinates.device, dtype=coordinates.dtype)), dim=1)
+        coordinates = torch.cat(
+            (
+                coordinates,
+                torch.ones(
+                    coordinates.shape[0],
+                    1,
+                    *coordinates.shape[2:],
+                    device=coordinates.device,
+                    dtype=coordinates.dtype
+                ),
+            ),
+            dim=1,
+        )
 
         # center the coordinate grid, so that rotation happens around the center of the domain
         size = coordinates.shape[2:]
         for i in range(self.ndims):
             coordinates[:, i] -= size[i] / 2.0
-        
+
         # permute for batched matric multiplication
-        coordinates = coordinates.permute(0,2,3,4,1) if self.ndims ==3 else coordinates.permute(0,2,3,1)
+        coordinates = (
+            coordinates.permute(0, 2, 3, 4, 1)
+            if self.ndims == 3
+            else coordinates.permute(0, 2, 3, 1)
+        )
         # we need to do this for each member of the batch separately
         for i in range(len(coordinates)):
             coordinates[i] = torch.matmul(coordinates[i], affine[i])
-        coordinates = coordinates.permute(0,-1,1,2,3) if self.ndims ==3 else coordinates.permute(0,-1,1,2)
+        coordinates = (
+            coordinates.permute(0, -1, 1, 2, 3)
+            if self.ndims == 3
+            else coordinates.permute(0, -1, 1, 2)
+        )
         # de-homogenize
-        coordinates = coordinates[:, :self.ndims]
+        coordinates = coordinates[:, : self.ndims]
 
         # un-center the coordinate grid
         for i in range(self.ndims):

@@ -16,7 +16,7 @@ class TiffStackDataset(Dataset):
         min_slice=0,
         max_slice=-1,
         slice_pairs=False,
-        slice_pair_max_z_diff=(2,2),
+        slice_pair_max_z_diff=(2, 2),
         transform=None,
     ):
         """
@@ -33,9 +33,7 @@ class TiffStackDataset(Dataset):
         self.intensity_stack = Image.open(intensity_tif_image)
         self.segmentation_stack = Image.open(segmentation_tif_image)
         self.min_slice = min_slice
-        self.max_slice = (
-            self.intensity_stack.n_frames if max_slice == -1 else max_slice
-        )
+        self.max_slice = self.intensity_stack.n_frames if max_slice == -1 else max_slice
         self.dynamic_range = self.get_dynamic_range()
         self.slice_pairs = slice_pairs
         self.max_z_diff = slice_pair_max_z_diff
@@ -43,9 +41,9 @@ class TiffStackDataset(Dataset):
 
     def get_dynamic_range(self):
         mode = self.intensity_stack.mode
-        if '16' in mode:
+        if "16" in mode:
             return 16
-        elif '32' in mode:
+        elif "32" in mode:
             return 32
         else:
             return 8
@@ -56,7 +54,7 @@ class TiffStackDataset(Dataset):
 
     def toFloatTensor(self, x):
         x = np.array(x, dtype=np.float32)
-        return f.volumetric_image_to_tensor(x, dtype=torch.float32) 
+        return f.volumetric_image_to_tensor(x, dtype=torch.float32)
 
     def normalize_intensity(self, x):
         return x / 2 ** self.dynamic_range
@@ -65,7 +63,7 @@ class TiffStackDataset(Dataset):
         return x * 2 ** self.dynamic_range
 
     def __len__(self):
-        if self.slice_pairs and self.max_z_diff == (0,1):
+        if self.slice_pairs and self.max_z_diff == (0, 1):
             # last slice has no next partner, thus we reduce the length by one
             return self.max_slice - self.min_slice - 1
         return self.max_slice - self.min_slice
@@ -80,7 +78,10 @@ class TiffStackDataset(Dataset):
         if not self.slice_pairs:
             if self.transform:
                 img0, seg0 = self.transform(img0, seg0)
-            return self.normalize_intensity(self.toFloatTensor(img0)), self.toIntTensor(seg0)
+            return (
+                self.normalize_intensity(self.toFloatTensor(img0)),
+                self.toIntTensor(seg0),
+            )
 
         # pick second slice
         idx1 = random.choice(
@@ -93,8 +94,14 @@ class TiffStackDataset(Dataset):
         if self.transform:
             img0, seg0, img1, seg1 = self.transform(img0, seg0, img1, seg1)
         return (
-            (self.normalize_intensity(self.toFloatTensor(img0)), self.toIntTensor(seg0)),
-            (self.normalize_intensity(self.toFloatTensor(img1)), self.toIntTensor(seg1)),
+            (
+                self.normalize_intensity(self.toFloatTensor(img0)),
+                self.toIntTensor(seg0),
+            ),
+            (
+                self.normalize_intensity(self.toFloatTensor(img1)),
+                self.toIntTensor(seg1),
+            ),
         )
 
 

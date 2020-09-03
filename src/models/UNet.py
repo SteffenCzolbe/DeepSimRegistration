@@ -31,7 +31,8 @@ class UNet(nn.Module):
         )
 
         # configure output layer
-        self.pred = nn.Sequential(tnn.Conv(
+        self.pred = nn.Sequential(
+            tnn.Conv(
                 self.backbone.output_channels[-1],
                 self.backbone.output_channels[-1],
                 kernel_size=3,
@@ -50,8 +51,8 @@ class UNet(nn.Module):
                 out_channels,
                 kernel_size=1,
                 padding=0,
-            )
-            )
+            ),
+        )
         self.activation = nn.Softmax(dim=1)
 
     def forward(self, x):

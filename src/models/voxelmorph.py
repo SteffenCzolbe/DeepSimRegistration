@@ -11,13 +11,9 @@ class Voxelmorph(nn.Module):
     VoxelMorph network for (unsupervised) nonlinear registration between two images.
     Slightly modified implementation.
     """
+
     def __init__(
-        self,
-        in_channels,
-        enc_feat,
-        dec_feat,
-        bnorm=True,
-        dropout=True,
+        self, in_channels, enc_feat, dec_feat, bnorm=True, dropout=True,
     ):
         """ 
         Parameters:
@@ -39,9 +35,7 @@ class Voxelmorph(nn.Module):
         )
 
         # configure flow prediction and integration
-        self.flow = FlowPredictor(
-            in_channels=self.backbone.output_channels[-1],
-        )
+        self.flow = FlowPredictor(in_channels=self.backbone.output_channels[-1],)
 
     def forward(self, source, target):
         """

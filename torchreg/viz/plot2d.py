@@ -51,7 +51,9 @@ class Fig:
         img = transforms.image_to_numpy(image)
         if len(img.shape) == 2:
             # plot greyscale image
-            self.axs[row, col].imshow(img, cmap="gray", vmin=vmin, vmax=vmax, interpolation='none')
+            self.axs[row, col].imshow(
+                img, cmap="gray", vmin=vmin, vmax=vmax, interpolation="none"
+            )
         elif len(img.shape) == 3:
             # last channel is color channel
             self.axs[row, col].imshow(img)
@@ -59,7 +61,9 @@ class Fig:
         self.axs[row, col].title.set_text(title)
         return self
 
-    def plot_contour(self, row, col, mask, contour_class, width=3, rgba=(36, 255, 12, 255)):
+    def plot_contour(
+        self, row, col, mask, contour_class, width=3, rgba=(36, 255, 12, 255)
+    ):
         """
         imposes a contour-line overlay onto a plot
         Parameters:
@@ -74,7 +78,7 @@ class Fig:
         mask = transforms.image_to_numpy(mask)
 
         # get mask
-        mask = (mask == contour_class)
+        mask = mask == contour_class
 
         if len(rgba) == 3:
             # add alpha-channel
@@ -82,16 +86,27 @@ class Fig:
 
         # find countours
         import cv2
+
         outline = np.zeros((*mask.shape[:2], 4), dtype=np.uint8) * 255
-        cnts = cv2.findContours(mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts = cv2.findContours(
+            mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]
         for c in cnts:
             cv2.drawContours(outline, [c], -1, rgba, thickness=width)
-        self.axs[row, col].imshow(outline.astype(np.float) / 255, vmin=0, vmax=1, interpolation='none', alpha=1.0)
+        self.axs[row, col].imshow(
+            outline.astype(np.float) / 255,
+            vmin=0,
+            vmax=1,
+            interpolation="none",
+            alpha=1.0,
+        )
 
         return self
 
-    def plot_overlay_class_mask(self, row, col, class_mask, num_classes, colors, alpha=0.4):
+    def plot_overlay_class_mask(
+        self, row, col, class_mask, num_classes, colors, alpha=0.4
+    ):
         """
         imposes a color-coded class_mask onto a plot
         class_mask needs to be of the form 1 x H x W of type long.
@@ -104,19 +119,23 @@ class Fig:
             alpha: alpha-visibility of the overlay. Default 0.4
         """
         # one-hot encode the classes
-        class_masks = torch.nn.functional.one_hot(class_mask[0].long(), num_classes=num_classes).detach().cpu().numpy()
+        class_masks = (
+            torch.nn.functional.one_hot(class_mask[0].long(), num_classes=num_classes)
+            .detach()
+            .cpu()
+            .numpy()
+        )
         img = np.zeros((*class_masks.shape[:2], 4))
         for c in range(num_classes):
             color = colors[c]
             if color is None:
-                color = (0,0,0,0)
+                color = (0, 0, 0, 0)
             if len(color) == 3:
                 color = (*color, 255)
-            img[class_masks[:,:,c] == 1] = np.array(color) / 255
+            img[class_masks[:, :, c] == 1] = np.array(color) / 255
         # back to tensor for the next function
         img = torch.tensor(img).permute(-1, 0, 1)
         self.plot_overlay(row, col, img, alpha=alpha)
-
 
     def plot_overlay(self, row, col, mask, alpha=0.4, vmin=None, vmax=None):
         """
@@ -135,14 +154,29 @@ class Fig:
         mask = transforms.image_to_numpy(mask)
         if len(mask.shape) == 2:
             # plot greyscale image
-            self.axs[row, col].imshow(mask, cmap='jet', vmin=vmin, vmax=vmax, interpolation='none', alpha=alpha)
+            self.axs[row, col].imshow(
+                mask,
+                cmap="jet",
+                vmin=vmin,
+                vmax=vmax,
+                interpolation="none",
+                alpha=alpha,
+            )
         elif len(mask.shape) in [3, 4]:
             # last channel is color channel
             self.axs[row, col].imshow(mask, alpha=alpha)
         return self
 
     def plot_transform_grid(
-        self, row, col, inv_flow, interval=5, linewidth=0.5, title=None, color='#000000FF' , overlay=False
+        self,
+        row,
+        col,
+        inv_flow,
+        interval=5,
+        linewidth=0.5,
+        title=None,
+        color="#000000FF",
+        overlay=False,
     ):
         """
         plots a transformation of the form 2 x H x W at position row, col.
@@ -161,8 +195,8 @@ class Fig:
 
         # make sure it's not running out of bounds
         H, W = inv_transform.shape[-2:]
-        inv_transform[0, :, :] = torch.clamp(inv_transform[0, :, :], 0, H-1)
-        inv_transform[1, :, :] = torch.clamp(inv_transform[1, :, :], 0, W-1)
+        inv_transform[0, :, :] = torch.clamp(inv_transform[0, :, :], 0, H - 1)
+        inv_transform[1, :, :] = torch.clamp(inv_transform[1, :, :], 0, W - 1)
 
         # convert to numpy
         inv_transform = transforms.image_to_numpy(inv_transform)
@@ -179,19 +213,33 @@ class Fig:
 
         for r in range(0, inv_transform.shape[0], interval):
             self.axs[row, col].plot(
-                inv_transform[r, :, 1], inv_transform[r, :, 0], color.lower(), linewidth=linewidth
+                inv_transform[r, :, 1],
+                inv_transform[r, :, 0],
+                color.lower(),
+                linewidth=linewidth,
             )
         for c in range(0, inv_transform.shape[1], interval):
             self.axs[row, col].plot(
-                inv_transform[:, c, 1], inv_transform[:, c, 0], color.lower(), linewidth=linewidth
+                inv_transform[:, c, 1],
+                inv_transform[:, c, 0],
+                color.lower(),
+                linewidth=linewidth,
             )
 
         # set position back
-        self.axs[row, col].set_position(bbox, which='both')
+        self.axs[row, col].set_position(bbox, which="both")
         return self
 
     def plot_transform_vec(
-        self, row, col, flow, interval=5, arrow_length=1.0, linewidth=1.0, title=None, overlay=False
+        self,
+        row,
+        col,
+        flow,
+        interval=5,
+        arrow_length=1.0,
+        linewidth=1.0,
+        title=None,
+        overlay=False,
     ):
         """
         plots a transformation of the form 2 x H x W at position row, col.
@@ -242,7 +290,6 @@ class Fig:
         )
         return self
 
-
     def show(self):
         plt.show()
 
@@ -256,6 +303,7 @@ class Fig:
         plt.savefig(path)
         if close:
             plt.close(self.fig)
+
     def save_to_PIL(self, close=True):
         """
         saves the current figure toa PIL image object.
@@ -277,7 +325,11 @@ class Fig:
             path: path to save at. Including extension. eg. '~/my_fig.png'
             close: Bool, closes the figure when set.
         """
-        extent = self.axs[row, col].get_window_extent().transformed(self.fig.dpi_scale_trans.inverted())
+        extent = (
+            self.axs[row, col]
+            .get_window_extent()
+            .transformed(self.fig.dpi_scale_trans.inverted())
+        )
         self.fig.savefig(path, bbox_inches=extent)
         if close:
             plt.close(self.fig)
@@ -301,11 +353,11 @@ class Fig:
         img_start = 0
         img_end = H - 1
         for h in range(0, H):
-            if not (img_array[h, 0] == np.array([255,255,255,255])).all():
+            if not (img_array[h, 0] == np.array([255, 255, 255, 255])).all():
                 img_start = h
                 break
-        for h in range(H-1, 0, -1):
-            if not (img_array[h, 0] == np.array([255,255,255,255])).all():
+        for h in range(H - 1, 0, -1):
+            if not (img_array[h, 0] == np.array([255, 255, 255, 255])).all():
                 img_end = h + 1
                 break
 
