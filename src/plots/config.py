@@ -11,19 +11,32 @@ PLOT_CONFIG = {
     "phc-u373": {"display_name": "PhC-U373", "smoothing_factor": 0.98},
     "platelet-em": {"display_name": "Platelet-EM", "smoothing_factor": 0.997},
     "brain-mri": {"display_name": "Brain-MRI", "smoothing_factor": 0.8},
-}LOSS_FUNTION_ORDER = [
+}
+
+LOSS_FUNTION_ORDER = [
     "l2",
     "ncc",
+    "ncc2",
     "ncc+supervised",
+    "ncc2+supervised",
     "vgg",
     "deepsim",
 ]  # , 'transfer', ]
+
 LOSS_FUNTION_CONFIG = {
     "l2": {"display_name": "MSE", "primary_color": plt.get_cmap("tab20c").colors[0]},
     "ncc": {"display_name": "NCC", "primary_color": plt.get_cmap("tab20c").colors[1]},
+    "ncc2": {
+        "display_name": r"$\text{NCC}^2$",
+        "primary_color": plt.get_cmap("tab20c").colors[17],
+    },
     "ncc+supervised": {
         "display_name": r"$\text{NCC}_{\text{sup}}$",
         "primary_color": plt.get_cmap("tab20c").colors[2],
+    },
+    "ncc2+supervised": {
+        "display_name": r"$\text{NCC}^2_{\text{sup}}$",
+        "primary_color": plt.get_cmap("tab20c").colors[18],
     },
     "deepsim": {
         "display_name": "DeepSim",
