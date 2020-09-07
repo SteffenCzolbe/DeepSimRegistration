@@ -72,7 +72,7 @@ def plot_platelet(fig, row, col, I, S, inv_flow=None, title=None):
 
 dataset = "platelet-em"
 sample_idx = 10
-LOSS_FUNTION_ORDER = ["ncc", "deepsim"]
+LOSS_FUNTION_ORDER = ["ncc2", "deepsim"]
 
 fig = viz.Fig(1, 2, None, figsize=(7, 4))
 # adjust subplot spacing
