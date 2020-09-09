@@ -93,7 +93,7 @@ for i, dataset in enumerate(DATASET_ORDER):
 
 # add labels
 fig.text(0.5, 0.02, "Gradient Updates", ha="center", va="center")
-fig.text(0.06, 0.5, "Mean Dice Overlap", ha="center", va="center", rotation="vertical")
+fig.text(0.06, 0.5, "Train Mean Dice Overlap", ha="center", va="center", rotation="vertical")
 handles = [
     LOSS_FUNTION_CONFIG[loss_function]["handle"] for loss_function in LOSS_FUNTION_ORDER
 ]

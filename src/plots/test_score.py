@@ -60,7 +60,7 @@ for i, dataset in enumerate(DATASET_ORDER):
 
 
 # add labels
-fig.text(0.06, 0.5, "Mean Dice Overlap", ha="center", va="center", rotation="vertical")
+fig.text(0.06, 0.5, "Test Mean Dice Overlap", ha="center", va="center", rotation="vertical")
 
 os.makedirs("./out/plots/", exist_ok=True)
 plt.savefig("./out/plots/test_score.pdf")
