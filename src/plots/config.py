@@ -15,9 +15,7 @@ PLOT_CONFIG = {
 
 LOSS_FUNTION_ORDER = [
     "l2",
-    "ncc",
     "ncc2",
-    "ncc+supervised",
     "ncc2+supervised",
     "vgg",
     "deepsim",
@@ -27,16 +25,16 @@ LOSS_FUNTION_CONFIG = {
     "l2": {"display_name": "MSE", "primary_color": plt.get_cmap("tab20c").colors[0]},
     "ncc": {"display_name": "NCC", "primary_color": plt.get_cmap("tab20c").colors[1]},
     "ncc2": {
-        "display_name": r"$\text{NCC}^2$",
-        "primary_color": plt.get_cmap("tab20c").colors[17],
+        "display_name": r"$\text{NCC}$",
+        "primary_color": plt.get_cmap("tab20c").colors[1],
     },
     "ncc+supervised": {
         "display_name": r"$\text{NCC}_{\text{sup}}$",
         "primary_color": plt.get_cmap("tab20c").colors[2],
     },
     "ncc2+supervised": {
-        "display_name": r"$\text{NCC}^2_{\text{sup}}$",
-        "primary_color": plt.get_cmap("tab20c").colors[18],
+        "display_name": r"$\text{NCC}_{\text{sup}}$",
+        "primary_color": plt.get_cmap("tab20c").colors[2],
     },
     "deepsim": {
         "display_name": "DeepSim",
