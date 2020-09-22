@@ -51,7 +51,7 @@ if $TUNE_BRAIN; then
     done
 
     # ncc2
-    for LAM in 0.25 4
+    for LAM in 0.25 4 8 16
     do
     $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss ncc2 --ncc_win_size 9 --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_steps=15000
     done
