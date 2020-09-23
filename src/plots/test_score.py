@@ -28,6 +28,8 @@ for i, dataset in enumerate(DATASET_ORDER):
             pval = results[dataset][loss_function].get(
                 "statistically_significantly_worse_than_deepsim_pval", 1
             )
+            dval = results[dataset][loss_function].get("cohens_d", 1)
+            dstring = f'\n$d={dval:.2f}$' if loss_function != 'deepsim' else ''
             if pval < 0.001:
                 stars = "***"
             elif pval < 0.01:
@@ -36,7 +38,7 @@ for i, dataset in enumerate(DATASET_ORDER):
                 stars = "*"
             else:
                 stars = ""
-            labels.append(LOSS_FUNTION_CONFIG[loss_function]["display_name"] + stars)
+            labels.append(LOSS_FUNTION_CONFIG[loss_function]["display_name"] + stars + dstring)
             # label_colors.append('dimgrey' if results[dataset][loss_function]['statistically_significantly_worse_than_deepsim'] else 'black')
             label_colors.append("black")
             colors.append(LOSS_FUNTION_CONFIG[loss_function]["primary_color"])
