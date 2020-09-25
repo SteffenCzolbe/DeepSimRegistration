@@ -271,9 +271,9 @@ def make_overview():
 
 def make_detail():
     # detail view
-    fig = viz.Fig(2, 1, None, figsize=(2, 5))
+    fig = viz.Fig(2, 1, None, figsize=(1.5, 3))
     # adjust subplot spacing
-    fig.fig.subplots_adjust(hspace=0.12, wspace=0.05)
+    fig.fig.subplots_adjust(hspace=0.3, wspace=0.05)
 
     # set plotting function
     plotfun = plot_platelet_detail
