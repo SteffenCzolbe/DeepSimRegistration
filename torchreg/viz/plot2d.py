@@ -51,7 +51,6 @@ class Fig:
         img = transforms.image_to_numpy(image)
         if len(img.shape) == 2:
             # plot greyscale image
-            print(f'plotting in {row}, {col}. img has shape {np.array(self.axs).shape}')
             self.axs[row, col].imshow(
                 img, cmap="gray", vmin=vmin, vmax=vmax, interpolation="none"
             )
