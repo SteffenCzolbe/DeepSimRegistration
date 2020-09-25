@@ -9,6 +9,7 @@ python3 -m src.plots.img_sample
 python3 -m src.plots.platelet_sample
 python3 -m src.plots.aggregate_hparam_results
 python3 -m src.plots.feature_maps
+python3 -m src.plots.short_paper_img_sample
 
 # crop pdfs
 pdfcrop ./out/plots/convergence.pdf ./out/plots/convergence.pdf 
@@ -19,3 +20,5 @@ pdfcrop ./out/plots/brain_sample.pdf ./out/plots/brain_sample.pdf
 pdfcrop ./out/plots/img_sample.pdf ./out/plots/img_sample.pdf 
 pdfcrop ./out/plots/platelet_sample.pdf ./out/plots/platelet_sample.pdf 
 pdfcrop ./out/plots/hparam.pdf ./out/plots/hparam.pdf 
+pdfcrop ./out/plots/short_paper_img_sample.pdf ./out/plots/short_paper_img_sample.pdf 
+pdfcrop ./out/plots/short_paper_img_sample_detail.pdf ./out/plots/short_paper_img_sample_detail.pdf 
