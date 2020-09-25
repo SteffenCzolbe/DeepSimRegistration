@@ -26,7 +26,7 @@ class Fig:
 
         # extend empty dimensions to array
         if cols == 1:
-            self.axs = np.array([self.axs])
+            self.axs = np.array([[ax] for ax in self.axs])
         if rows == 1:
             self.axs = np.array([self.axs])
 
@@ -51,6 +51,7 @@ class Fig:
         img = transforms.image_to_numpy(image)
         if len(img.shape) == 2:
             # plot greyscale image
+            print(f'plotting in {row}, {col}. img has shape {np.array(self.axs).shape}')
             self.axs[row, col].imshow(
                 img, cmap="gray", vmin=vmin, vmax=vmax, interpolation="none"
             )
