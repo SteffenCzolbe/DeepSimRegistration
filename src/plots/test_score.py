@@ -8,7 +8,7 @@ from .config import *
 from .run_models import run_models
 
 # set up sup-plots
-fig = plt.figure(figsize=(12, 4))
+fig = plt.figure(figsize=(8, 3))
 axs = fig.subplots(1, len(DATASET_ORDER))
 plt.subplots_adjust(bottom=0.3)
 plt.rcParams["boxplot.medianprops.color"] = "k"
@@ -38,7 +38,7 @@ for i, dataset in enumerate(DATASET_ORDER):
                 stars = "*"
             else:
                 stars = ""
-            labels.append(LOSS_FUNTION_CONFIG[loss_function]["display_name"] + stars + dstring)
+            labels.append(LOSS_FUNTION_CONFIG[loss_function]["display_name"] + '\\small' + stars + dstring)
             # label_colors.append('dimgrey' if results[dataset][loss_function]['statistically_significantly_worse_than_deepsim'] else 'black')
             label_colors.append("black")
             colors.append(LOSS_FUNTION_CONFIG[loss_function]["primary_color"])
