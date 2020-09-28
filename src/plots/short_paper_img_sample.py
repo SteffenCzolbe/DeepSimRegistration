@@ -37,7 +37,7 @@ def crop(x_low, x_high, y_low, y_high, I):
 
 def plot_platelet(fig, row, col, model, I, S, inv_flow=None, title=None, highlight_color=None):
     crop_area = (270, 470, 100, 300)
-    highlight_area = (350, 410, 100, 160)
+    highlight_area = (350, 410, 102, 160)
     I = crop(*crop_area, I)
     S = crop(*crop_area, S)
     if inv_flow is not None:
@@ -224,7 +224,7 @@ def make_overview():
     fig = viz.Fig(5, 8, None, figsize=(8, 5))
     # adjust subplot spacing
     fig.fig.subplots_adjust(hspace=0.05, wspace=0.05)
-    highlight_colors = [None, 'r', None, None, 'green']
+    highlight_colors = [None, 'r', None, None, '#31e731']
 
     for i, dataset in enumerate(DATASET_ORDER):
         # set plotting function
@@ -280,7 +280,7 @@ def make_detail():
     dataset = "platelet-em"
     sample_idx = 5
     LOSS_FUNTION_ORDER = ["ncc2", "deepsim"]
-    highlight_colors = ['r', 'green']
+    highlight_colors = ['r', '#31e731']
 
     for j, (loss_function, highlight_color) in enumerate(zip(LOSS_FUNTION_ORDER, highlight_colors)):
         path = os.path.join("./weights/", dataset, "registration", loss_function)
