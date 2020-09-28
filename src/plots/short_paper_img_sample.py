@@ -83,7 +83,7 @@ def plot_platelet(fig, row, col, model, I, S, inv_flow=None, title=None, highlig
         h = highlight_area[1] - highlight_area[0]
         w = highlight_area[3] - highlight_area[2]
         p = (highlight_area[2] - crop_area[2], highlight_area[0] - crop_area[0])
-        rect = patches.Rectangle(p,h,w,linewidth=1,edgecolor=highlight_color,facecolor='none')
+        rect = patches.Rectangle(p,h,w,linewidth=2,edgecolor=highlight_color,facecolor='none')
         fig.axs[row, col].add_patch(rect)
     
         
@@ -224,7 +224,7 @@ def make_overview():
     fig = viz.Fig(5, 8, None, figsize=(8, 5))
     # adjust subplot spacing
     fig.fig.subplots_adjust(hspace=0.05, wspace=0.05)
-    highlight_colors = [None, 'r', None, None, 'lime']
+    highlight_colors = [None, 'r', None, None, 'green']
 
     for i, dataset in enumerate(DATASET_ORDER):
         # set plotting function
@@ -280,7 +280,7 @@ def make_detail():
     dataset = "platelet-em"
     sample_idx = 5
     LOSS_FUNTION_ORDER = ["ncc2", "deepsim"]
-    highlight_colors = ['r', 'lime']
+    highlight_colors = ['r', 'green']
 
     for j, (loss_function, highlight_color) in enumerate(zip(LOSS_FUNTION_ORDER, highlight_colors)):
         path = os.path.join("./weights/", dataset, "registration", loss_function)
