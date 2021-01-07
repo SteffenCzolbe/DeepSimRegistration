@@ -86,9 +86,7 @@ if len(labels) > 0:
         patch.set_facecolor(color)
 
     # rotate labels
-    for tick in ax.get_xticklabels():
-        tick.set_rotation(70)
-        tick.set_ha("right")
+    plt.setp( ax.xaxis.get_majorticklabels(), rotation=70, ha="right", rotation_mode="anchor") 
 
 # add legend
 labels = [LOSS_FUNTION_CONFIG[l]["display_name"] for l in LOSS_FUNTION_ORDER]
