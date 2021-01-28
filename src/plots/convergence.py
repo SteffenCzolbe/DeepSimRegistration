@@ -3,6 +3,7 @@ import os
 from tensorboard.backend.event_processing import event_accumulator
 from tqdm import tqdm
 from .config import *
+from matplotlib.ticker import FormatStrFormatter
 
 
 # read logs
@@ -71,7 +72,7 @@ def smooth(ys, smoothing_factor=0.6):
 
 
 # set up sup-plots
-fig = plt.figure(figsize=(12, 3.5))
+fig = plt.figure(figsize=(8.5, 2.5))
 axs = fig.subplots(1, len(DATASET_ORDER))
 plt.subplots_adjust(bottom=0.15)
 
@@ -92,8 +93,8 @@ for i, dataset in enumerate(DATASET_ORDER):
         LOSS_FUNTION_CONFIG[loss_function]["handle"] = line[0]
 
 # add labels
-fig.text(0.5, 0.02, "Gradient Updates", ha="center", va="center")
-fig.text(0.06, 0.5, "Train Mean Dice Overlap", ha="center", va="center", rotation="vertical")
+fig.text(0.5, 0.015, "Gradient Updates", ha="center", va="center")
+fig.text(0.07, 0.5, "Train Mean Dice Overlap", ha="center", va="center", rotation="vertical")
 handles = [
     LOSS_FUNTION_CONFIG[loss_function]["handle"] for loss_function in LOSS_FUNTION_ORDER
 ]
@@ -102,6 +103,10 @@ labels = [
     for loss_function in LOSS_FUNTION_ORDER
 ]
 axs[-1].legend(handles, labels, loc="lower right")
+
+# configure precision
+for ax in axs:
+    ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
 os.makedirs("./out/plots/", exist_ok=True)
 plt.savefig("./out/plots/convergence.pdf")

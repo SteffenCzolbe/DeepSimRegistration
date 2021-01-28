@@ -9,6 +9,7 @@ from collections import defaultdict
 import glob
 from .config import *
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 
 def read_tb_scalar_log(file, scalar):
     """
@@ -52,7 +53,7 @@ def read_model(dir):
 
 def plot(hparam_tuning_results):
     # set up sup-plots
-    fig = plt.figure(figsize=(12, 3.5))
+    fig = plt.figure(figsize=(8.5, 2.5))
     axs = fig.subplots(1, len(DATASET_ORDER))
     plt.subplots_adjust(bottom=0.15)
     
@@ -72,9 +73,12 @@ def plot(hparam_tuning_results):
             axs[i].set_title(PLOT_CONFIG[dataset]["display_name"])
         
     # add labels
-    fig.text(0.5, 0.02, "Regularization Hyperparameter $\lambda$", ha="center", va="center")
-    fig.text(0.06, 0.5, "Validation Mean Dice Overlap", ha="center", va="center", rotation="vertical")
-    axs[-1].legend()
+    fig.text(0.5, 0.015, "Regularization Hyperparameter $\lambda$", ha="center", va="center")
+    fig.text(0.07, 0.5, "Validation Mean Dice Overlap", ha="center", va="center", rotation="vertical")
+    #axs[-1].legend()
+    # configure precision
+    for ax in axs:
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     
     os.makedirs("./out/plots/", exist_ok=True)
     plt.savefig("./out/plots/hparam.pdf")
