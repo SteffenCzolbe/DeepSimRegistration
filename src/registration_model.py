@@ -21,6 +21,8 @@ class RegistrationModel(CommonLightningModel):
         """
         super().__init__(hparams, dataset_image_pairs=True)
         self.hparams = hparams
+        self.probabilistic= False
+        self.probabilistic_p = 0.5
 
         # set net
         self.net = Voxelmorph(
@@ -60,6 +62,14 @@ class RegistrationModel(CommonLightningModel):
         Same as torch.nn.Module.forward(), however in Lightning you want this to
         define the operations you want to use for prediction (i.e.: on a server or as a feature extractor).
         """
+            
+        # activate dropout layers for probabilistic model
+        if self.probabilistic:
+            dropout_layers = self.get_dropout_layers(self)
+            for l in dropout_layers:
+                l.train() # activate dropout
+                l.p = self.probabilistic_p # set dropout probability
+                
         # run model
         return self.net(moving, fixed)
 
@@ -96,6 +106,19 @@ class RegistrationModel(CommonLightningModel):
             .squeeze(-1)
             .float()
         )
+        
+    
+    def get_dropout_layers(self, model):
+        """
+        Collects all the dropout layers of the model
+        """
+        ret = []
+        for obj in model.children():
+            if hasattr(obj, 'children'):
+                ret += self.get_dropout_layers(obj)
+            if isinstance(obj, torch.nn.Dropout3d) or isinstance(obj, torch.nn.Dropout2d):
+                ret.append(obj)
+        return ret
 
     def _step(self, batch, batch_idx, save_viz=False, eval_per_class=False):
         """
