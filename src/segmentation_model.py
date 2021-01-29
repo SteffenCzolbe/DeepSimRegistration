@@ -35,6 +35,11 @@ class SegmentationModel(CommonLightningModel):
         self.dice_overlap = torchreg.metrics.DiceOverlap(
             classes=list(range(self.dataset_config("classes")))
         )
+        
+    def class_probabilities(self, x):
+        # run model
+        y_pred_onehot, y_pred_raw = self.net(x)
+        return y_pred_onehot
 
     def forward(self, x):
         """
