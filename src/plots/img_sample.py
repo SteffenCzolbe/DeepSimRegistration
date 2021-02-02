@@ -7,6 +7,7 @@ import torch
 import torchreg
 import torchreg.viz as viz
 from .config import *
+import matplotlib.patches as patches
 
 
 def get_img(model, test_set_index):
@@ -34,13 +35,15 @@ def crop(x_low, x_high, y_low, y_high, I):
     return I[:, :, x_low:x_high, y_low:y_high]
 
 
-def plot_platelet(fig, row, col, I, S, inv_flow=None):
-    I = crop(270, 470, 100, 300, I)
-    S = crop(270, 470, 100, 300, S)
+def plot_platelet(fig, row, col, model, I, S, inv_flow=None, title=None, highlight_color=None):
+    crop_area = (270, 470, 100, 300)
+    highlight_area = (350, 410, 102, 160)
+    I = crop(*crop_area, I)
+    S = crop(*crop_area, S)
     if inv_flow is not None:
-        inv_flow = crop(270, 470, 100, 300, inv_flow)
+        inv_flow = crop(*crop_area, inv_flow)
 
-    fig.plot_img(row, col, I[0], vmin=0, vmax=1)
+    fig.plot_img(row, col, I[0], vmin=0, vmax=1, title=title)
     fig.plot_overlay_class_mask(
         row,
         col,
@@ -75,9 +78,52 @@ def plot_platelet(fig, row, col, I, S, inv_flow=None):
             color="#FFFFFFFF",
             overlay=True,
         )
+    if highlight_color is not None:
+        # add highlight-frame
+        h = highlight_area[1] - highlight_area[0]
+        w = highlight_area[3] - highlight_area[2]
+        p = (highlight_area[2] - crop_area[2], highlight_area[0] - crop_area[0])
+        rect = patches.Rectangle(p,h,w,linewidth=2,edgecolor=highlight_color,facecolor='none')
+        fig.axs[row, col].add_patch(rect)
+    
+        
+def plot_platelet_detail(fig, row, col, model, I, S, inv_flow=None, title=None, highlight_color=None):
+    crop_area = (350, 410, 100, 160)
+    highlight_area = (350, 409, 100, 159)
+    I = crop(*crop_area, I)
+    S = crop(*crop_area, S)
+    if inv_flow is not None:
+        inv_flow = crop(*crop_area, inv_flow)
+
+    fig.plot_img(row, col, I[0], vmin=0, vmax=1, title=title)
+    fig.plot_contour(
+        row,
+        col,
+        S[0],
+        contour_class=1,
+        width=2,
+        rgba=model.dataset_config("class_colors")[1],
+    )
+    if inv_flow is not None:
+        fig.plot_transform_grid(
+            row,
+            col,
+            inv_flow[0],
+            interval=7,
+            linewidth=0.5,
+            color="#000000FF",
+            overlay=True,
+        )
+    if highlight_color is not None:
+        # add highlight-frame
+        h = highlight_area[1] - highlight_area[0]
+        w = highlight_area[3] - highlight_area[2]
+        p = (highlight_area[2] - crop_area[2], highlight_area[0] - crop_area[0])
+        rect = patches.Rectangle(p,h,w,linewidth=4,edgecolor=highlight_color,facecolor='none')
+        fig.axs[row, col].add_patch(rect)
 
 
-def plot_phc(fig, row, col, I, S, inv_flow=None):
+def plot_phc(fig, row, col, model, I, S, inv_flow=None):
     I = crop(200, 300, 0, 100, I)
     S = crop(200, 300, 0, 100, S)
     if inv_flow is not None:
@@ -112,7 +158,7 @@ def plot_phc(fig, row, col, I, S, inv_flow=None):
         )
 
 
-def plot_brainmri(fig, row, col, I, S, inv_flow=None):
+def plot_brainmri(fig, row, col, model, I, S, inv_flow=None):
     # get slice
     I = I[:, :, :, :, 100]
     S = S[:, :, :, :, 100]
@@ -174,23 +220,69 @@ def plot_brainmri(fig, row, col, I, S, inv_flow=None):
     torchreg.settings.set_ndims(3)  # back to 3d
 
 
-fig = viz.Fig(5, 8, None, figsize=(8, 5))
-# adjust subplot spacing
-fig.fig.subplots_adjust(hspace=0.05, wspace=0.05)
+def make_overview():
+    fig = viz.Fig(5, 9, None, figsize=(9, 5))
+    # adjust subplot spacing
+    fig.fig.subplots_adjust(hspace=0.05, wspace=0.05)
+    highlight_colors = [None, 'r', None, None, '#31e731', None]
 
-for i, dataset in enumerate(DATASET_ORDER):
+    for i, dataset in enumerate(DATASET_ORDER):
+        # set plotting function
+        if dataset == "platelet-em":
+            plotfun = plot_platelet
+            sample_idx = 5
+        elif dataset == "brain-mri":
+            plotfun = plot_brainmri
+            sample_idx = 0
+        elif dataset == "phc-u373":
+            plotfun = plot_phc
+            sample_idx = 9
+
+        for j, (loss_function, highlight_color) in enumerate(zip(LOSS_FUNTION_ORDER, highlight_colors)):
+            path = os.path.join("./weights/", dataset, "registration", loss_function)
+            if not os.path.isdir(path):
+                continue
+            # load model
+            checkpoint_path = os.path.join(path, "weights.ckpt")
+            model = RegistrationModel.load_from_checkpoint(checkpoint_path=checkpoint_path)
+
+            # run model
+            I_0, S_0, I_m, S_m, I_1, S_1, inv_flow = get_img(model, sample_idx)
+
+            # plot aligned image
+            kwargs = {'highlight_color': highlight_color} if dataset == "platelet-em" else {}
+            plotfun(fig, i, j + 2, model, I_m, S_m, inv_flow=inv_flow, **kwargs)
+
+        # plot moved and fixed image
+        plotfun(fig, i, 0, model, I_0, S_0)
+        plotfun(fig, i, 1, model, I_1, S_1)
+
+    # label loss function
+    for i, lossfun in enumerate(LOSS_FUNTION_ORDER):
+        fig.axs[0, i + 2].set_title(LOSS_FUNTION_CONFIG[lossfun]["display_name"])
+    fig.axs[0, 0].set_title("Moving")
+    fig.axs[0, 1].set_title("Fixed")
+
+    os.makedirs("./out/plots", exist_ok=True)
+    fig.save("./out/plots/img_sample.pdf", close=False)
+    fig.save("./out/plots/img_sample.png")
+
+
+
+def make_detail():
+    # detail view
+    fig = viz.Fig(2, 1, None, figsize=(1.5, 3))
+    # adjust subplot spacing
+    fig.fig.subplots_adjust(hspace=0.3, wspace=0.05)
+
     # set plotting function
-    if dataset == "platelet-em":
-        plotfun = plot_platelet
-        sample_idx = 5
-    elif dataset == "brain-mri":
-        plotfun = plot_brainmri
-        sample_idx = 0
-    elif dataset == "phc-u373":
-        plotfun = plot_phc
-        sample_idx = 9
+    plotfun = plot_platelet_detail
+    dataset = "platelet-em"
+    sample_idx = 5
+    LOSS_FUNTION_ORDER = ["ncc2", "deepsim"]
+    highlight_colors = ['r', '#31e731']
 
-    for j, loss_function in enumerate(LOSS_FUNTION_ORDER):
+    for j, (loss_function, highlight_color) in enumerate(zip(LOSS_FUNTION_ORDER, highlight_colors)):
         path = os.path.join("./weights/", dataset, "registration", loss_function)
         if not os.path.isdir(path):
             continue
@@ -200,21 +292,27 @@ for i, dataset in enumerate(DATASET_ORDER):
 
         # run model
         I_0, S_0, I_m, S_m, I_1, S_1, inv_flow = get_img(model, sample_idx)
+        
 
         # plot aligned image
-        plotfun(fig, i, j + 2, I_m, S_m, inv_flow=inv_flow)
+        plotfun(
+            fig,
+            j,
+            0,
+            model, 
+            I_m,
+            S_m,
+            inv_flow=inv_flow,
+            title=LOSS_FUNTION_CONFIG[loss_function]["display_name"],
+            highlight_color=highlight_color
+        )
 
-    # plot moved and fixed image
-    plotfun(fig, i, 0, I_0, S_0)
-    plotfun(fig, i, 1, I_1, S_1)
 
-# label loss function
-for i, lossfun in enumerate(LOSS_FUNTION_ORDER):
-    fig.axs[0, i + 2].set_title(LOSS_FUNTION_CONFIG[lossfun]["display_name"])
-fig.axs[0, 0].set_title(r"$\mathbf{I}$")
-fig.axs[0, 1].set_title(r"$\mathbf{J}$")
+    os.makedirs("./out/plots", exist_ok=True)
+    fig.save("./out/plots/img_sample_detail.pdf", close=False)
+    fig.save("./out/plots/img_sample_detail.png")
 
-os.makedirs("./out/plots", exist_ok=True)
-fig.save("./out/plots/img_sample.pdf", close=False)
-fig.save("./out/plots/img_sample.png")
+
+make_overview()
+make_detail()
 

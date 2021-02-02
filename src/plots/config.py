@@ -19,6 +19,7 @@ LOSS_FUNTION_ORDER = [
     "ncc2+supervised",
     "vgg",
     "deepsim",
+    "deepsim-ae",
 ]  # , 'transfer', ]
 
 LOSS_FUNTION_CONFIG = {
@@ -37,10 +38,17 @@ LOSS_FUNTION_CONFIG = {
         "primary_color": plt.get_cmap("tab20c").colors[2],
     },
     "deepsim": {
-        "display_name": "DeepSim",
+        "display_name": r"$\text{DeepSim}_{\text{seg}}$",
+        "primary_color": plt.get_cmap("tab20c").colors[5],
+    },
+    "deepsim-ae": {
+        "display_name": r"$\text{DeepSim}_{\text{ae}}$",
         "primary_color": plt.get_cmap("tab20c").colors[4],
     },
-    "vgg": {"display_name": "VGG", "primary_color": plt.get_cmap("tab20c").colors[3]},
+    "vgg": {
+        "display_name": "VGG", 
+        "primary_color": plt.get_cmap("tab20c").colors[3]
+        },
     "transfer": {
         "display_name": "Transfer",
         "primary_color": plt.get_cmap("tab20c").colors[16],

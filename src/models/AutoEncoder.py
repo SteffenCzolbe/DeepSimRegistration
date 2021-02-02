@@ -6,7 +6,7 @@ import torchreg.nn as tnn
 from .backbone import Backbone
 
 
-class UNet(nn.Module):
+class AutoEncoder(nn.Module):
     """
     UNet network for classification.
     """
@@ -27,7 +27,7 @@ class UNet(nn.Module):
 
         # configure backbone
         self.backbone = Backbone(
-            enc_feat, dec_feat, in_channels=in_channels, dropout=dropout, bnorm=bnorm,
+            enc_feat, dec_feat, in_channels=in_channels, dropout=dropout, bnorm=bnorm, skip_connections=False
         )
 
         # configure output layer
@@ -53,7 +53,7 @@ class UNet(nn.Module):
                 padding=0,
             ),
         )
-        self.activation = nn.Softmax(dim=1)
+        self.activation = nn.Sigmoid()
 
     def forward(self, x):
         """

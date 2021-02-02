@@ -8,6 +8,7 @@ from .common_lightning_model import CommonLightningModel
 from .models.voxelmorph import Voxelmorph
 from .loss_metrics import NCC, DeepSim, VGGFeatureExtractor
 from .segmentation_model import SegmentationModel
+from .autoencoder_model import AutoEncoderModel
 
 
 class RegistrationModel(CommonLightningModel):
@@ -32,15 +33,20 @@ class RegistrationModel(CommonLightningModel):
             bnorm=self.hparams.bnorm,
             dropout=self.hparams.dropout,
         )
-
+        
+        if hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-ae"] and not hparams.deepsim_weights:
+            raise ValueError("No weights specified for Deep Similarity Metric.")
+        
         if hparams.loss.lower() in ["deepsim", "deepsim-transfer"]:
-            if not hparams.deepsim_weights:
-                raise ValueError("No weights specified for Deep Similarity Metric.")
-            else:
-                feature_extractor = SegmentationModel.load_from_checkpoint(
-                    hparams.deepsim_weights
-                )
-                self.deepsim = DeepSim(feature_extractor)
+            feature_extractor = SegmentationModel.load_from_checkpoint(
+                hparams.deepsim_weights
+            )
+            self.deepsim = DeepSim(feature_extractor)
+        elif hparams.loss.lower() == "deepsim-ae":
+            feature_extractor = AutoEncoderModel.load_from_checkpoint(
+                hparams.deepsim_weights
+            )
+            self.deepsim = DeepSim(feature_extractor)
         elif hparams.loss.lower() == "vgg":
             feature_extractor = VGGFeatureExtractor()
             self.vgg_loss = DeepSim(feature_extractor)
@@ -74,7 +80,7 @@ class RegistrationModel(CommonLightningModel):
         return self.net(moving, fixed)
 
     def similarity_loss(self, I_m, I_1, S_m_onehot, S_1_onehot):
-        if self.hparams.loss.lower() in ["deepsim", "deepsim-transfer"]:
+        if self.hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-ae"]:
             return self.deepsim(I_m, I_1)
         elif self.hparams.loss.lower() == "vgg":
             return self.vgg_loss(I_m, I_1)
@@ -235,7 +241,7 @@ class RegistrationModel(CommonLightningModel):
             "--loss",
             type=str,
             default="ncc",
-            help="Similarity Loss function. Options: 'l2', 'ncc', 'ncc2', 'deepsim', 'deepsim-transfer', 'ncc+supervised', 'vgg' (Default: ncc)",
+            help="Similarity Loss function. Options: 'l2', 'ncc', 'ncc2', 'deepsim', 'deepsim-transfer', 'deepsim-ae', 'ncc+supervised', 'vgg' (Default: ncc)",
         )
         parser.add_argument(
             "--ncc_win_size",
