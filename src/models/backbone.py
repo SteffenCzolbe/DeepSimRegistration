@@ -11,7 +11,7 @@ class Backbone(nn.Module):
     U-net backbone for registration models.
     """
 
-    def __init__(self, enc_feat, dec_feat, in_channels=1, bnorm=False, dropout=True):
+    def __init__(self, enc_feat, dec_feat, in_channels=1, bnorm=False, dropout=True, skip_connections=True):
         """
         Parameters:
             enc_feat: List of encoder features. e.g. [16, 32, 32, 32]
@@ -19,10 +19,12 @@ class Backbone(nn.Module):
             in_channels: input channels, eg 1 for a single greyscale image. Default 1.
             bnorm: bool. Perform batch-normalization?
             dropout: bool. Perform dropout?
+            skip_connections: bool, Set for U-net like skip cnnections
         """
         super().__init__()
 
         self.upsample = tnn.Upsample(scale_factor=2, mode="linear", align_corners=False)
+        self.skip_connections = skip_connections
 
         # configure encoder (down-sampling path)
         prev_feat = in_channels
@@ -32,19 +34,25 @@ class Backbone(nn.Module):
                 Stage(prev_feat, feat, stride=2, dropout=dropout, bnorm=bnorm)
             )
             prev_feat = feat
+            
+        if self.skip_connections:
+            # pre-calculate decoder sizes and channels
+            enc_stages = len(enc_feat)
+            dec_stages = len(dec_feat)
+            enc_history = list(reversed([in_channels] + enc_feat))
+            decoder_out_channels = [
+                enc_history[i + 1] + dec_feat[i] for i in range(dec_stages)
+            ]
+            decoder_in_channels = [enc_history[0]] + decoder_out_channels[:-1]
 
-        # pre-calculate decoder sizes and channels
-        enc_stages = len(enc_feat)
-        dec_stages = len(dec_feat)
-        enc_history = list(reversed([in_channels] + enc_feat))
-        decoder_out_channels = [
-            enc_history[i + 1] + dec_feat[i] for i in range(dec_stages)
-        ]
-        decoder_in_channels = [enc_history[0]] + decoder_out_channels[:-1]
-
+        else:
+            # pre-calculate decoder sizes and channels
+            decoder_out_channels = dec_feat
+            decoder_in_channels = enc_feat[-1:] + decoder_out_channels[:-1]
+            
         # pre-calculate return sizes and channels
         self.output_length = len(dec_feat) + 1
-        self.output_channels = [enc_history[0]] + decoder_out_channels
+        self.output_channels = [enc_feat[-1]] + decoder_out_channels
 
         # configure decoder (up-sampling path)
         self.decoder = nn.ModuleList()
@@ -76,7 +84,8 @@ class Backbone(nn.Module):
         for layer in self.decoder:
             x = layer(x)
             x = self.upsample(x)
-            x = torch.cat([x, x_enc.pop()], dim=1)
+            if self.skip_connections:
+                x = torch.cat([x, x_enc.pop()], dim=1)
             x_dec.append(x)
 
         return x_dec

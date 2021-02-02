@@ -38,6 +38,7 @@ def run_models(use_cached=True):
         return pickle.load(open(cache_file_name, "rb"))
     else:
         results = {}
+        #results = pickle.load(open(cache_file_name, "rb"))
         for dataset in DATASET_ORDER:
             results[dataset] = {}
             for loss_function in tqdm(

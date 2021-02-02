@@ -51,12 +51,15 @@ def read_tb_scalar_log(file, scalar, max_step=None):
         },
     )
     ea.Reload()  # loads events from file
+    step_to_epoch = ea.Scalars("epoch")
+    step_to_epoch = dict([(event.step, event.value) for event in step_to_epoch])
+    
     events = ea.Scalars(scalar)
 
     records = []
     for event in events:
         if max_step is None or event.step < max_step:
-            records.append((event.step, event.value))
+            records.append((step_to_epoch[event.step], event.value))
         else:
             break
 
@@ -93,7 +96,7 @@ for i, dataset in enumerate(DATASET_ORDER):
         LOSS_FUNTION_CONFIG[loss_function]["handle"] = line[0]
 
 # add labels
-fig.text(0.5, 0.015, "Gradient Updates", ha="center", va="center")
+fig.text(0.5, 0.015, "Epoch", ha="center", va="center")
 fig.text(0.07, 0.5, "Train Mean Dice Overlap", ha="center", va="center", rotation="vertical")
 handles = [
     LOSS_FUNTION_CONFIG[loss_function]["handle"] for loss_function in LOSS_FUNTION_ORDER
@@ -102,7 +105,7 @@ labels = [
     LOSS_FUNTION_CONFIG[loss_function]["display_name"]
     for loss_function in LOSS_FUNTION_ORDER
 ]
-axs[-1].legend(handles, labels, loc="lower right")
+axs[-1].legend(handles, labels, loc="lower right", fontsize="small")
 
 # configure precision
 for ax in axs:
