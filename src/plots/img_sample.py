@@ -224,7 +224,7 @@ def make_overview():
     fig = viz.Fig(5, 9, None, figsize=(9, 5))
     # adjust subplot spacing
     fig.fig.subplots_adjust(hspace=0.05, wspace=0.05)
-    highlight_colors = [None, 'r', None, None, '#31e731', None]
+    highlight_colors = [None, 'r', None, None, None, '#31e731']
 
     for i, dataset in enumerate(DATASET_ORDER):
         # set plotting function

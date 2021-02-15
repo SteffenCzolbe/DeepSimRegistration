@@ -45,6 +45,14 @@ classes = np.argsort(-mean_dice_overlaps).tolist()
 for rm_class in [0, 21, 23, 19]:
     classes.remove(rm_class)
 
+def make_bold(means):
+    # decide wich labels to make bold
+    ours = [3,4] # 0-indexed positions of our metrics
+    order = np.flip(np.argsort(means))
+    order_ours = [i in ours for i in order]
+    return order_ours[0] and order_ours[1]
+    
+
 # aggregate data
 for c in classes:
     for loss_function in LOSS_FUNTION_ORDER:
@@ -57,11 +65,10 @@ for c in classes:
             )
             colors.append(LOSS_FUNTION_CONFIG[loss_function]["primary_color"])
     # set tick labels
-    deepsim_best = np.argmax(median_dice_overlap_of_classes[-4:]) == 3
     col_count = len(results[dataset].keys())
     for _ in range((col_count // 2) + 1):
         labels.append("")
-    if deepsim_best:
+    if make_bold(median_dice_overlap_of_classes[-5:]):
         labels.append(r"\textbf{" + class_to_name_dict[str(c)] + "}")
     else:
         labels.append(class_to_name_dict[str(c)])
@@ -90,7 +97,8 @@ if len(labels) > 0:
 
 # add legend
 labels = [LOSS_FUNTION_CONFIG[l]["display_name"] for l in LOSS_FUNTION_ORDER]
-ax.legend(handles[-5:-1], labels, loc="lower left", prop={"size": 9})
+labels.remove('VGG')
+ax.legend(handles[-6:-1], labels, loc="lower left", prop={"size": 9})
 
 # add labels
 fig.text(0.06, 0.675, "Dice Overlap", ha="center", va="center", rotation="vertical")
