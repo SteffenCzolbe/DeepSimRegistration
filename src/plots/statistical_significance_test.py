@@ -9,7 +9,20 @@ def cohen_d(x,y):
     dof = nx + ny - 2
     return (mean(x) - mean(y)) / sqrt(((nx-1)*std(x, ddof=1) ** 2 + (ny-1)*std(y, ddof=1) ** 2) / dof)
 
+def rank_metrics(results_dataset_dict):
+    loss_functions = results[dataset].keys()
+    mean_dice_overlaps = []
+    for metric in loss_functions:
+        mean_do = mean(results_dataset_dict[metric]["dice_overlap"])
+        mean_dice_overlaps.append((metric, mean_do))
+    mean_dice_overlaps.sort(reverse=True, key=lambda t: t[1])
+    for rank, (metric,_) in enumerate(mean_dice_overlaps):
+        results_dataset_dict[metric]["rank"] = rank
+    return results_dataset_dict
+    
+
 def compare_metrics(results_dataset_dict, metric0, metric1):
+    print(f'comparing {metric0} to {metric1}')
     scores_metric0 = results_dataset_dict[metric0]["dice_overlap"]
     scores_metric1 = results_dataset_dict[metric1]["dice_overlap"]
     
@@ -41,11 +54,13 @@ def compare_metrics(results_dataset_dict, metric0, metric1):
     results_dataset_dict[metric0]["compared_to"][metric1]["p_val"] = p_value
     results_dataset_dict[metric0]["compared_to"][metric1]["cohens_d"] = d
     results_dataset_dict[metric0]["compared_to"][metric1]["cohens_d_category"] = effect_size
+    return results_dataset_dict
     
 def print_results(results):
     for dataset in results.keys():
         for loss_function in results[dataset].keys():
-            print(f"\n{dataset}, {loss_function}:")
+            rank = results[dataset][loss_function]["rank"]
+            print(f"\n{dataset}, {loss_function} is rank {rank}:")
             for comparison_function in results[dataset][loss_function]["compared_to"].keys():
                 relative_str = "is better" if results[dataset][loss_function]["compared_to"][comparison_function]["is_better"] else "is worse "
                 p_value = results[dataset][loss_function]["compared_to"][comparison_function]["p_val"]
@@ -54,21 +69,20 @@ def print_results(results):
                 print(f'    {relative_str} than {comparison_function:15} p={p_value:.3f}, d={d:.3f} ({effect_size})')
     
 
-cache_file_name = "./src/plots/cache.pickl"
+if __name__ == '__main__':
+    cache_file_name = "./src/plots/cache.pickl"
+    results = pickle.load(open(cache_file_name, "rb"))
 
-
-results = pickle.load(open(cache_file_name, "rb"))
-
-for dataset in results.keys():
-    loss_functions = results[dataset].keys()
-    
-    for metric0 in loss_functions:
-        for metric1 in loss_functions:
-            if metric0 == metric1:
-                continue
-            # compare
-            compare_metrics(results[dataset], metric0, metric1)
-    
-print_results(results)
-pickle.dump(results, open(cache_file_name, "wb"))
+    for dataset in results.keys():
+        results[dataset] = rank_metrics(results[dataset])
+        loss_functions = results[dataset].keys()
+        for metric0 in loss_functions:
+            for metric1 in loss_functions:
+                if metric0 == metric1:
+                    continue
+                # compare 2 metrics
+                results[dataset] = compare_metrics(results[dataset], metric0, metric1)
+        
+    print_results(results)
+    pickle.dump(results, open(cache_file_name, "wb"))
 
