@@ -8,6 +8,7 @@ from .config import *
 from .run_models import run_models
 import json
 
+LOSS_FUNTION_ORDER.remove('vgg') # not for VGG
 dataset = "brain-mri"
 
 # set up sup-plots
@@ -97,7 +98,6 @@ if len(labels) > 0:
 
 # add legend
 labels = [LOSS_FUNTION_CONFIG[l]["display_name"] for l in LOSS_FUNTION_ORDER]
-labels.remove('VGG')
 ax.legend(handles[-6:-1], labels, loc="lower left", prop={"size": 9})
 
 # add labels
