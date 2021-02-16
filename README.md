@@ -12,7 +12,7 @@ This repository contains all experiments presented in the paper, the code used t
 
 ## DeepSim: Semantic similarity metrics for learned image registration
 
-Oral presentation (top 10% of submissions). Included initial concept and use of a segmentation model for feature extraction. Cite as:
+NeurIPS workshop on Medical Imaging, 2020. Oral presentation (top 10% of submissions). Included initial concept and use of a segmentation model for feature extraction. Cite as:
 
 ```
 @article{czolbe2020deepsim,
@@ -25,7 +25,7 @@ year={2020}
 
 ## Semantic similarity metrics for learned image registration
 
-Under review for MIDL 2021 (single-blind submission). Expands on the initial publication with the use auf autoencoders for unsupervised training of the feature extractor, a more detailed description of the work, and a expanded evaluation section.
+Under review for MIDL 2021 (single-blind review). Expands on the initial publication with the use auf autoencoders for unsupervised training of the feature extractor, an expanded evaluation section, and a more detailed description of the work.
 
 # Reproduce Experiments
 
