@@ -66,7 +66,7 @@ def print_results(results):
                 p_value = results[dataset][loss_function]["compared_to"][comparison_function]["p_val"]
                 d = results[dataset][loss_function]["compared_to"][comparison_function]["cohens_d"]
                 effect_size = results[dataset][loss_function]["compared_to"][comparison_function]["cohens_d_category"]
-                print(f'    {relative_str} than {comparison_function:15} p={p_value:.3f}, d={d:.3f} ({effect_size})')
+                print(f'    {relative_str} than {comparison_function:15} p={p_value:.3f}, d={d:.2f} ({effect_size})')
     
 
 if __name__ == '__main__':
