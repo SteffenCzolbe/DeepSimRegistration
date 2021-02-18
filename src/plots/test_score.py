@@ -6,13 +6,15 @@ from src.registration_model import RegistrationModel
 import torch
 from .config import *
 from .run_models import run_models
+from matplotlib.ticker import FormatStrFormatter
 
 # set up sup-plots
-fig = plt.figure(figsize=(8, 3))
+fig = plt.figure(figsize=(7, 2.5))
 axs = fig.subplots(1, len(DATASET_ORDER))
-plt.subplots_adjust(bottom=0.3)
+plt.subplots_adjust(bottom=0.32, wspace=0.3)
 plt.rcParams["boxplot.medianprops.color"] = "k"
 plt.rcParams["boxplot.medianprops.linewidth"] = 3.0
+outlier_porps = dict(markersize=3, markeredgecolor="black", marker='.')
 results = run_models(use_cached=True)
 for i, dataset in enumerate(DATASET_ORDER):
     # set dataset title
@@ -48,6 +50,7 @@ for i, dataset in enumerate(DATASET_ORDER):
             vert=True,  # vertical box alignment
             patch_artist=True,  # fill with color
             labels=labels,
+            flierprops=outlier_porps
         )  # will be used to label x-ticks
         # color boxes
         for patch, color in zip(bplot["boxes"], colors):
@@ -55,8 +58,13 @@ for i, dataset in enumerate(DATASET_ORDER):
 
         # rotate labels
         for tick, color in zip(axs[i].get_xticklabels(), label_colors):
-            tick.set_rotation(70)
+            tick.set_rotation(60)
             tick.set_color(color)
+            
+    
+# configure axis precision
+for ax in axs:
+    ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
 
 # add labels
