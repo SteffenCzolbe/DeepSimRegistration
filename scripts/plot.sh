@@ -15,3 +15,4 @@ pdfcrop ./out/plots/test_score_per_class_brain-mri.pdf ./out/plots/test_score_pe
 pdfcrop ./out/plots/hparam.pdf ./out/plots/hparam.pdf 
 pdfcrop ./out/plots/img_sample.pdf ./out/plots/img_sample.pdf 
 pdfcrop ./out/plots/img_sample_detail.pdf ./out/plots/img_sample_detail.pdf 
+pdfcrop ./out/plots/img_sample_detail_all.pdf ./out/plots/img_sample_detail_all.pdf 
