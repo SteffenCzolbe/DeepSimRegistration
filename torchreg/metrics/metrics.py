@@ -130,12 +130,12 @@ class GradNorm(nn.Module):
         flow = F.pad(flow, [0, 1] * self.ndims, mode="replicate")
         # get finite differences
         if self.ndims == 2:
-            dx = torch.abs(flow[:, :, 1:, :-1] - flow[:, :, :-1, :-1])
-            dy = torch.abs(flow[:, :, :-1, 1:] - flow[:, :, :-1, :-1])
+            dy = torch.abs(flow[:, :, 1:, :-1] - flow[:, :, :-1, :-1])
+            dx = torch.abs(flow[:, :, :-1, 1:] - flow[:, :, :-1, :-1])
         elif self.ndims == 3:
-            dx = torch.abs(flow[:, :, 1:, :-1, :-1] - flow[:, :, :-1, :-1, :-1])
+            dz = torch.abs(flow[:, :, 1:, :-1, :-1] - flow[:, :, :-1, :-1, :-1])
             dy = torch.abs(flow[:, :, :-1, 1:, :-1] - flow[:, :, :-1, :-1, :-1])
-            dz = torch.abs(flow[:, :, :-1, :-1, 1:] - flow[:, :, :-1, :-1, :-1])
+            dx = torch.abs(flow[:, :, :-1, :-1, 1:] - flow[:, :, :-1, :-1, :-1])
 
         # square
         if self.penalty == "l2":
@@ -155,13 +155,13 @@ class GradNorm(nn.Module):
             return torch.sum(d)
 
 
-class PixelArea(nn.Module):
-    def __init__(self, reduction="mean"):
-        super(PixelArea, self).__init__()
+class JacobianDeterminant(nn.Module):
+    def __init__(self, reduction="mean", preserve_size=False):
+        super(JacobianDeterminant, self).__init__()
         self.idty = torchreg.nn.Identity()
         self.reduction = reduction
-        if torchreg.settings.get_ndims() != 2:
-            raise Exception("Only 2D supported by this operation.")
+        self.ndims = torchreg.settings.get_ndims()
+        self.preserve_size = preserve_size
 
     def forward(self, flow):
         """
@@ -170,30 +170,37 @@ class PixelArea(nn.Module):
 
         def determinant_2d(x, y):
             return x[:, [0]] * y[:, [1]] - x[:, [1]] * y[:, [0]]
-
-        # pad flow
-        flow = F.pad(flow, (1, 1, 1, 1), mode="replicate")
+        def determinant_3d(x, y, z):
+            return (x[:, [0]] * y[:, [1]] * z[:, [2]] +
+                    x[:, [2]] * y[:, [0]] * z[:, [1]] +
+                    x[:, [1]] * y[:, [2]] * z[:, [0]] -
+                    x[:, [2]] * y[:, [1]] * z[:, [0]] -
+                    x[:, [1]] * y[:, [0]] * z[:, [2]] -
+                    x[:, [0]] * y[:, [2]] * z[:, [1]])
+        
+        if self.preserve_size:
+            flow = F.pad(flow, [0, 1] * self.ndims, mode="replicate")
 
         # map to target domain
         transform = flow + self.idty(flow)
-
-        # calculate area of upper left triangle of each grid cell
-        dx = transform[:, :, 2:, 1:-1, ...] - transform[:, :, 1:-1, 1:-1, ...]
-        dy = transform[:, :, 1:-1, 2:, ...] - transform[:, :, 1:-1, 1:-1, ...]
-        area_upper_triag = 0.5 * determinant_2d(dx, dy).abs()
-
-        # calculate area of lower right triangle of each grid cell
-        dx = transform[:, :, :-2, 1:-1, ...] - transform[:, :, 1:-1, 1:-1, ...]
-        dy = transform[:, :, 1:-1, :-2, ...] - transform[:, :, 1:-1, 1:-1, ...]
-        area_lower_triag = 0.5 * determinant_2d(dx, dy).abs()
-
-        area = area_upper_triag + area_lower_triag
+        
+        # get finite differences
+        if self.ndims == 2:
+            dx = torch.abs(transform[:, :, 1:, :-1] - transform[:, :, :-1, :-1])
+            dy = torch.abs(transform[:, :, :-1, 1:] - transform[:, :, :-1, :-1])
+            jacdet = determinant_2d(dx, dy)
+        elif self.ndims == 3:
+            dx = torch.abs(transform[:, :, 1:, :-1, :-1] - transform[:, :, :-1, :-1, :-1])
+            dy = torch.abs(transform[:, :, :-1, 1:, :-1] - transform[:, :, :-1, :-1, :-1])
+            dz = torch.abs(transform[:, :, :-1, :-1, 1:] - transform[:, :, :-1, :-1, :-1])
+            jacdet = determinant_3d(dx, dy, dz)
+            
         if self.reduction == "none":
-            return area
+            return jacdet
         elif self.reduction == "mean":
-            return torch.mean(area)
+            return torch.mean(jacdet)
         elif self.reduction == "sum":
-            return torch.sum(area)
+            return torch.sum(jacdet)
 
 
 class DiceOverlap(nn.Module):
@@ -254,3 +261,14 @@ class SoftDiceOverlap(nn.Module):
         # calculate dice per class, mean over classes
         dice = 2 * s_union / (s_y_true + s_y_pred + 1e-6)
         return torch.mean(dice)
+
+
+if __name__ == '__main__':
+    # jacobean determinant test
+    torchreg.settings.set_ndims(3)
+    jac_det = JacobianDeterminant(reduction='mean', preserve_size=False)
+    flow = torch.zeros(1,3,5,5,5)
+    for i in range(flow.shape[2]):
+        flow[:, 2, :, :, i] = 0.5*i
+    print('flow', flow)
+    print("jacobian determinant", jac_det(flow))
