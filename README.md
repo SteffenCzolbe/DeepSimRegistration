@@ -43,18 +43,40 @@ pip3 install -r requirements.txt
 
 ## Data
 
-Preprocessed versions of the PhC-373 and Platelet-EM datasets are enclosed in the repository. The Brain-MRI scans are not provided with this package. By default they have to be placed in a separate repository, structured as:
+Since we are not allowed to re-distribute the datasets, it is required to perform manual action. 
+
+### Brain-MRI
+The Brain-MRI scans have been taken from the publically accessible ABIDEI, ABIDEII, OASIS3 studies. We used Freesurfer and some custom scripts to perform the preprocessing steps of
+- intensity normalization
+- skullstripping
+- affine alignment
+- automatic segmentation
+- crop to 160x192x224
+- Segmentation areas of LH and RH combined to single labels
+- some smaller segmentations removed/combined, Total 22 classes left
+
+The resulting intensity and label volumes are then organized in a separate directory:
 
 ```
 deepsimreg/
+    <you are here>
+brain_mris/
     data/
-        PhC-U373/
-            images/
-                01.tif
-                02.tif
-            labels-class/
-                01.tif
-                02.tif
+        <subject_id>/
+            "brain_aligned.nii.gz"
+            "seg_coalesced_aligned.nii.gz"
+```
+### PhC-373
+The PhC-373 dataset can be automatically downloaded and pre-processed using the provided script
+```
+$ scripts/download_phc.sh
+```
+
+### Platelet-EM
+The Platelet-EM dataset originally contains 5 class annotations. Due to the strong imbalance of labels, we combined some of the less frequent classes to end up with 3 groups (Background, Cytoplasm and Organelle). The datset needs to be placed in:
+```
+deepsimreg/
+    data/
         platelet_em_reduced/
             images/
                 24-images.tif
@@ -62,11 +84,6 @@ deepsimreg/
             labels-class/
                 24-class.tif
                 50-class.tif
-brain_mris/
-    data/
-        <subject_id>/
-            "brain_aligned.nii.gz"
-            "seg_coalesced_aligned.nii.gz"
 ```
 
 ## Train segmentation models for feature extraction
