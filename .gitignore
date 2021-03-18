@@ -11,6 +11,7 @@ weights
 *.pckl
 *.pickl
 .vscode
+*.tif
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
