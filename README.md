@@ -2,13 +2,29 @@
 
 Steffen Czolbe, Oswin Krause, Aasa Feragen
 
-[[MIDL 2021 open-review]](https://openreview.net/forum?id=9M5cH--UdcC) [[Med-NeurIPS 2020 Short-Paper]](https://arxiv.org/abs/2011.05735) [[Med-NeurIPS 2020 Oral]](https://youtu.be/GV4r2fOe0Oo)
+[[MIDL 2021 Oral]](https://youtu.be/Hs9X3wSO774) [[MIDL 2021 open-review]](https://openreview.net/forum?id=9M5cH--UdcC) [[Med-NeurIPS 2020 Short-Paper]](https://arxiv.org/abs/2011.05735) [[Med-NeurIPS 2020 Oral]](https://youtu.be/GV4r2fOe0Oo)
 
-[![Video](https://img.youtube.com/vi/GV4r2fOe0Oo/hqdefault.jpg)](https://youtu.be/GV4r2fOe0Oo)
+
+[![Video](https://img.youtube.com/vi/Hs9X3wSO774/hqdefault.jpg)](https://youtu.be/Hs9X3wSO774)
 
 This repository contains all experiments presented in the paper, the code used to generate the figures, and instructions and scripts to re-produce all results. Implementation in the deep-learning framework pytorch.
 
 # Publications
+
+## Semantic similarity metrics for learned image registration
+
+MIDL 2021 Long-Oral (top 7% of submissions). Expands on the initial publication with the use auf autoencoders for unsupervised training of the feature extractor, an expanded evaluation section, and a more detailed description of the work. Cite as:
+
+```
+@inproceedings{czolbe2021deepsim,
+title={DeepSim: Semantic similarity metrics for learned image registration},
+author={Czolbe, Steffen and Krause, Oswin and Feragen, Aasa},
+  booktitle={Medical Imaging with Deep Learning},
+  year={2021},
+  organization={PMLR}
+}
+```
+
 
 ## DeepSim: Semantic similarity metrics for learned image registration
 
@@ -23,9 +39,6 @@ year={2020}
 }
 ```
 
-## Semantic similarity metrics for learned image registration
-
-Under review for MIDL 2021 (single-blind review). Expands on the initial publication with the use auf autoencoders for unsupervised training of the feature extractor, an expanded evaluation section, and a more detailed description of the work.
 
 # Reproduce Experiments
 
