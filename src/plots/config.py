@@ -17,6 +17,7 @@ LOSS_FUNTION_ORDER = [
     "l2",
     "ncc2",
     "ncc2+supervised",
+    "nmi",
     "vgg",
     "deepsim-ae",
     "deepsim",
@@ -25,6 +26,10 @@ LOSS_FUNTION_ORDER = [
 LOSS_FUNTION_CONFIG = {
     "l2": {"display_name": "MSE", "primary_color": plt.get_cmap("tab20c").colors[0]},
     "ncc": {"display_name": "NCC", "primary_color": plt.get_cmap("tab20c").colors[1]},
+    "nmi": {
+        "display_name": r"$\text{NMI}$",
+        "display_name_bold": r"$\textbf{NMI}$",
+        "primary_color": plt.get_cmap("tab20b").colors[2]},
     "ncc2": {
         "display_name": r"$\text{NCC}$",
         "display_name_bold": r"$\textbf{NCC}$",
@@ -51,13 +56,12 @@ LOSS_FUNTION_CONFIG = {
         "primary_color": plt.get_cmap("tab20c").colors[5],
     },
     "vgg": {
-        "display_name": r"$\text{VGG}$", 
-        "display_name_bold": r"$\textbf{VGG}$", 
+        "display_name": r"$\text{VGG}$",
+        "display_name_bold": r"$\textbf{VGG}$",
         "primary_color": plt.get_cmap("tab20c").colors[3]
-        },
+    },
     "transfer": {
         "display_name": "Transfer",
         "primary_color": plt.get_cmap("tab20c").colors[16],
     },
 }
-
