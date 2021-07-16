@@ -269,9 +269,9 @@ def make_overview():
     # label loss function
     for i, lossfun in enumerate(LOSS_FUNTION_ORDER):
         fig.axs[0, i +
-                2].set_title(LOSS_FUNTION_CONFIG[lossfun]["display_name"])
-    fig.axs[0, 0].set_title("Moving")
-    fig.axs[0, 1].set_title("Fixed")
+                2].set_title(LOSS_FUNTION_CONFIG[lossfun]["display_name"], verticalalignment='top')
+    fig.axs[0, 0].set_title("Moving", verticalalignment='top')
+    fig.axs[0, 1].set_title("Fixed", verticalalignment='top')
 
     os.makedirs("./out/plots", exist_ok=True)
     fig.save("./out/plots/img_sample.pdf", close=False)
@@ -324,7 +324,7 @@ def make_detail():
 
 def make_detail_all():
     # detail view
-    fig = viz.Fig(1, 6, None, figsize=(9, 2))
+    fig = viz.Fig(1, len(LOSS_FUNTION_ORDER), None, figsize=(9, 2))
     # adjust subplot spacing
     fig.fig.subplots_adjust(hspace=0.3, wspace=0.05)
 
