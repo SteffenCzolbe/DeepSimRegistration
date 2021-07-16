@@ -6,7 +6,7 @@ import torchreg
 import torchreg.viz as viz
 from .common_lightning_model import CommonLightningModel
 from .models.voxelmorph import Voxelmorph
-from .loss_metrics import NCC, DeepSim, VGGFeatureExtractor
+from .loss_metrics import NCC, NMI, DeepSim, VGGFeatureExtractor
 from .segmentation_model import SegmentationModel
 from .autoencoder_model import AutoEncoderModel
 
@@ -22,7 +22,7 @@ class RegistrationModel(CommonLightningModel):
         """
         super().__init__(hparams, dataset_image_pairs=True)
         self.hparams = hparams
-        self.probabilistic= False
+        self.probabilistic = False
         self.probabilistic_p = 0.5
 
         # set net
@@ -33,10 +33,11 @@ class RegistrationModel(CommonLightningModel):
             bnorm=self.hparams.bnorm,
             dropout=self.hparams.dropout,
         )
-        
+
         if hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-ae"] and not hparams.deepsim_weights:
-            raise ValueError("No weights specified for Deep Similarity Metric.")
-        
+            raise ValueError(
+                "No weights specified for Deep Similarity Metric.")
+
         if hparams.loss.lower() in ["deepsim", "deepsim-transfer"]:
             feature_extractor = SegmentationModel.load_from_checkpoint(
                 hparams.deepsim_weights
@@ -50,12 +51,17 @@ class RegistrationModel(CommonLightningModel):
         elif hparams.loss.lower() == "vgg":
             feature_extractor = VGGFeatureExtractor()
             self.vgg_loss = DeepSim(feature_extractor)
+        elif hparams.loss.lower() == "nmi":
+            # brain dataset hyperintensities can be >1.0
+            self.nmi_loss = NMI(
+                vmax=1.5 if hparams.dataset == "brain-mri" else 1.)
 
         squared_ncc = hparams.loss.lower() in ["ncc2", "ncc2+supervised"]
         self.ncc = NCC(window=hparams.ncc_win_size, squared=squared_ncc)
         self.mse = torch.nn.MSELoss()
         self.diffusion_reg = torchreg.metrics.GradNorm()
-        self.jacobian_determinant = torchreg.metrics.JacobianDeterminant(reduction='none')
+        self.jacobian_determinant = torchreg.metrics.JacobianDeterminant(
+            reduction='none')
         self.dice_overlap = torchreg.metrics.DiceOverlap(
             classes=list(range(self.dataset_config("classes")))
         )
@@ -69,14 +75,14 @@ class RegistrationModel(CommonLightningModel):
         Same as torch.nn.Module.forward(), however in Lightning you want this to
         define the operations you want to use for prediction (i.e.: on a server or as a feature extractor).
         """
-            
+
         # activate dropout layers for probabilistic model
         if self.probabilistic:
             dropout_layers = self.get_dropout_layers(self)
             for l in dropout_layers:
-                l.train() # activate dropout
-                l.p = self.probabilistic_p # set dropout probability
-                
+                l.train()  # activate dropout
+                l.p = self.probabilistic_p  # set dropout probability
+
         # run model
         return self.net(moving, fixed)
 
@@ -91,6 +97,8 @@ class RegistrationModel(CommonLightningModel):
             return self.ncc(I_m, I_1) + self.mse(S_m_onehot, S_1_onehot)
         elif self.hparams.loss.lower() == "l2":
             return self.mse(I_m, I_1)
+        elif self.hparams.loss.lower() == "nmi":
+            return self.nmi_loss(I_m, I_1)
         else:
             raise ValueError(f'loss function "{self.hparams.loss}" unknow.')
 
@@ -99,8 +107,10 @@ class RegistrationModel(CommonLightningModel):
             self.augmentation.randomize()
             I_0 = self.augmentation(I_0)
             I_1 = self.augmentation(I_1)
-            S_0 = self.augmentation(S_0.float(), interpolation="nearest").round().long()
-            S_1 = self.augmentation(S_1.float(), interpolation="nearest").round().long()
+            S_0 = self.augmentation(
+                S_0.float(), interpolation="nearest").round().long()
+            S_1 = self.augmentation(
+                S_1.float(), interpolation="nearest").round().long()
         return I_0, I_1, S_0, S_1
 
     def segmentation_to_onehot(self, S):
@@ -113,8 +123,7 @@ class RegistrationModel(CommonLightningModel):
             .squeeze(-1)
             .float()
         )
-        
-    
+
     def get_dropout_layers(self, model):
         """
         Collects all the dropout layers of the model
@@ -149,13 +158,15 @@ class RegistrationModel(CommonLightningModel):
 
         # morph image and segmentation
         I_m = self.transformer(I_0, flow)
-        S_m = self.transformer(S_0.float(), flow, mode="nearest").round().long()
+        S_m = self.transformer(
+            S_0.float(), flow, mode="nearest").round().long()
         S_0_onehot = self.segmentation_to_onehot(S_0)
         S_m_onehot = self.transformer(S_0_onehot, flow)
         S_1_onehot = self.segmentation_to_onehot(S_1)
 
         # calculate loss
-        similarity_loss = self.similarity_loss(I_m, I_1, S_m_onehot, S_1_onehot)
+        similarity_loss = self.similarity_loss(
+            I_m, I_1, S_m_onehot, S_1_onehot)
         diffusion_regularization = self.diffusion_reg(flow)
         loss = similarity_loss + self.hparams.lam * diffusion_regularization
 
@@ -224,14 +235,16 @@ class RegistrationModel(CommonLightningModel):
         fig.plot_transform_grid(
             1, 0, flow[0], title="$\Phi$", interval=15, linewidth=0.1
         )
-        fig.plot_img(0, 2, (S_0[0] != S_1[0]).long(), vmin=0, vmax=1, title="Diff")
+        fig.plot_img(0, 2, (S_0[0] != S_1[0]).long(),
+                     vmin=0, vmax=1, title="Diff")
         fig.plot_img(
             1, 2, (S_m[0] != S_1[0]).long(), vmin=0, vmax=1, title="Diff Registered"
         )
 
         if save:
             os.makedirs(self.hparams.savedir, exist_ok=True)
-            fig.save(os.path.join(self.hparams.savedir, f"{self.current_epoch}.pdf"),)
+            fig.save(os.path.join(self.hparams.savedir,
+                                  f"{self.current_epoch}.pdf"),)
         else:
             return fig
 
@@ -248,7 +261,7 @@ class RegistrationModel(CommonLightningModel):
             "--loss",
             type=str,
             default="ncc",
-            help="Similarity Loss function. Options: 'l2', 'ncc', 'ncc2', 'deepsim', 'deepsim-transfer', 'deepsim-ae', 'ncc+supervised', 'vgg' (Default: ncc)",
+            help="Similarity Loss function. Options: 'l2', 'ncc', 'ncc2', 'nmi', 'deepsim', 'deepsim-transfer', 'deepsim-ae', 'ncc+supervised', 'vgg' (Default: ncc)",
         )
         parser.add_argument(
             "--ncc_win_size",
@@ -275,6 +288,8 @@ class RegistrationModel(CommonLightningModel):
         parser.add_argument(
             "--bnorm", action="store_true", help="use batchnormalization."
         )
-        parser.add_argument("--dropout", action="store_true", help="use dropout")
-        parser.add_argument("--savedir", type=str, help="Directory to save images in")
+        parser.add_argument(
+            "--dropout", action="store_true", help="use dropout")
+        parser.add_argument("--savedir", type=str,
+                            help="Directory to save images in")
         return parser

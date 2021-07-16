@@ -34,6 +34,12 @@ if $TUNE_PLATELET; then
     $WRAPPER_FUNC python3 -m src.train_registration --dataset platelet-em --savedir ./out/platelet-em/registration/ncc2+supervised/$LAM/ --loss ncc2+supervised --ncc_win_size 9 --lam $LAM --channels 64 128 256 --batch_size 3 --accumulate_grad_batches 2 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_steps=12500
     done
 
+    # nmi
+    for LAM in 0.125 0.25 0.5 1 2
+    do
+    $WRAPPER_FUNC python3 -m src.train_registration --dataset platelet-em --savedir ./out/platelet-em/registration/nmi/$LAM/ --loss nmi --lam $LAM --channels 64 128 256 --batch_size 3 --accumulate_grad_batches 2 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_steps=12500
+    done
+
     # deepsim
     for LAM in 0.25 0.5 1 2 4
     do
@@ -72,6 +78,12 @@ if $TUNE_PHC; then
     $WRAPPER_FUNC python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/ncc2+supervised/$LAM/ --loss ncc2+supervised --ncc_win_size 9 --lam $LAM --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --distributed_backend ddp --max_steps=10000
     done
 
+    # nmi
+    for LAM in 0.0625 0.125 0.25 0.5 1 2
+    do
+    $WRAPPER_FUNC python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/nmi/$LAM/ --loss nmi --lam $LAM --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --distributed_backend ddp --max_steps=10000
+    done
+
     # deepsim
     for LAM in 0.03125 0.0625 0.125 0.25 0.5 1
     do
@@ -108,6 +120,12 @@ if $TUNE_BRAIN; then
     for LAM in 0.5 1 2 4 8
     do
     $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss ncc2+supervised --ncc_win_size 9 --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_steps=15000
+    done
+
+    # nmi
+    for LAM in 0.5 1 2 4 8
+    do
+    $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss nmi --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_steps=15000
     done
 
     # deepsim
