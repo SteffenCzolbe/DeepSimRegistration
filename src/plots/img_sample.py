@@ -82,11 +82,13 @@ def plot_platelet(fig, row, col, model, I, S, inv_flow=None, title=None, highlig
         # add highlight-frame
         h = highlight_area[1] - highlight_area[0]
         w = highlight_area[3] - highlight_area[2]
-        p = (highlight_area[2] - crop_area[2], highlight_area[0] - crop_area[0])
-        rect = patches.Rectangle(p,h,w,linewidth=2,edgecolor=highlight_color,facecolor='none')
+        p = (highlight_area[2] - crop_area[2],
+             highlight_area[0] - crop_area[0])
+        rect = patches.Rectangle(p, h, w, linewidth=2,
+                                 edgecolor=highlight_color, facecolor='none')
         fig.axs[row, col].add_patch(rect)
-    
-        
+
+
 def plot_platelet_detail(fig, row, col, model, I, S, inv_flow=None, title=None, highlight_color=None):
     crop_area = (350, 410, 100, 160)
     highlight_area = (350, 409, 100, 159)
@@ -118,8 +120,10 @@ def plot_platelet_detail(fig, row, col, model, I, S, inv_flow=None, title=None, 
         # add highlight-frame
         h = highlight_area[1] - highlight_area[0]
         w = highlight_area[3] - highlight_area[2]
-        p = (highlight_area[2] - crop_area[2], highlight_area[0] - crop_area[0])
-        rect = patches.Rectangle(p,h,w,linewidth=4,edgecolor=highlight_color,facecolor='none')
+        p = (highlight_area[2] - crop_area[2],
+             highlight_area[0] - crop_area[0])
+        rect = patches.Rectangle(p, h, w, linewidth=4,
+                                 edgecolor=highlight_color, facecolor='none')
         fig.axs[row, col].add_patch(rect)
 
 
@@ -193,7 +197,8 @@ def plot_brainmri(fig, row, col, model, I, S, inv_flow=None):
         map(
             lambda t: t[0],
             filter(
-                lambda t: t[1] is not None, model.dataset_config("class_colors").items()
+                lambda t: t[1] is not None, model.dataset_config(
+                    "class_colors").items()
             ),
         )
     )
@@ -224,7 +229,7 @@ def make_overview():
     fig = viz.Fig(5, 9, None, figsize=(9, 5))
     # adjust subplot spacing
     fig.fig.subplots_adjust(hspace=0.05, wspace=0.05)
-    highlight_colors = [None, 'r', None, None, '#31e731', None]
+    highlight_colors = [None, 'r', None, None, None, '#31e731']
 
     for i, dataset in enumerate(DATASET_ORDER):
         # set plotting function
@@ -239,19 +244,23 @@ def make_overview():
             sample_idx = 9
 
         for j, (loss_function, highlight_color) in enumerate(zip(LOSS_FUNTION_ORDER, highlight_colors)):
-            path = os.path.join("./weights/", dataset, "registration", loss_function)
+            path = os.path.join("./weights/", dataset,
+                                "registration", loss_function)
             if not os.path.isdir(path):
                 continue
             # load model
             checkpoint_path = os.path.join(path, "weights.ckpt")
-            model = RegistrationModel.load_from_checkpoint(checkpoint_path=checkpoint_path)
+            model = RegistrationModel.load_from_checkpoint(
+                checkpoint_path=checkpoint_path)
 
             # run model
             I_0, S_0, I_m, S_m, I_1, S_1, inv_flow = get_img(model, sample_idx)
 
             # plot aligned image
-            kwargs = {'highlight_color': highlight_color} if dataset == "platelet-em" else {}
-            plotfun(fig, i, j + 2, model, I_m, S_m, inv_flow=inv_flow, **kwargs)
+            kwargs = {
+                'highlight_color': highlight_color} if dataset == "platelet-em" else {}
+            plotfun(fig, i, j + 2, model, I_m, S_m,
+                    inv_flow=inv_flow, **kwargs)
 
         # plot moved and fixed image
         plotfun(fig, i, 0, model, I_0, S_0)
@@ -259,14 +268,14 @@ def make_overview():
 
     # label loss function
     for i, lossfun in enumerate(LOSS_FUNTION_ORDER):
-        fig.axs[0, i + 2].set_title(LOSS_FUNTION_CONFIG[lossfun]["display_name"])
+        fig.axs[0, i +
+                2].set_title(LOSS_FUNTION_CONFIG[lossfun]["display_name"])
     fig.axs[0, 0].set_title("Moving")
     fig.axs[0, 1].set_title("Fixed")
 
     os.makedirs("./out/plots", exist_ok=True)
     fig.save("./out/plots/img_sample.pdf", close=False)
     fig.save("./out/plots/img_sample.png")
-
 
 
 def make_detail():
@@ -283,23 +292,24 @@ def make_detail():
     highlight_colors = ['r', '#31e731']
 
     for j, (loss_function, highlight_color) in enumerate(zip(LOSS_FUNTION_ORDER, highlight_colors)):
-        path = os.path.join("./weights/", dataset, "registration", loss_function)
+        path = os.path.join("./weights/", dataset,
+                            "registration", loss_function)
         if not os.path.isdir(path):
             continue
         # load model
         checkpoint_path = os.path.join(path, "weights.ckpt")
-        model = RegistrationModel.load_from_checkpoint(checkpoint_path=checkpoint_path)
+        model = RegistrationModel.load_from_checkpoint(
+            checkpoint_path=checkpoint_path)
 
         # run model
         I_0, S_0, I_m, S_m, I_1, S_1, inv_flow = get_img(model, sample_idx)
-        
 
         # plot aligned image
         plotfun(
             fig,
             j,
             0,
-            model, 
+            model,
             I_m,
             S_m,
             inv_flow=inv_flow,
@@ -307,12 +317,52 @@ def make_detail():
             highlight_color=highlight_color
         )
 
-
     os.makedirs("./out/plots", exist_ok=True)
     fig.save("./out/plots/img_sample_detail.pdf", close=False)
     fig.save("./out/plots/img_sample_detail.png")
 
 
+def make_detail_all():
+    # detail view
+    fig = viz.Fig(1, 6, None, figsize=(9, 2))
+    # adjust subplot spacing
+    fig.fig.subplots_adjust(hspace=0.3, wspace=0.05)
+
+    # set plotting function
+    plotfun = plot_platelet_detail
+    dataset = "platelet-em"
+    sample_idx = 5
+
+    for j, loss_function in enumerate(LOSS_FUNTION_ORDER):
+        path = os.path.join("./weights/", dataset,
+                            "registration", loss_function)
+        if not os.path.isdir(path):
+            continue
+        # load model
+        checkpoint_path = os.path.join(path, "weights.ckpt")
+        model = RegistrationModel.load_from_checkpoint(
+            checkpoint_path=checkpoint_path)
+
+        # run model
+        I_0, S_0, I_m, S_m, I_1, S_1, inv_flow = get_img(model, sample_idx)
+
+        # plot aligned image
+        plotfun(
+            fig,
+            0,
+            j,
+            model,
+            I_m,
+            S_m,
+            inv_flow=inv_flow,
+            title=LOSS_FUNTION_CONFIG[loss_function]["display_name"],
+        )
+
+    os.makedirs("./out/plots", exist_ok=True)
+    fig.save("./out/plots/img_sample_detail_all.pdf", close=False)
+    fig.save("./out/plots/img_sample_detail_all.png")
+
+
 make_overview()
 make_detail()
-
+make_detail_all()

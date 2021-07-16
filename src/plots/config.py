@@ -18,8 +18,8 @@ LOSS_FUNTION_ORDER = [
     "ncc2",
     "ncc2+supervised",
     "vgg",
-    "deepsim",
     "deepsim-ae",
+    "deepsim",
 ]  # , 'transfer', ]
 
 LOSS_FUNTION_CONFIG = {
@@ -27,26 +27,32 @@ LOSS_FUNTION_CONFIG = {
     "ncc": {"display_name": "NCC", "primary_color": plt.get_cmap("tab20c").colors[1]},
     "ncc2": {
         "display_name": r"$\text{NCC}$",
+        "display_name_bold": r"$\textbf{NCC}$",
         "primary_color": plt.get_cmap("tab20c").colors[1],
     },
     "ncc+supervised": {
         "display_name": r"$\text{NCC}_{\text{sup}}$",
+        "display_name_bold": r"$\textbf{NCC}_{\textbf{sup}}$",
         "primary_color": plt.get_cmap("tab20c").colors[2],
     },
     "ncc2+supervised": {
         "display_name": r"$\text{NCC}_{\text{sup}}$",
+        "display_name_bold": r"$\textbf{NCC}_{\textbf{sup}}$",
         "primary_color": plt.get_cmap("tab20c").colors[2],
     },
     "deepsim": {
         "display_name": r"$\text{DeepSim}_{\text{seg}}$",
-        "primary_color": plt.get_cmap("tab20c").colors[5],
+        "display_name_bold": r"$\textbf{DeepSim}_{\textbf{seg}}$",
+        "primary_color": plt.get_cmap("tab20c").colors[4],
     },
     "deepsim-ae": {
         "display_name": r"$\text{DeepSim}_{\text{ae}}$",
-        "primary_color": plt.get_cmap("tab20c").colors[4],
+        "display_name_bold": r"$\textbf{DeepSim}_{\textbf{ae}}$",
+        "primary_color": plt.get_cmap("tab20c").colors[5],
     },
     "vgg": {
-        "display_name": "VGG", 
+        "display_name": r"$\text{VGG}$", 
+        "display_name_bold": r"$\textbf{VGG}$", 
         "primary_color": plt.get_cmap("tab20c").colors[3]
         },
     "transfer": {

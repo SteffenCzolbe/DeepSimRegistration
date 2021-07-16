@@ -40,6 +40,12 @@ if $TUNE_PLATELET; then
     $WRAPPER_FUNC python3 -m src.train_registration --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim/$LAM/ --loss deepsim --deepsim_weights ./weights/platelet-em/segmentation/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_steps=12500
     done
 
+    # deepsim-ae
+    for LAM in 0.25 0.5 1 2 4
+    do
+    $WRAPPER_FUNC python3 -m src.train_registration --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae/ --loss deepsim-ae --deepsim_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    done
+
     # vgg
     for LAM in 0.25 0.5 1 2 4
     do
@@ -72,6 +78,12 @@ if $TUNE_PHC; then
     $WRAPPER_FUNC python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim/$LAM/ --loss deepsim --deepsim_weights ./weights/phc-u373/segmentation/weights.ckpt --lam $LAM --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --distributed_backend ddp --max_steps=10000
     done
 
+    # deepsim-ae
+    for LAM in 0.03125 0.0625 0.125 0.25 0.5 1
+    do
+    $WRAPPER_FUNC python3 -m src.train_registration --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae/$LAM/ --loss deepsim-ae --deepsim_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 2 --distributed_backend ddp --max_steps=10000
+    done
+
     # vgg
     for LAM in 0.03125 0.0625 0.125 0.25 0.5
     do
@@ -101,6 +113,12 @@ if $TUNE_BRAIN; then
     # deepsim
     for LAM in 0.5 1 2 4 8
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss deepsim --ncc_win_size 9 --deepsim_weights ./weights/brain-mri/segmentation/weights.ckpt --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_steps=15000
+    $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss deepsim --deepsim_weights ./weights/brain-mri/segmentation/weights.ckpt --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_steps=15000
+    done
+
+    # deepsim-ae
+    for LAM in 2 1 4 0.5 8
+    do
+    $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss deepsim-ae --deepsim_weights ./weights/brain-mri/autoencoder/weights.ckpt --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_steps=15000
     done
 fi

@@ -11,7 +11,8 @@ def test_model(model):
     def map_dicts(list_of_dics):
         dict_of_lists = {}
         for k in list_of_dics[0].keys():
-            dict_of_lists[k] = torch.stack([d[k] for d in list_of_dics]).cpu().numpy()
+            dict_of_lists[k] = torch.stack(
+                [d[k] for d in list_of_dics]).cpu().numpy()
         return dict_of_lists
 
     with torch.no_grad():
@@ -29,16 +30,21 @@ def test_model(model):
             )
             score = model._step(batch, None, eval_per_class=True)
             scores.append(score)
-    return map_dicts(scores)
+        # map list of dicts to a dict of lists
+        return map_dicts(scores)
 
 
 def run_models(use_cached=True):
     cache_file_name = "./src/plots/cache.pickl"
+
     if use_cached and os.path.isfile(cache_file_name):
         return pickle.load(open(cache_file_name, "rb"))
     else:
-        results = {}
-        #results = pickle.load(open(cache_file_name, "rb"))
+        if os.path.isfile(cache_file_name):
+            results = pickle.load(open(cache_file_name, "rb"))
+        else:
+            results = {}
+
         for dataset in DATASET_ORDER:
             results[dataset] = {}
             for loss_function in tqdm(
@@ -56,6 +62,8 @@ def run_models(use_cached=True):
                 )
                 step_dict = test_model(model)
                 results[dataset][loss_function] = step_dict
+                # print(f"{dataset}, {loss_function}:")
+                # print(step_dict)
         pickle.dump(results, open(cache_file_name, "wb"))
         return results
 

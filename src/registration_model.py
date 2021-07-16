@@ -55,6 +55,7 @@ class RegistrationModel(CommonLightningModel):
         self.ncc = NCC(window=hparams.ncc_win_size, squared=squared_ncc)
         self.mse = torch.nn.MSELoss()
         self.diffusion_reg = torchreg.metrics.GradNorm()
+        self.jacobian_determinant = torchreg.metrics.JacobianDeterminant(reduction='none')
         self.dice_overlap = torchreg.metrics.DiceOverlap(
             classes=list(range(self.dataset_config("classes")))
         )
@@ -164,6 +165,8 @@ class RegistrationModel(CommonLightningModel):
             accuracy = torch.mean((S_m == S_1).float())
             if eval_per_class:
                 dice_overlap_per_class = self.dice_overlap_per_class(S_m, S_1)
+            # jacobian determinants
+            jac_dets = self.jacobian_determinant(flow)
 
         # visualize
         if save_viz and self.dataset_config("dataset_type") == "tif":
@@ -175,6 +178,10 @@ class RegistrationModel(CommonLightningModel):
             "similarity_loss": similarity_loss,
             "dice_overlap": dice_overlap,
             "accuracy": accuracy,
+            "jacobian_determinant_mean": jac_dets.mean(),
+            "jacobian_determinant_negative": (jac_dets < 0).float().mean(),
+            "jacobian_determinant_var": jac_dets.var(),
+            "jacobian_determinant_log_var": jac_dets.abs().log().var(),
             "dice_overlap_per_class": dice_overlap_per_class
             if eval_per_class
             else None,
