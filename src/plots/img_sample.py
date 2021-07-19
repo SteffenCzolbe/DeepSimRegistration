@@ -225,11 +225,18 @@ def plot_brainmri(fig, row, col, model, I, S, inv_flow=None):
     torchreg.settings.set_ndims(3)  # back to 3d
 
 
+def plot_no_data(fig, row, col, text, fontsize=12):
+    ax = fig.axs[row, col]
+    ax.axis("on")
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+    ax.text(0.5, 0.5, text, va="center", ha="center", fontsize=fontsize)
+
+
 def make_overview():
     fig = viz.Fig(5, 9, None, figsize=(9, 5))
     # adjust subplot spacing
     fig.fig.subplots_adjust(hspace=0.05, wspace=0.05)
-    highlight_colors = [None, 'r', None, None, None, '#31e731']
 
     for i, dataset in enumerate(DATASET_ORDER):
         # set plotting function
@@ -243,10 +250,11 @@ def make_overview():
             plotfun = plot_phc
             sample_idx = 9
 
-        for j, (loss_function, highlight_color) in enumerate(zip(LOSS_FUNTION_ORDER, highlight_colors)):
+        for j, loss_function in enumerate(LOSS_FUNTION_ORDER):
             path = os.path.join("./weights/", dataset,
                                 "registration", loss_function)
             if not os.path.isdir(path):
+                plot_no_data(fig, i, j + 2, "N/A for\n3D data", fontsize=8)
                 continue
             # load model
             checkpoint_path = os.path.join(path, "weights.ckpt")
@@ -257,14 +265,14 @@ def make_overview():
             I_0, S_0, I_m, S_m, I_1, S_1, inv_flow = get_img(model, sample_idx)
 
             # plot aligned image
-            kwargs = {
-                'highlight_color': highlight_color} if dataset == "platelet-em" else {}
             plotfun(fig, i, j + 2, model, I_m, S_m,
-                    inv_flow=inv_flow, **kwargs)
+                    inv_flow=inv_flow)
 
         # plot moved and fixed image
-        plotfun(fig, i, 0, model, I_0, S_0)
-        plotfun(fig, i, 1, model, I_1, S_1)
+        kwargs = {} if dataset != "platelet-em" else {"highlight_color": '#31e731'}
+        plotfun(fig, i, 0, model, I_0, S_0, **kwargs)
+        kwargs = {} if dataset != "platelet-em" else {"highlight_color": 'r'}
+        plotfun(fig, i, 1, model, I_1, S_1, **kwargs)
 
     # label loss function
     for i, lossfun in enumerate(LOSS_FUNTION_ORDER):
@@ -276,50 +284,6 @@ def make_overview():
     os.makedirs("./out/plots", exist_ok=True)
     fig.save("./out/plots/img_sample.pdf", close=False)
     fig.save("./out/plots/img_sample.png")
-
-
-def make_detail():
-    # detail view
-    fig = viz.Fig(2, 1, None, figsize=(1.5, 3))
-    # adjust subplot spacing
-    fig.fig.subplots_adjust(hspace=0.3, wspace=0.05)
-
-    # set plotting function
-    plotfun = plot_platelet_detail
-    dataset = "platelet-em"
-    sample_idx = 5
-    LOSS_FUNTION_ORDER = ["ncc2", "deepsim"]
-    highlight_colors = ['r', '#31e731']
-
-    for j, (loss_function, highlight_color) in enumerate(zip(LOSS_FUNTION_ORDER, highlight_colors)):
-        path = os.path.join("./weights/", dataset,
-                            "registration", loss_function)
-        if not os.path.isdir(path):
-            continue
-        # load model
-        checkpoint_path = os.path.join(path, "weights.ckpt")
-        model = RegistrationModel.load_from_checkpoint(
-            checkpoint_path=checkpoint_path)
-
-        # run model
-        I_0, S_0, I_m, S_m, I_1, S_1, inv_flow = get_img(model, sample_idx)
-
-        # plot aligned image
-        plotfun(
-            fig,
-            j,
-            0,
-            model,
-            I_m,
-            S_m,
-            inv_flow=inv_flow,
-            title=LOSS_FUNTION_CONFIG[loss_function]["display_name"],
-            highlight_color=highlight_color
-        )
-
-    os.makedirs("./out/plots", exist_ok=True)
-    fig.save("./out/plots/img_sample_detail.pdf", close=False)
-    fig.save("./out/plots/img_sample_detail.png")
 
 
 def make_detail_all():
@@ -364,5 +328,4 @@ def make_detail_all():
 
 
 make_overview()
-make_detail()
 make_detail_all()
