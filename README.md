@@ -4,7 +4,6 @@ Steffen Czolbe, Oswin Krause, Aasa Feragen
 
 [[MIDL 2021 Oral]](https://youtu.be/Hs9X3wSO774) [[MIDL 2021 open-review]](https://openreview.net/forum?id=9M5cH--UdcC) [[Med-NeurIPS 2020 Short-Paper]](https://arxiv.org/abs/2011.05735) [[Med-NeurIPS 2020 Oral]](https://youtu.be/GV4r2fOe0Oo)
 
-
 [![Video](https://img.youtube.com/vi/Hs9X3wSO774/hqdefault.jpg)](https://youtu.be/Hs9X3wSO774)
 
 This repository contains all experiments presented in the paper, the code used to generate the figures, and instructions and scripts to re-produce all results. Implementation in the deep-learning framework pytorch.
@@ -25,7 +24,6 @@ author={Czolbe, Steffen and Krause, Oswin and Feragen, Aasa},
 }
 ```
 
-
 ## DeepSim: Semantic similarity metrics for learned image registration
 
 NeurIPS workshop on Medical Imaging, 2020. Oral presentation (top 10% of submissions). Included initial concept and use of a segmentation model for feature extraction. Cite as:
@@ -38,7 +36,6 @@ journal={NeurIPS workshop on Medical Imaging},
 year={2020}
 }
 ```
-
 
 # Reproduce Experiments
 
@@ -56,10 +53,12 @@ pip3 install -r requirements.txt
 
 ## Data
 
-Since we are not allowed to re-distribute the datasets, it is required to perform manual action. 
+Since we are not allowed to re-distribute the datasets, it is required to perform manual action.
 
 ### Brain-MRI
+
 The Brain-MRI scans have been taken from the publically accessible ABIDEI, ABIDEII, OASIS3 studies. We used Freesurfer and some custom scripts to perform the preprocessing steps of
+
 - intensity normalization
 - skullstripping
 - affine alignment
@@ -79,14 +78,19 @@ brain_mris/
             "brain_aligned.nii.gz"
             "seg_coalesced_aligned.nii.gz"
 ```
+
 ### PhC-373
+
 The PhC-373 dataset can be automatically downloaded and pre-processed using the provided script
+
 ```
 $ scripts/download_phc.sh
 ```
 
 ### Platelet-EM
+
 The Platelet-EM dataset originally contains 5 class annotations. Due to the strong imbalance of labels, we combined some of the less frequent classes to end up with 3 groups (Background, Cytoplasm and Organelle). The datset needs to be placed in:
+
 ```
 deepsimreg/
     data/
@@ -151,11 +155,11 @@ The quality of the registration models can be quantitatively and qualitatively a
 $ scrits/test_registration.sh
 ```
 
-, which will print metrics on the test set to stdout and create segmented .tif and .nii.gz files in the `out/` directory.
+, which will print metrics on the test set to stdout and create aligned .tif and .nii.gz files in the `out/` directory.
 
-## Plots
+## Experiments, Evaluation
 
-The Plots from the paper can be re-created by running
+all the evaluation plots from the paper can be re-created by running
 
 ```
 $ scripts/plot.sh
