@@ -25,9 +25,11 @@ class Fig:
         self.fig.suptitle(title)
 
         # extend empty dimensions to array
-        if cols == 1:
+        if cols == 1 and rows == 1:
+            self.axs = np.array([[self.axs]])
+        elif cols == 1:
             self.axs = np.array([[ax] for ax in self.axs])
-        if rows == 1:
+        elif rows == 1:
             self.axs = np.array([self.axs])
 
         # hide all axis
@@ -120,7 +122,8 @@ class Fig:
         """
         # one-hot encode the classes
         class_masks = (
-            torch.nn.functional.one_hot(class_mask[0].long(), num_classes=num_classes)
+            torch.nn.functional.one_hot(
+                class_mask[0].long(), num_classes=num_classes)
             .detach()
             .cpu()
             .numpy()
@@ -362,4 +365,3 @@ class Fig:
                 break
 
         return img.crop((0, img_start, W, img_end))
-
