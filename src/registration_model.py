@@ -34,16 +34,16 @@ class RegistrationModel(CommonLightningModel):
             dropout=self.hparams.dropout,
         )
 
-        if hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-ae"] and not hparams.deepsim_weights:
+        if "deepsim" in hparams.loss.lower() and not hparams.deepsim_weights:
             raise ValueError(
                 "No weights specified for Deep Similarity Metric.")
 
-        if hparams.loss.lower() in ["deepsim", "deepsim-transfer"]:
+        if hparams.loss.lower() in ["deepsim", "deepsim-wbe", "deepsim-transfer", "deepsim-ebw"]:
             feature_extractor = SegmentationModel.load_from_checkpoint(
                 hparams.deepsim_weights
             )
             self.deepsim = DeepSim(feature_extractor)
-        elif hparams.loss.lower() == "deepsim-ae":
+        elif hparams.loss.lower() in ["deepsim-ae", "deepsim-ae-wbe", "deepsim-ae-ebw"]:
             feature_extractor = AutoEncoderModel.load_from_checkpoint(
                 hparams.deepsim_weights
             )
@@ -86,21 +86,32 @@ class RegistrationModel(CommonLightningModel):
         # run model
         return self.net(moving, fixed)
 
-    def similarity_loss(self, I_m, I_1, S_m_onehot, S_1_onehot):
-        if self.hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-ae"]:
-            return self.deepsim(I_m, I_1)
+    def similarity_loss(self, I_0, I_1, S_0, S_1, flow):
+        I_m = self.transformer(I_0, flow)
+        if self.hparams.loss.lower() in ["deepsim", "deepsim-wbe", "deepsim-transfer", "deepsim-ae", "deepsim-ae-wbe"]:
+            # warp before extract
+            sim_loss = self.deepsim.first_warp_then_extract_features(
+                I_0, I_1, flow)
+        elif self.hparams.loss.lower() in ["deepsim-ebw", "deepsim-ae-ebw"]:
+            # extract before warp
+            sim_loss = self.deepsim.first_extract_features_then_warp(
+                I_0, I_1, flow)
         elif self.hparams.loss.lower() == "vgg":
-            return self.vgg_loss(I_m, I_1)
+            sim_loss = self.vgg_loss(I_m, I_1)
         elif self.hparams.loss.lower() in ["ncc", "ncc2"]:
-            return self.ncc(I_m, I_1)
+            sim_loss = self.ncc(I_m, I_1)
         elif self.hparams.loss.lower() in ["ncc+supervised", "ncc2+supervised"]:
-            return self.ncc(I_m, I_1) + self.mse(S_m_onehot, S_1_onehot)
+            S_0_onehot = self.segmentation_to_onehot(S_0)
+            S_1_onehot = self.segmentation_to_onehot(S_1)
+            S_m_onehot = self.transformer(S_0_onehot, flow)
+            sim_loss = self.ncc(I_m, I_1) + self.mse(S_m_onehot, S_1_onehot)
         elif self.hparams.loss.lower() == "l2":
-            return self.mse(I_m, I_1)
+            sim_loss = self.mse(I_m, I_1)
         elif self.hparams.loss.lower() == "nmi":
-            return self.nmi_loss(I_m, I_1)
+            sim_loss = self.nmi_loss(I_m, I_1)
         else:
             raise ValueError(f'loss function "{self.hparams.loss}" unknow.')
+        return sim_loss, I_m
 
     def augment(self, I_0, I_1, S_0, S_1):
         with torch.no_grad():
@@ -157,16 +168,12 @@ class RegistrationModel(CommonLightningModel):
         flow = self.forward(I_0, I_1)
 
         # morph image and segmentation
-        I_m = self.transformer(I_0, flow)
         S_m = self.transformer(
             S_0.float(), flow, mode="nearest").round().long()
-        S_0_onehot = self.segmentation_to_onehot(S_0)
-        S_m_onehot = self.transformer(S_0_onehot, flow)
-        S_1_onehot = self.segmentation_to_onehot(S_1)
 
         # calculate loss
-        similarity_loss = self.similarity_loss(
-            I_m, I_1, S_m_onehot, S_1_onehot)
+        similarity_loss, I_m = self.similarity_loss(
+            I_0, I_1, S_0, S_1, flow)
         diffusion_regularization = self.diffusion_reg(flow)
         loss = similarity_loss + self.hparams.lam * diffusion_regularization
 
@@ -261,7 +268,7 @@ class RegistrationModel(CommonLightningModel):
             "--loss",
             type=str,
             default="ncc",
-            help="Similarity Loss function. Options: 'l2', 'ncc', 'ncc2', 'nmi', 'deepsim', 'deepsim-transfer', 'deepsim-ae', 'ncc+supervised', 'vgg' (Default: ncc)",
+            help="Similarity Loss function. Options: 'l2', 'ncc', 'ncc2', 'nmi', 'deepsim', 'deepsim-ebw', 'deepsim-transfer', 'deepsim-ae', 'deepsim-ae-ebw', 'ncc+supervised', 'vgg' (Default: ncc)",
         )
         parser.add_argument(
             "--ncc_win_size",

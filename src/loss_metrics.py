@@ -7,6 +7,102 @@ import math
 from torchvision import models
 
 
+class DeepSim(nn.Module):
+    """
+    Deep similarity metric
+    """
+
+    def __init__(self, feature_extractor_model, eps=1e-6):
+        super().__init__()
+        # feature extractor model variable called seg_model for backwards compatibility. Can be any model implementing the extract_features method
+        self.seg_model = feature_extractor_model
+        self.eps = eps
+        self.transformer = torchreg.nn.SpatialTransformer()
+
+        # fix params of feature extractor
+        for param in self.seg_model.parameters():
+            param.requires_grad = False
+
+    def forward(self, y_true, y_pred):
+        """DeepSim Loss. Taking the target and a morphed image. Extract features from the morphed image to calculate similarity.
+
+        Args:
+            y_true (torch.Tensor): The true target image. 
+            y_pred (torch.Tensor): The predicted (transformed) image
+
+        Returns:
+            torch.Tensor: the loss
+        """
+        # set to eval (deactivate dropout)
+        self.seg_model.eval()
+
+        # extract features
+        feats0 = self.seg_model.extract_features(y_true)
+        feats1 = self.seg_model.extract_features(y_pred)
+        return self._compare_feat_maps(feats0, feats1)
+
+    def first_warp_then_extract_features(self, I_0, I_1, flow):
+        """Alternative interface to self.forward().
+
+        Args:
+            I_0 (torch.Tensor): The moving image
+            I_1 (torch.Tensor): The fixed image
+            flow (torch.Tensor): the transformation
+
+        Returns:
+            torch.Tensor: the loss
+        """
+        I_m = self.transformer(I_0, flow)
+        return self.forward(I_1, I_m)
+
+    def first_extract_features_then_warp(self, I_0, I_1, flow):
+        """ Extracts features before warping.
+
+        Args:
+            I_0 (torch.Tensor): The moving image
+            I_1 (torch.Tensor): The fixed image
+            flow (torch.Tensor): the transformation
+
+        Returns:
+            torch.Tensor: the loss
+        """
+        # set to eval (deactivate dropout)
+        self.seg_model.eval()
+
+        # extract features
+        feats0 = self.seg_model.extract_features(I_0)
+        feats1 = self.seg_model.extract_features(I_1)
+
+        def apply_downscaled_transform(image, flow):
+            img_size = image.shape[2]
+            flow_size = flow.shape[2]
+            scale_factor = img_size / flow_size
+            scaled_flow = torch.nn.functional.interpolate(flow,
+                                                          scale_factor=scale_factor, mode='nearest')
+            scaled_flow *= scale_factor
+            return self.transformer(image, scaled_flow)
+
+        # warp features
+        feats0 = [apply_downscaled_transform(feat, flow) for feat in feats0]
+
+        # calculate loss
+        return self._compare_feat_maps(feats0, feats1)
+
+    def _compare_feat_maps(self, feats0, feats1):
+        losses = [self._cosine_sim(feat0, feat1).mean()
+                  for feat0, feat1 in zip(feats0, feats1)]
+
+        # mean and invert for minimization. Add +1 so loss >=0
+        return -torch.stack(losses).mean() + 1
+
+    def _cosine_sim(self, a, b):
+        prod_ab = torch.sum(a * b, dim=1)
+        norm_a = torch.sum(a ** 2, dim=1).clamp(self.eps) ** 0.5
+        norm_b = torch.sum(b ** 2, dim=1).clamp(self.eps) ** 0.5
+        cos_sim = prod_ab / (norm_a * norm_b)
+        return cos_sim
+
+
 class NCC(nn.Module):
     """
     Local (over window) normalized cross correlation loss. Normalized to window [0,2], with 0 being perfect match.
@@ -164,40 +260,6 @@ class NMI(nn.Module):
             return -torch.mean((ent_x + ent_y) / ent_joint)
         else:
             return -torch.mean(ent_x + ent_y - ent_joint)
-
-
-class DeepSim(nn.Module):
-    """
-    Deep similarity metric
-    """
-
-    def __init__(self, seg_model, eps=1e-6):
-        super().__init__()
-        self.seg_model = seg_model
-        self.eps = eps
-
-        # fix params
-        for param in self.seg_model.parameters():
-            param.requires_grad = False
-
-    def forward(self, y_true, y_pred):
-        # set to eval (deactivate dropout)
-        self.seg_model.eval()
-
-        # extract features
-        feats0 = self.seg_model.extract_features(y_true)
-        feats1 = self.seg_model.extract_features(y_pred)
-        losses = []
-        for feat0, feat1 in zip(feats0, feats1):
-            # calculate cosine similarity
-            prod_ab = torch.sum(feat0 * feat1, dim=1)
-            norm_a = torch.sum(feat0 ** 2, dim=1).clamp(self.eps) ** 0.5
-            norm_b = torch.sum(feat1 ** 2, dim=1).clamp(self.eps) ** 0.5
-            cos_sim = prod_ab / (norm_a * norm_b)
-            losses.append(torch.mean(cos_sim))
-
-        # mean and invert for minimization
-        return -torch.stack(losses).mean() + 1
 
 
 class VGGFeatureExtractor(nn.Module):
