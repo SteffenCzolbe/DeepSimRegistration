@@ -83,7 +83,7 @@ plt.subplots_adjust(bottom=0.18)
 for i, dataset in enumerate(DATASET_ORDER):
     axs[i].set_title(PLOT_CONFIG[dataset]["display_name"])
     for loss_function in tqdm(
-        LOSS_FUNTION_ORDER, desc=f"plotting convergence of loss-finctions on {dataset}"
+        LOSS_FUNTION_ORDER, desc=f"plotting convergence of loss-functions on {dataset}"
     ):
         path = os.path.join("./weights/", dataset,
                             "registration", loss_function)
