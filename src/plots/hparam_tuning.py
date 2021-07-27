@@ -62,8 +62,9 @@ def read_model_logs(dir):
 
 def plot(hparam_tuning_results):
     # set up sup-plots
-    fig = plt.figure(figsize=(8.5, 2.5))
-    axs = fig.subplots(1, len(DATASET_ORDER))
+    fig = plt.figure(figsize=(11, 2.5))
+    axs = fig.subplots(1, len(DATASET_ORDER)+1)
+    axs[3].axis("off")
     plt.subplots_adjust(bottom=0.18)
 
     for i, dataset in enumerate(DATASET_ORDER):
@@ -76,29 +77,29 @@ def plot(hparam_tuning_results):
             items = hparam_tuning_results[dataset][lossfun].items()
             items = sorted(items, key=lambda t: t[0])
             lambdas, val_dice_overlap = list(zip(*items))
-            line = axs[i].plot(lambdas, val_dice_overlap, color=LOSS_FUNTION_CONFIG[lossfun]
-                               ["primary_color"], label=LOSS_FUNTION_CONFIG[lossfun]["display_name"])
-            axs[i].scatter(lambdas, val_dice_overlap,
-                           color=LOSS_FUNTION_CONFIG[lossfun]["primary_color"], marker='x')
+            axs[i].plot(lambdas, val_dice_overlap, color=LOSS_FUNTION_CONFIG[lossfun]
+                        ["primary_color"], label=LOSS_FUNTION_CONFIG[lossfun]["display_name"])
+            handle = axs[i].scatter(lambdas, val_dice_overlap,
+                                    color=LOSS_FUNTION_CONFIG[lossfun]["primary_color"], marker=LOSS_FUNTION_CONFIG[lossfun]["marker"])
             axs[i].set_xscale('log', basex=2)
             axs[i].set_title(PLOT_CONFIG[dataset]["display_name"], fontsize=18)
-            LOSS_FUNTION_CONFIG[lossfun]["handle"] = line[0]
+            LOSS_FUNTION_CONFIG[lossfun]["handle"] = handle
 
     # add labels
-    fig.text(0.5, 0.03, "Regularization Hyperparameter $\lambda$",
+    fig.text(0.42, 0.03, "Regularization Hyperparameter $\lambda$",
              ha="center", va="center", fontsize=16)
     fig.text(0.07, 0.5, "Val. Mean Dice Overlap", ha="center",
              va="center", rotation="vertical", fontsize=16)
 
     # add legend
-    # handles = [
-    #     LOSS_FUNTION_CONFIG[loss_function]["handle"] for loss_function in LOSS_FUNTION_ORDER
-    # ]
-    # labels = [
-    #     LOSS_FUNTION_CONFIG[loss_function]["display_name"]
-    #     for loss_function in LOSS_FUNTION_ORDER
-    # ]
-    # axs[-1].legend(handles, labels, loc="upper left", fontsize="x-small")
+    handles = [
+        LOSS_FUNTION_CONFIG[loss_function]["handle"] for loss_function in LOSS_FUNTION_ORDER
+    ]
+    labels = [
+        LOSS_FUNTION_CONFIG[loss_function]["display_name"]
+        for loss_function in LOSS_FUNTION_ORDER
+    ]
+    axs[2].legend(handles, labels, bbox_to_anchor=(1., 1.))
 
     # configure axis precision
     for ax in axs:
