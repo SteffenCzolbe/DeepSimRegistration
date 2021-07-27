@@ -86,7 +86,7 @@ def plot(hparam_tuning_results):
             LOSS_FUNTION_CONFIG[lossfun]["handle"] = handle
 
     # add labels
-    fig.text(0.42, 0.03, "Regularization Hyperparameter $\lambda$",
+    fig.text(0.42, 0.05, "Regularization Hyperparameter $\lambda$",
              ha="center", va="center", fontsize=16)
     fig.text(0.07, 0.5, "Val. Mean Dice Overlap", ha="center",
              va="center", rotation="vertical", fontsize=16)
