@@ -103,7 +103,8 @@ if len(labels) > 0:
 
 # add legend
 labels = [LOSS_FUNTION_CONFIG[l]["display_name"] for l in LOSS_FUNTION_ORDER]
-ax.legend(handles[-6:-1], labels, loc="lower left", prop={"size": 9})
+ax.legend(handles[-(1+len(LOSS_FUNTION_ORDER)):-1],
+          labels, loc="lower left", prop={"size": 9})
 
 # add labels
 fig.text(0.06, 0.675, "Dice Overlap", ha="center",
