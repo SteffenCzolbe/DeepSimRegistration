@@ -17,11 +17,18 @@ LOSS_FUNTION_ORDER = [
     "l2",
     "ncc2",
     "ncc2+supervised",
-    # "nmi",
+    "nmi",
     "vgg",
     "deepsim-ae",
     "deepsim",
-]  # , 'transfer', ]
+]
+
+EXTRACT_BEFORE_WARP_LOSS_FUNTIONS = [
+    "deepsim-ae",
+    "deepsim-ae-ebw",
+    "deepsim",
+    "deepsim-ebw",
+]
 
 LOSS_FUNTION_CONFIG = {
     "l2": {
@@ -77,5 +84,17 @@ LOSS_FUNTION_CONFIG = {
         "display_name": "Transfer",
         "primary_color": plt.get_cmap("tab20c").colors[16],
         "marker": "x"
+    },
+    "deepsim-ebw": {
+        "display_name": r"$\text{DeepSim}_{\text{seg}}\text{(EbT)}$",
+        "display_name_bold": r"$\textbf{DeepSim}_{\textbf{seg}}\text{(EbT)}$",
+        "primary_color": plt.get_cmap("tab20c").colors[6],
+        "marker": "P"
+    },
+    "deepsim-ae-ebw": {
+        "display_name": r"$\text{DeepSim}_{\text{ae}}\text{(EbT)}$",
+        "display_name_bold": r"$\textbf{DeepSim}_{\textbf{ae}}\text{(EbT)}$",
+        "primary_color": plt.get_cmap("tab20c").colors[7],
+        "marker": "D"
     },
 }

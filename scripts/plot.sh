@@ -8,6 +8,7 @@ python3 -m src.plots.feature_maps
 python3 -m src.plots.img_sample
 python3 -m src.plots.metrics_to_csv
 python3 -m src.plots.smoothness_vs_dice_score
+python3 -m src.plots.extract_before_warp
 
 # crop pdfs
 pdfcrop ./out/plots/convergence.pdf ./out/plots/convergence.pdf 
@@ -18,3 +19,4 @@ pdfcrop ./out/plots/img_sample.pdf ./out/plots/img_sample.pdf
 pdfcrop ./out/plots/img_sample_detail.pdf ./out/plots/img_sample_detail.pdf 
 pdfcrop ./out/plots/img_sample_detail_all.pdf ./out/plots/img_sample_detail_all.pdf 
 pdfcrop ./out/plots/smoothness_vs_dice_overlap.pdf ./out/plots/smoothness_vs_dice_overlap.pdf 
+pdfcrop ./out/plots/extract_before_warp.pdf ./out/plots/extract_before_warp.pdf 
