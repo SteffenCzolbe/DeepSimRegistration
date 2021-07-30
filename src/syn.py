@@ -9,6 +9,8 @@ from src.registration_model import RegistrationModel
 from src.segmentation_model import SegmentationModel
 from src.autoencoder_model import AutoEncoderModel
 from typing import *
+from tqdm import tqdm
+import yaml
 
 
 def load_model(dataset, loss_function):
@@ -22,6 +24,10 @@ def get_dataloader(dataset):
     model = load_model(dataset, "l2")
     class_cnt = model.dataset_config("classes")
     return model.test_dataloader(), class_cnt
+
+
+def get_dataset_length(dataloader):
+    return len(dataloader.dataset)
 
 
 def get_img_pair(dataloader, index, feature_extractor=None):
@@ -151,10 +157,7 @@ def register_and_eval_multichannel_tensors(moving: torch.Tensor, moving_seg: tor
                             moving=moving_ants[0],
                             type_of_transform='SyNOnly',
                             multivariate_extras=multivariate_extras,
-                            flow_sigma=3,
-                            total_sigma=0,
-                            reg_iterations=(80, 0, 0),  # TODO
-                            verbose=True)
+                            verbose=False)
 
     # warp segmentation
     # fixed image required to define the domain
@@ -169,27 +172,55 @@ def register_and_eval_multichannel_tensors(moving: torch.Tensor, moving_seg: tor
         classes=list(range(class_cnt))
     )
 
-    print("Dice overlap no registration:")
-    print(dice_overlap(moving_seg.unsqueeze(0), fixed_seg.unsqueeze(0)))
-    print("Dice overlap with registration:")
-    print(dice_overlap(morphed_seg.unsqueeze(0), fixed_seg.unsqueeze(0)))
+    return dice_overlap(morphed_seg.unsqueeze(0), fixed_seg.unsqueeze(0)).item()
 
-    return dice_overlap(morphed_seg.unsqueeze(0), fixed_seg.unsqueeze(0))
+
+def set_up_file(out_file, hparams):
+    if os.path.isfile(out_file):
+        # file already exsists, do nothing
+        return
+    else:
+        # create file
+        os.makedirs(os.path.dirname(out_file), exist_ok=True)
+        data = {'hparams': vars(hparams), 'scores': {}}
+        with open(out_file, 'w') as file:
+            yaml.safe_dump(data, file)
+        return
+
+
+def write_result_to_file(out_file, index, dice_overlap):
+    with open(out_file, 'r') as file:
+        data = yaml.safe_load(file)
+        data['scores'][index] = dice_overlap
+
+    if data:
+        with open(out_file, 'w') as file:
+            yaml.safe_dump(data, file)
 
 
 def main(hparams):
     # setup
+    set_up_file(hparams.out_file, hparams)
     dataloader, class_cnt = get_dataloader(hparams.dataset)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     feature_extractor = load_feature_extractor(
         device, hparams.feature_extractor_weights, feature_extractor_model=hparams.feature_extractor)
 
-    # load images
-    (I_0, S_0), (I_1, S_1) = get_img_pair(
-        dataloader, 0, feature_extractor)
+    n = get_dataset_length(dataloader)
+    idx_from = int(hparams.data_from * n)
+    idx_to = int(hparams.data_to * n)
 
-    dice_overlap = register_and_eval_multichannel_tensors(
-        I_0, S_0, I_1, S_1, class_cnt)
+    for idx in tqdm(range(idx_from, idx_to), desc='Registering images...'):
+        # load images
+        (I_0, S_0), (I_1, S_1) = get_img_pair(
+            dataloader, idx, feature_extractor)
+
+        # register
+        dice_overlap = register_and_eval_multichannel_tensors(
+            I_0, S_0, I_1, S_1, class_cnt)
+        print('Dice overlap: ', dice_overlap)
+
+        write_result_to_file(hparams.out_file, idx, dice_overlap)
 
 
 if __name__ == "__main__":
@@ -203,6 +234,15 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--feature_extractor_weights", type=str, help="path to feature extractor weights"
+    )
+    parser.add_argument(
+        "--data_from", type=float, default=0., help="Fraction of the dataset from"
+    )
+    parser.add_argument(
+        "--data_to", type=float, default=1., help="Fraction of the dataset to"
+    )
+    parser.add_argument(
+        "--out_file", type=str, help="File to write results to"
     )
     hparams = parser.parse_args()
     main(hparams)
