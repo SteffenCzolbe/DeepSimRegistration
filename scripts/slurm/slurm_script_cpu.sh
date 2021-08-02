@@ -8,7 +8,7 @@
 #SBATCH --job-name='unnamed job'
 
 # normal cpu stuff: allocate cpus, memory
-#SBATCH --ntasks=1 --cpus-per-task=2 --mem=52000M
+#SBATCH --ntasks=1 --cpus-per-task=2 --mem=40000M
 
 # we run on the cpu partition
 #SBATCH -p image1
