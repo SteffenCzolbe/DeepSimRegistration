@@ -106,14 +106,14 @@ LOSS_FUNTION_CONFIG = {
     "deepsim-ebw": {
         "display_name": r"$\text{DeepSim}_{\text{seg}}\text{(EbT)}$",
         "display_name_bold": r"$\textbf{DeepSim}_{\textbf{seg}}\text{(EbT)}$",
-        "primary_color": plt.get_cmap("tab20c").colors[6],
+        "primary_color": plt.get_cmap("tab20c").colors[4],
         "marker": "x",
         "our_method": True
     },
     "deepsim-ae-ebw": {
         "display_name": r"$\text{DeepSim}_{\text{ae}}\text{(EbT)}$",
         "display_name_bold": r"$\textbf{DeepSim}_{\textbf{ae}}\text{(EbT)}$",
-        "primary_color": plt.get_cmap("tab20c").colors[7],
+        "primary_color": plt.get_cmap("tab20c").colors[5],
         "marker": "o",
         "our_method": True
     },
