@@ -62,10 +62,10 @@ def read_model_logs(dir):
 
 def plot(hparam_tuning_results):
     # set up sup-plots
-    fig = plt.figure(figsize=(11, 2.5))
+    fig = plt.figure(figsize=(14, 3.0))
     axs = fig.subplots(1, len(DATASET_ORDER)+1)
     axs[3].axis("off")
-    plt.subplots_adjust(bottom=0.18)
+    plt.subplots_adjust(bottom=0.18, wspace=0.3)
 
     for i, dataset in enumerate(DATASET_ORDER):
         if dataset not in hparam_tuning_results.keys():
@@ -99,11 +99,11 @@ def plot(hparam_tuning_results):
         LOSS_FUNTION_CONFIG[loss_function]["display_name"]
         for loss_function in LOSS_FUNTION_ORDER
     ]
-    axs[2].legend(handles, labels, bbox_to_anchor=(1., 1.))
+    axs[2].legend(handles, labels, bbox_to_anchor=(1., 1.), fontsize=12)
 
     # configure axis precision
     for ax in axs:
-        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
 
     os.makedirs("./out/plots/", exist_ok=True)
     plt.savefig("./out/plots/hparam.pdf")

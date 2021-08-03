@@ -19,7 +19,7 @@ def load_data_for_model(dataset, loss_function):
     if loss_function not in test_results[dataset].keys():
         return None, None
     dice = test_results[dataset][loss_function]["dice_overlap"].mean(axis=0)
-    smoothness = test_results[dataset][loss_function]["jacobian_determinant_var"].mean(
+    smoothness = test_results[dataset][loss_function]["jacobian_determinant_log_var"].mean(
         axis=0)
     folding = test_results[dataset][loss_function]["jacobian_determinant_negative"].mean(
         axis=0)
@@ -29,9 +29,10 @@ def load_data_for_model(dataset, loss_function):
 def main(args):
 
     # set up sup-plots
-    fig = plt.figure(figsize=(8.5, 2.5))
-    axs = fig.subplots(1, len(DATASET_ORDER))
-    plt.subplots_adjust(bottom=0.18)
+    fig = plt.figure(figsize=(14*0.8, 3.0*0.8))
+    axs = fig.subplots(1, len(DATASET_ORDER)+1)
+    axs[3].axis("off")
+    plt.subplots_adjust(bottom=0.18, wspace=0.3)
 
     for i, dataset in enumerate(DATASET_ORDER):
         for loss_function in LOSS_FUNTION_ORDER:
@@ -40,15 +41,15 @@ def main(args):
                 continue
             # read lam, score
             handle = axs[i].scatter(
-                dice, smoothness, color=LOSS_FUNTION_CONFIG[loss_function]["primary_color"], marker=LOSS_FUNTION_CONFIG[loss_function]["marker"])
+                dice, smoothness, color=LOSS_FUNTION_CONFIG[loss_function]["primary_color"], marker=LOSS_FUNTION_CONFIG[loss_function]["marker"], s=80)
             axs[i].set_title(PLOT_CONFIG[dataset]["display_name"], fontsize=18)
             LOSS_FUNTION_CONFIG[loss_function]["handle"] = handle
 
     # add labels
-    fig.text(0.5, 0.03, "Test Mean Dice Overlap",
+    fig.text(0.42, 0.04, "Test Mean Dice Overlap",
              ha="center", va="center", fontsize=16)
     fig.text(
-        0.07, 0.5, "$\sigma^2(|J_{\Phi}|)$", ha="center", va="center", rotation="vertical", fontsize=16)
+        0.08, 0.5, "$\sigma^2(\log |J_{\Phi}|)$", ha="center", va="center", rotation="vertical", fontsize=16)
 
     # add legend
     handles = [
@@ -58,7 +59,8 @@ def main(args):
         LOSS_FUNTION_CONFIG[loss_function]["display_name"]
         for loss_function in LOSS_FUNTION_ORDER
     ]
-    axs[0].legend(handles, labels, loc="upper right", fontsize="x-small")
+    legend = axs[0].legend(
+        handles, labels, fontsize=8, ncol=2, loc='upper center', fancybox=False, framealpha=1.0, columnspacing=0.5, labelspacing=0.6)
 
     # configure axis precision
     for ax in axs:
