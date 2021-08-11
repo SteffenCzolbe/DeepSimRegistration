@@ -41,45 +41,45 @@ EXTRACT_BEFORE_WARP_LOSS_FUNTIONS = [
 LOSS_FUNTION_CONFIG = {
     "l2": {
         "display_name": "MSE",
-        "primary_color": plt.get_cmap("tab20c").colors[0],
+        "primary_color": "#3282bd",
         "marker": "s",
         "our_method": False},
     "ncc": {
         "display_name": "NCC",
-        "primary_color": plt.get_cmap("tab20c").colors[1],
+        "primary_color": "#5598ca",
         "marker": "^",
         "our_method": False},
     "ncc2": {
         "display_name": r"$\text{NCC}$",
         "display_name_bold": r"$\textbf{NCC}$",
-        "primary_color": plt.get_cmap("tab20c").colors[1],
+        "primary_color": "#5598ca",
         "marker": "^",
         "our_method": False
     },
     "ncc+supervised": {
         "display_name": r"$\text{NCC}_{\text{sup}}$",
         "display_name_bold": r"$\textbf{NCC}_{\textbf{sup}}$",
-        "primary_color": plt.get_cmap("tab20c").colors[2],
+        "primary_color": "#78afd6",
         "marker": ">",
         "our_method": False
     },
     "ncc2+supervised": {
         "display_name": r"$\text{NCC}_{\text{sup}}$",
         "display_name_bold": r"$\textbf{NCC}_{\textbf{sup}}$",
-        "primary_color": plt.get_cmap("tab20c").colors[2],
+        "primary_color": "#78afd6",
         "marker": ">",
         "our_method": False
     },
     "nmi": {
         "display_name": r"$\text{NMI}$",
         "display_name_bold": r"$\textbf{NMI}$",
-        "primary_color": plt.get_cmap("tab20b").colors[2],
+        "primary_color": "#9ac5e3",
         "marker": "v",
         "our_method": False},
     "vgg": {
         "display_name": r"$\text{VGG}$",
         "display_name_bold": r"$\textbf{VGG}$",
-        "primary_color": plt.get_cmap("tab20c").colors[3],
+        "primary_color": "#bddbef",
         "marker": "<",
         "our_method": False
     },
