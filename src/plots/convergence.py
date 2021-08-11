@@ -76,9 +76,9 @@ def smooth(ys, smoothing_factor=0.6):
 
 
 # set up sup-plots
-fig = plt.figure(figsize=(8.5, 2.5))
+fig = plt.figure(figsize=(8, 3))
 axs = fig.subplots(1, len(DATASET_ORDER))
-plt.subplots_adjust(bottom=0.18)
+plt.subplots_adjust(bottom=0.33)
 
 for i, dataset in enumerate(DATASET_ORDER):
     axs[i].set_title(PLOT_CONFIG[dataset]["display_name"])
@@ -98,9 +98,9 @@ for i, dataset in enumerate(DATASET_ORDER):
         LOSS_FUNTION_CONFIG[loss_function]["handle"] = line[0]
 
 # add labels
-fig.text(0.5, 0.03, "Gradient Update Steps",
+fig.text(0.5, 0.2, "Gradient Update Steps",
          ha="center", va="center", fontsize=16)
-fig.text(0.07, 0.5, "Train Mean Dice Overlap", ha="center",
+fig.text(0.06, 0.58, "Train Mean Dice Overlap", ha="center",
          va="center", rotation="vertical", fontsize=16)
 handles = [
     LOSS_FUNTION_CONFIG[loss_function]["handle"] for loss_function in LOSS_FUNTION_ORDER
@@ -109,7 +109,8 @@ labels = [
     LOSS_FUNTION_CONFIG[loss_function]["display_name"]
     for loss_function in LOSS_FUNTION_ORDER
 ]
-axs[-1].legend(handles, labels, loc="lower right", fontsize="small")
+fig.legend(handles, labels, loc="lower center",
+           ncol=len(handles), handlelength=1.5, columnspacing=1.5)
 
 # configure precision
 for ax in axs:
