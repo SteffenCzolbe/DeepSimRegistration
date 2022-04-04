@@ -260,6 +260,7 @@ class SoftDiceOverlap(nn.Module):
 
         # calculate dice per class, mean over classes
         dice = 2 * s_union / (s_y_true + s_y_pred + 1e-6)
+        # dice =  (2 * s_union + 1)/ (s_y_true + s_y_pred + 1e-6)
         return torch.mean(dice)
 
 

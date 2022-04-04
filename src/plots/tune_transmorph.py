@@ -125,8 +125,9 @@ if __name__ == '__main__':
     hparam_tuning_results = defaultdict(lambda: defaultdict(lambda: {}))
 
     tuning = glob.glob('./weights_exp/transmorph-platelet/*')
-    print(tuning)
-    runs = tuning
+    tuning2 = glob.glob('./weights_exp/transmorph-phc/*')
+    #print(tuning)
+    runs = tuning2 + tuning
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
         if lossfun in EXTRACT_TRANSMORPH_LOSS_FUNCTIONS:

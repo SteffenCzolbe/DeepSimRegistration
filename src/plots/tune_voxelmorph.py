@@ -61,7 +61,7 @@ def read_model_logs(dir):
 def plot(hparam_tuning_results):
     # set up sup-plots
     fig = plt.figure(figsize=(9, 3))
-    axs = fig.subplots(1, len(DATASET_ORDER) + 1, gridspec_kw={'width_ratios': [1, 1, 0.5]})
+    axs = fig.subplots(1, len(DATASET_ORDER) + 1, gridspec_kw={'width_ratios': [1, 1, 0.7]})
     axs[2].axis("off")
     #axs = fig.subplots(1, len(DATASET_ORDER))
     plt.subplots_adjust(bottom=0.18, wspace=0.3)
@@ -78,7 +78,7 @@ def plot(hparam_tuning_results):
             lambdas, val_dice_overlap = list(zip(*items))
             handle = axs[i].plot(lambdas, val_dice_overlap, color=LOSS_FUNTION_CONFIG[lossfun]
                                  ["primary_color"], label=LOSS_FUNTION_CONFIG[lossfun]["display_name"], 
-                                                    linestyle='--' if '_' in lossfun else '-',
+                                                    linestyle='--' if 'transfer' in lossfun else '-',
                                                     marker='<' if 'transfer' in lossfun else LOSS_FUNTION_CONFIG[lossfun]["marker"],
                                                     #markersize=4 if '_' in lossfun else 6,
                                                     linewidth=1 if '_' in lossfun else 1.5)
@@ -116,10 +116,11 @@ def plot(hparam_tuning_results):
 if __name__ == '__main__':
     hparam_tuning_results = defaultdict(lambda: defaultdict(lambda: {}))
 
-    #tuning = glob.glob('./weights/hparam_tuning/*')
-    tuning = glob.glob('./weights_exp/deep-sim/*')
+    tuning = glob.glob('./weights/hparam_tuning/*')
+    #tuning = glob.glob('./weights_exp/deep-sim/*')
     mind = glob.glob('./weights_exp/mind-voxelmorph/lightning_logs/*')
-    runs = mind + tuning
+    transfer_seg = glob.glob('./weights_exp/transfer-seg/lightning_logs/*')
+    runs = mind + tuning + transfer_seg
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
         if lossfun in MIND_AND_OTHER_LOSS_FUNTION:

@@ -45,9 +45,15 @@ logs_levels2_ae
 logs_levels2_ae/*
 logs_levels_ae
 logs_levels_ae/*
+logs_levels_seg
+logs_levels_seg/*
+logs_levels_seg2
+logs_levels_seg2/*
 my_logs_transmorph
 my_logs_transmorph/*
 my_mind
+mind_loss
+avg_time
 tests
 tests/*
 

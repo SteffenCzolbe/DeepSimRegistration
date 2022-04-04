@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import os
 from tensorboard.backend.event_processing import event_accumulator
 from tqdm import tqdm
-from .config import *
+from .config2D import *
 from matplotlib.ticker import FormatStrFormatter
 
 
@@ -80,6 +80,9 @@ fig = plt.figure(figsize=(8, 3))
 axs = fig.subplots(1, len(DATASET_ORDER))
 plt.subplots_adjust(bottom=0.33)
 
+mode = 'val'
+title = 'Val'
+
 for i, dataset in enumerate(DATASET_ORDER):
     axs[i].set_title(PLOT_CONFIG[dataset]["display_name"])
     for loss_function in tqdm(
@@ -89,7 +92,7 @@ for i, dataset in enumerate(DATASET_ORDER):
                             "registration", loss_function)
         if not os.path.isdir(path):
             continue
-        x, y = read_tb_scalar_logs(path, "train/dice_overlap")
+        x, y = read_tb_scalar_logs(path, f"{mode}/dice_overlap")
         y = smooth(y, PLOT_CONFIG[dataset]["smoothing_factor"])
         c = LOSS_FUNTION_CONFIG[loss_function]["primary_color"]
         line = axs[i].plot(
@@ -100,7 +103,7 @@ for i, dataset in enumerate(DATASET_ORDER):
 # add labels
 fig.text(0.5, 0.2, "Gradient Update Steps",
          ha="center", va="center", fontsize=16)
-fig.text(0.06, 0.58, "Train Mean Dice Overlap", ha="center",
+fig.text(0.06, 0.58, f"{title} Mean Dice Overlap", ha="center",
          va="center", rotation="vertical", fontsize=16)
 handles = [
     LOSS_FUNTION_CONFIG[loss_function]["handle"] for loss_function in LOSS_FUNTION_ORDER
