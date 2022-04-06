@@ -41,6 +41,7 @@ def read_tb_scalar_log(file, scalar):
 def read_hparams_from_yaml(file):
     with open(file) as f:
         hparams = yaml.load(f, Loader=yaml.Loader)
+        #print(hparams)
     return hparams['dataset'], hparams['loss'], hparams['lam']
 
 
@@ -81,10 +82,10 @@ def plot(hparam_tuning_results):
             items = sorted(items, key=lambda t: t[0])
             lambdas, val_dice_overlap = list(zip(*items))
             handle = axs[i].plot(lambdas, val_dice_overlap, color=LOSS_FUNTION_CONFIG[lossfun]
-                                 ["primary_color"], label=LOSS_FUNTION_CONFIG[lossfun]["display_name"], 
-                                                    linestyle='--' if '_' in lossfun else '-',
-                                                    marker='<' if 'transfer' in lossfun else LOSS_FUNTION_CONFIG[lossfun]["marker"],
-                                                    #markersize=4 if '_' in lossfun else 6,
+                                 ["primary_color"], label=LOSS_FUNTION_CONFIG[lossfun]["display_name"],
+                                                    #linestyle='--' if '_' in lossfun else '-')
+                                                    marker=LOSS_FUNTION_CONFIG[lossfun]["marker"],
+                                                    markersize=4 if '_' in lossfun else 6,
                                                     linewidth=1 if '_' in lossfun else 1.5)
             handle = handle[0]
             axs[i].set_xscale('log', basex=2)
@@ -126,10 +127,13 @@ if __name__ == '__main__':
 
     tuning = glob.glob('./weights_exp/transmorph-platelet/*')
     tuning2 = glob.glob('./weights_exp/transmorph-phc/*')
+    tuning3 = glob.glob('./weights_exp/my_logs_transmorph2/lightning_logs/*')
     #print(tuning)
-    runs = tuning2 + tuning
+    runs = tuning3  + tuning + tuning2
     for run in tqdm(runs, desc='reading hparam training logs...'):
+        print(run)
         dataset, lossfun, lam = read_model_hparams(run)
+        print(run, dataset, lossfun, lam)
         if lossfun in EXTRACT_TRANSMORPH_LOSS_FUNCTIONS:
                 mean_val_dice_overlap = read_model_logs(run)
                 hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap

@@ -80,7 +80,7 @@ def plot(hparam_tuning_results):
             handle = axs[i].plot(lambdas, val_dice_overlap, color=LOSS_FUNTION_CONFIG[lossfun]
                                  ["primary_color"], label=LOSS_FUNTION_CONFIG[lossfun]["display_name"], 
                                                     linestyle='--' if 'transfer' in lossfun else '-',
-                                                    marker='<' if 'transfer' in lossfun else LOSS_FUNTION_CONFIG[lossfun]["marker"])
+                                                    marker=LOSS_FUNTION_CONFIG[lossfun]["marker"])
             handle = handle[0]
             axs[i].set_xscale('log', basex=2)
             axs[i].set_title(PLOT_CONFIG[dataset]["display_name"], fontsize=18)

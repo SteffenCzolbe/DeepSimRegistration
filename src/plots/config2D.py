@@ -35,25 +35,25 @@ LOSS_FUNTION_ORDER = [
 ]
 
 MIND_AND_OTHER_LOSS_FUNTION = [
-    "mind",
     "l2",
     "ncc2",
     "ncc2+supervised",
     "nmi",
     #"vgg",
+    "mind",
     "deepsim-ae",
     "deepsim",
-    "deepsim-transfer",
+    #"deepsim-transfer",
 ]
 
 
 
 EXTRACT_TRANSMORPH_LOSS_FUNCTIONS = [
-    "mind",
     "l2",
     "ncc2",
     "ncc2+supervised",
     "nmi",
+    "mind",
     #"vgg",
     "deepsim-ae",
     "deepsim",
@@ -76,11 +76,11 @@ EXTRACT_BEFORE_WARP_LOSS_FUNTIONS = [
 ]
 
 EXTRACT_TRANSFER_LOSS_FUNTIONS = [
-    "vgg",
     "deepsim-ae",
     "deepsim-transfer-ae",
     "deepsim",
-    "deepsim-transfer",  
+    "deepsim-transfer",
+    "vgg",     
 ]
 
 EXTRACT_LEVEL_AE_LOSS_FUNTIONS = [
@@ -144,17 +144,21 @@ LOSS_FUNTION_CONFIG = {
         "marker": "v",
         "our_method": False},
     "vgg": {
-        "display_name": "$VGG$",
-        "display_name_bold": "$VGG$",
-        "primary_color": "#bddbef",
-        "marker": "<",
+        "display_name": "$DeepSim_{VGG}$",
+        "display_name_bold": "$DeepSim{VGG}$",
+        # "primary_color": "#bddbef",
+        # "marker": "<",
+        "primary_color": "red",
+        "marker": "d",
         "our_method": False
     },
     "mind": {
         "display_name": "$MIND$",
         "display_name_bold": "$MIND$",
-        "primary_color": "blue",
-        "marker": "d",
+        # "primary_color": "blue",
+        # "marker": "d",
+        "primary_color": "#bddbef",
+        "marker": "<",
         "our_method": False
     },
     "deepsim": {
@@ -174,15 +178,17 @@ LOSS_FUNTION_CONFIG = {
     "deepsim-transfer": {
         "display_name": "$DeepSim_{seg}-TL$",
         "display_name_bold": "$DeepSim_{seg}-TL$",
-        "primary_color": plt.get_cmap("tab20c").colors[4],
-        "marker": "x",
+        #"primary_color": plt.get_cmap("tab20c").colors[4],
+        "primary_color":tuple(red_colors[200][:-1]),
+        "marker": "*",
         "our_method": True
     },
     "deepsim-transfer-ae": {
         "display_name": "$DeepSim_{ae}-TL$",
         "display_name_bold": "$DeepSim_{ae}-TL$",
-        "primary_color": plt.get_cmap("tab20c").colors[5],
-        "marker": "o",
+        #"primary_color": plt.get_cmap("tab20c").colors[5],
+        "primary_color":tuple(red_colors[120][:-1]),
+        "marker": "p",
         "our_method": True
     },
     "transfer": {

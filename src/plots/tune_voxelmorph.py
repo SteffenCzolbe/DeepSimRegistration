@@ -6,7 +6,7 @@ from tensorboard.backend.event_processing import event_accumulator
 import yaml
 from collections import defaultdict
 import glob
-from .config2D import *
+from .config import *
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
@@ -60,11 +60,16 @@ def read_model_logs(dir):
 
 def plot(hparam_tuning_results):
     # set up sup-plots
-    fig = plt.figure(figsize=(9, 3))
-    axs = fig.subplots(1, len(DATASET_ORDER) + 1, gridspec_kw={'width_ratios': [1, 1, 0.7]})
-    axs[2].axis("off")
-    #axs = fig.subplots(1, len(DATASET_ORDER))
+    # fig = plt.figure(figsize=(9, 3))
+    # axs = fig.subplots(1, len(DATASET_ORDER) + 1, gridspec_kw={'width_ratios': [1, 1, 0.7]})
+    # axs[2].axis("off")
+    # plt.subplots_adjust(bottom=0.18, wspace=0.3)
+    # set up sup-plots
+    fig = plt.figure(figsize=(14, 3.0))
+    axs = fig.subplots(1, len(DATASET_ORDER)+1)
+    axs[3].axis("off")
     plt.subplots_adjust(bottom=0.18, wspace=0.3)
+
 
     for i, dataset in enumerate(DATASET_ORDER):
         if dataset not in hparam_tuning_results.keys():
@@ -78,9 +83,9 @@ def plot(hparam_tuning_results):
             lambdas, val_dice_overlap = list(zip(*items))
             handle = axs[i].plot(lambdas, val_dice_overlap, color=LOSS_FUNTION_CONFIG[lossfun]
                                  ["primary_color"], label=LOSS_FUNTION_CONFIG[lossfun]["display_name"], 
-                                                    linestyle='--' if 'transfer' in lossfun else '-',
-                                                    marker='<' if 'transfer' in lossfun else LOSS_FUNTION_CONFIG[lossfun]["marker"],
-                                                    #markersize=4 if '_' in lossfun else 6,
+                                                    #linestyle='--' if 'transfer' in lossfun else '-',
+                                                    marker=LOSS_FUNTION_CONFIG[lossfun]["marker"],
+                                                    markersize=4 if '_' in lossfun else 6,
                                                     linewidth=1 if '_' in lossfun else 1.5)
             handle = handle[0]
             axs[i].set_xscale('log', basex=2)
@@ -88,10 +93,16 @@ def plot(hparam_tuning_results):
             LOSS_FUNTION_CONFIG[lossfun]["handle"] = handle
             print(LOSS_FUNTION_CONFIG[lossfun]["handle"])
 
+    # # add labels
+    # fig.text(0.42, 0.04, "Regularization Hyperparameter $\lambda$",
+    #          ha="center", va="center", fontsize=16)
+    # fig.text(0.05, 0.5, "Val. Mean Dice Overlap", ha="center",
+    #          va="center", rotation="vertical", fontsize=16)
+    
     # add labels
-    fig.text(0.42, 0.04, "Regularization Hyperparameter $\lambda$",
+    fig.text(0.42, 0.05, "Regularization Hyperparameter $\lambda$",
              ha="center", va="center", fontsize=16)
-    fig.text(0.05, 0.5, "Val. Mean Dice Overlap", ha="center",
+    fig.text(0.07, 0.5, "Val. Mean Dice Overlap", ha="center",
              va="center", rotation="vertical", fontsize=16)
 
     # add legend
@@ -119,12 +130,12 @@ if __name__ == '__main__':
     tuning = glob.glob('./weights/hparam_tuning/*')
     #tuning = glob.glob('./weights_exp/deep-sim/*')
     mind = glob.glob('./weights_exp/mind-voxelmorph/lightning_logs/*')
-    transfer_seg = glob.glob('./weights_exp/transfer-seg/lightning_logs/*')
-    runs = mind + tuning + transfer_seg
+    #transfer_seg = glob.glob('./weights_exp/transfer-seg/lightning_logs/*')
+    runs = mind + tuning #+ transfer_seg
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
         if lossfun in MIND_AND_OTHER_LOSS_FUNTION:
-                mean_val_dice_overlap = read_model_logs(run)
-                hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap
+            mean_val_dice_overlap = read_model_logs(run)
+            hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap
 
     plot(hparam_tuning_results)
