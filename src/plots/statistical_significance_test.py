@@ -70,7 +70,8 @@ def print_results(results):
     
 
 if __name__ == '__main__':
-    cache_file_name = "./src/plots/cache.pickl"
+    #cache_file_name = "./src/plots/cache.pickl"
+    cache_file_name = "./src/plots/cache2Ddatasets.pickl"
     results = pickle.load(open(cache_file_name, "rb"))
 
     for dataset in results.keys():

@@ -12,11 +12,12 @@ class NCC(nn.Module):
     Local (over window) normalized cross correlation loss. Normalized to window [0,2], with 0 being perfect match.
     """
 
-    def __init__(self, window=9, squared=False, eps=1e-6):
+    def __init__(self, window=9, squared=False, eps=1e-6, reduction='mean'):
         super().__init__()
         self.win = window
         self.squared = squared
         self.eps = eps
+        self.reduction = reduction
 
     def forward(self, y_true, y_pred):
         def compute_local_sums(I, J):
@@ -64,7 +65,11 @@ class NCC(nn.Module):
             cc = cross / (var0.clamp(self.eps) ** 0.5 * var1.clamp(self.eps) ** 0.5)
 
         # mean and invert for minimization
-        return -torch.mean(cc) + 1
+        if self.reduction == 'mean':
+            return -torch.mean(cc) + 1
+        else:
+            #return -cc + 1
+            return cc
 
 
 class DeepSim(nn.Module):
@@ -72,11 +77,12 @@ class DeepSim(nn.Module):
     Deep similarity metric
     """
 
-    def __init__(self, seg_model, eps=1e-6, levels='all'):
+    def __init__(self, seg_model, eps=1e-6, levels='all', reduction='mean'):
         super().__init__()
         self.seg_model = seg_model
         self.eps = eps
         self.levels = levels
+        self.reduction = reduction
 
         # fix params
         for param in self.seg_model.parameters():
@@ -104,16 +110,27 @@ class DeepSim(nn.Module):
             # calculate cosine similarity
             if self.levels == 'all':
                 cos_sim = self._calculate_cos_sim(feat0, feat1)
-                losses.append(torch.mean(cos_sim))
+                if self.reduction == 'mean':
+                    losses.append(torch.mean(cos_sim))
+                else:
+                    losses.append(cos_sim)
                 #print(f' level: {i}, shape: {feat0.size(), feat1.size()}')
             else:
                 if i in self.levels:
                     #print(f' level: {i}, shape: {feat0.size(), feat1.size()}')
                     cos_sim = self._calculate_cos_sim(feat0, feat1)
-                    losses.append(torch.mean(cos_sim))
+                    if self.reduction == 'mean':
+                        losses.append(torch.mean(cos_sim))
+                    else:
+                        losses.append(cos_sim)
 
         # mean and invert for minimization
-        return -torch.stack(losses).mean() + 1
+        #print(self.reduction)
+
+        if self.reduction == 'mean':
+            return -torch.stack(losses).mean() + 1
+        else:
+            return losses
 
 
 class VGGFeatureExtractor(nn.Module):

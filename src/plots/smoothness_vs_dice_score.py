@@ -5,15 +5,16 @@ import seaborn as sns
 from argparse import ArgumentParser
 import pickle
 import numpy as np
-from .config2D import *
+from .config import *
 import os
 from matplotlib.ticker import FormatStrFormatter
-
+from .run_models import run_models
 
 def load_data_for_model(dataset, loss_function):
     # load data
-    with open(args.cache_file_name, 'rb') as f:
-        test_results = pickle.load(f)
+    # with open(args.cache_file_name, 'rb') as f:
+    #     test_results = pickle.load(f)
+    test_results = run_models(use_cached=True)
     if dataset not in test_results.keys():
         return None, None
     if loss_function not in test_results[dataset].keys():
@@ -29,7 +30,7 @@ def load_data_for_model(dataset, loss_function):
 def main(args):
 
     # set up sup-plots
-    fig = plt.figure(figsize=(8, 3))
+    fig = plt.figure(figsize=(10, 3))
     axs = fig.subplots(1, len(DATASET_ORDER))
     plt.subplots_adjust(bottom=0.33)
 

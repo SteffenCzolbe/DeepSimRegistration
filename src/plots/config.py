@@ -20,16 +20,16 @@ DATASET_ORDER = ["brain-mri", "platelet-em", "phc-u373"]
 PLOT_CONFIG = {
     "phc-u373": {"display_name": "PhC-U373", "smoothing_factor": 0.98},
     "platelet-em": {"display_name": "Platelet-EM", "smoothing_factor": 0.997},
-    "brain-mri": {"display_name": "Brain-MRI", "smoothing_facto": 0.8},
+    "brain-mri": {"display_name": "Brain-MRI", "smoothing_factor": 0.8},
 }
 
 LOSS_FUNTION_ORDER = [
-    #"mind",
-    #"l2",
-    #"ncc2",
-    #"ncc2+supervised",
-    #"nmi",
-    "vgg",
+    "l2",
+    "ncc2",
+    "ncc2+supervised",
+    "nmi",
+    "mind",
+    #"vgg",
     "deepsim-ae",
     "deepsim",
 ]
@@ -213,21 +213,21 @@ LOSS_FUNTION_CONFIG = {
     },
     "syn": {
         "display_name": "$SyN$",
-        "feature_extracto": "none",
+        "feature_extractor": "none",
         "primary_color": plt.get_cmap("tab20c").colors[18],
         "our_method": False,
     },
     "syn_ae": {
         "display_name": "$SyN + DeepSim_{ae}$",
         "display_name_bold": "$SyN + DeepSim_{ae}$",
-        "feature_extracto": "ae",
+        "feature_extractor": "ae",
         "primary_color": plt.get_cmap("tab20c").colors[17],
         "our_method": True,
     },
     "syn_seg": {
         "display_name": "$SyN + DeepSim_{seg}$",
         "display_name_bold": "$SyN + DeepSim_{seg}$",
-        "feature_extracto": "seg",
+        "feature_extractor": "seg",
         "primary_color": plt.get_cmap("tab20c").colors[16],
         "our_method": True,
     },

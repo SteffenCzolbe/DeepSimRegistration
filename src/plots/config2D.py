@@ -24,12 +24,12 @@ PLOT_CONFIG = {
 }
 
 LOSS_FUNTION_ORDER = [
-    #"mind",
-    #"l2",
-    #"ncc2",
-    #"ncc2+supervised",
-    #"nmi",
-    "vgg",
+    "l2",
+    "ncc2",
+    "ncc2+supervised",
+    "nmi",
+    "mind",
+    #"vgg",
     "deepsim-ae",
     "deepsim",
 ]

@@ -6,22 +6,23 @@ from src.test_registration_voxelmorph import RegistrationModel
 import torch
 import torchreg
 import torchreg.viz as viz
-from .config2D import *
+from .config import *
 import matplotlib.patches as patches
 
 import os
 
-#os.environ["CUDA_LAUNCH_BLOCKING"]='1'
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
-os.environ["CUDA_VISIBLE_DEVICES"]='0'
-print(os.environ["CUDA_VISIBLE_DEVICES"])
+# #os.environ["CUDA_LAUNCH_BLOCKING"]='1'
+# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
+# os.environ["CUDA_VISIBLE_DEVICES"]='0'
+# print(os.environ["CUDA_VISIBLE_DEVICES"])
 
 def get_img(model, test_set_index):
     transformer = torchreg.nn.SpatialTransformer()
     integrate = torchreg.nn.FlowIntegration(6)
 
     with torch.no_grad():
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        #device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = 'cpu'
         model.eval()
         model = model.to(device)
         test_set = model.test_dataloader().dataset
@@ -259,6 +260,7 @@ def make_overview():
         for j, loss_function in enumerate(LOSS_FUNTION_ORDER):
             path = os.path.join("./weights/", dataset,
                                 "registration", loss_function)
+            print(dataset, loss_function)
             if not os.path.isdir(path):
                 plot_no_data(fig, i, j + 2, "N/A for\n3D data", fontsize=8)
                 continue

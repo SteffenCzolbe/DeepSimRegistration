@@ -41,13 +41,13 @@ def read_tb_scalar_log(file, scalar):
 def read_hparams_from_yaml(file):
     with open(file) as f:
         hparams = yaml.load(f, Loader=yaml.Loader)
-    return hparams['dataset'], hparams['loss'], hparams['lam']
+    return hparams['dataset'], hparams['loss'], hparams['lam'], hparams['deepsim_weights']
 
 
 def read_model_hparams(dir):
-    dataset, lossfun, lam = read_hparams_from_yaml(
+    dataset, lossfun, lam, w = read_hparams_from_yaml(
         os.path.join(dir, 'hparams.yaml'))
-    return dataset, lossfun, lam
+    return dataset, lossfun, lam, w
 
 
 def read_model_logs(dir):
@@ -126,14 +126,18 @@ if __name__ == '__main__':
 
     #tuning = glob.glob('./weights/hparam_tuning/*')
     tuning = glob.glob('./weights_exp/deep-sim/*')
-    platelet_seg = glob.glob('./weights_exp/levels-ae-platelet/lightning_logs/*')
-    platelet_ae = glob.glob('./weights_exp/levels-seg-platelet/lightning_logs/*')
-    phc_seg = glob.glob('./weights_exp/levels-seg-phc/lightning_logs/*')
-    phc_ae = glob.glob('./weights_exp/levels-ae-phc/lightning_logs/*')
+    #platelet_seg = glob.glob('./weights_exp/levels-ae-platelet/lightning_logs/*')
+    #platelet_ae = glob.glob('./weights_exp/levels-seg-platelet/lightning_logs/*')
+    phc_seg = glob.glob('./logs_levels_seg/lightning_logs/*')
+    phc_seg2 = glob.glob('./logs_levels_seg2/lightning_logs/*')
+    phc_ae = glob.glob('./logs_levels_ae/lightning_logs/*')
     
-    runs = platelet_seg + platelet_ae + phc_seg + phc_ae + tuning
+    #runs = platelet_seg + platelet_ae + phc_seg + phc_ae + tuning
+    runs = phc_seg + phc_seg2 + phc_ae + tuning
     for run in tqdm(runs, desc='reading hparam training logs...'):
-        dataset, lossfun, lam = read_model_hparams(run)
+        dataset, lossfun, lam, w = read_model_hparams(run)
+        folder = run.split('/')[-1]
+        print(folder, dataset, lossfun, lam, w)
         if lossfun in EXTRACT_LEVEL_SEG_LOSS_FUNTIONS:
             if lam != 4:
                 mean_val_dice_overlap = read_model_logs(run)

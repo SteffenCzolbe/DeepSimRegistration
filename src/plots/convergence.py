@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import os
 from tensorboard.backend.event_processing import event_accumulator
 from tqdm import tqdm
-from .config2D import *
+from .config import *
 from matplotlib.ticker import FormatStrFormatter
 
 
@@ -80,8 +80,11 @@ fig = plt.figure(figsize=(8, 3))
 axs = fig.subplots(1, len(DATASET_ORDER))
 plt.subplots_adjust(bottom=0.33)
 
-mode = 'val'
-title = 'Val'
+# mode = 'val'
+# title = 'Val'
+
+mode = 'train'
+title = 'Train'
 
 for i, dataset in enumerate(DATASET_ORDER):
     axs[i].set_title(PLOT_CONFIG[dataset]["display_name"])
@@ -120,5 +123,5 @@ for ax in axs:
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
 os.makedirs("./out/plots/", exist_ok=True)
-plt.savefig("./out/plots/convergence.pdf")
-plt.savefig("./out/plots/convergence.png")
+plt.savefig(f"./out/plots/convergence_{mode}.pdf")
+plt.savefig(f"./out/plots/convergence_{mode}.png")

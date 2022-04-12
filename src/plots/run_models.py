@@ -2,10 +2,16 @@ import pickle
 import os
 import numpy as np
 from tqdm import tqdm
-from src.registration_model import RegistrationModel
+from src.registration_model_run import RegistrationModel
 import torch
-from .config import *
+from .config2D import *
 
+import os
+
+#os.environ["CUDA_LAUNCH_BLOCKING"]='1'
+# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
+# os.environ["CUDA_VISIBLE_DEVICES"]='5'
+# print(os.environ["CUDA_VISIBLE_DEVICES"])
 
 def test_model(model):
     def map_dicts(list_of_dics):
@@ -35,13 +41,27 @@ def test_model(model):
 
 
 def run_models(use_cached=True):
-    cache_file_name = "./src/plots/cache.pickl"
+    cache_file_name_3D = "./src/plots/cache.pickl"
+    cache_file_name_2D = "./src/plots/cache2Ddatasets.pickl"
 
-    if use_cached and os.path.isfile(cache_file_name):
-        return pickle.load(open(cache_file_name, "rb"))
+    if use_cached and os.path.isfile(cache_file_name_2D):
+        d1 = pickle.load(open(cache_file_name_3D, "rb"))
+        d2 = pickle.load(open(cache_file_name_2D, "rb"))
+        # #print(d1['phc-u373'].keys())
+        # d1['phc-u373'].update({'mind': d2['phc-u373']['mind']})
+        # d1['platelet-em'].update({'mind': d2['platelet-em']['mind']})
+        # return d1
+        #print(print(d1['phc-u373'].keys()))
+        del d1['phc-u373']
+        del d1['platelet-em']
+        d2 = pickle.load(open(cache_file_name_2D, "rb"))
+        d = {**d1, **d2}
+        #print(d.keys())
+        return d
+        
     else:
-        if os.path.isfile(cache_file_name):
-            results = pickle.load(open(cache_file_name, "rb"))
+        if os.path.isfile(cache_file_name_2D):
+            results = pickle.load(open(cache_file_name_2D, "rb"))
         else:
             results = {}
 
@@ -62,9 +82,9 @@ def run_models(use_cached=True):
                 )
                 step_dict = test_model(model)
                 results[dataset][loss_function] = step_dict
-                # print(f"{dataset}, {loss_function}:")
-                # print(step_dict)
-        pickle.dump(results, open(cache_file_name, "wb"))
+                print(f"{dataset}, {loss_function}:")
+                print(step_dict)
+        pickle.dump(results, open(cache_file_name_2D, "wb"))
         return results
 
 

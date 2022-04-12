@@ -8,7 +8,8 @@ from PIL import Image
 
 
 class Fig:
-    def __init__(self, rows=1, cols=1, title=None, figsize=None, transparent_background=False, column_titles=None, axs=None):
+    def __init__(self, rows=1, cols=1, title=None, figsize=None, transparent_background=False, column_titles=None, axs=None,
+                 sharex=False, sharey=False):
         """
         instantiates a plot.
         Parameters:
@@ -22,7 +23,7 @@ class Fig:
         # instantiate plot
         if axs is None:
             self.fig, self.axs = plt.subplots(
-                nrows=rows, ncols=cols, dpi=300, figsize=figsize, frameon=not transparent_background
+                nrows=rows, ncols=cols, dpi=300, figsize=figsize, frameon=not transparent_background, sharex=sharex, sharey=sharey,
             )
         else:
             self.fig = plt.gcf()
@@ -64,7 +65,7 @@ class Fig:
                                   rotation=90, verticalalignment='center', horizontalalignment='center')
 
 
-    def plot_img(self, row, col, image, title=None, vmin=None, vmax=None):
+    def plot_img(self, row, col, image, cmap='gray', title=None, vmin=None, vmax=None, interpolation='none'):
         """
         plots a tensor of the form C x H x W at position row, col.
         C needs to be either C=1 or C=3
@@ -81,7 +82,7 @@ class Fig:
         if len(img.shape) == 2:
             # plot greyscale image
             self.axs[row, col].imshow(
-                img, cmap="gray", vmin=vmin, vmax=vmax, interpolation="none"
+                img, cmap=cmap, vmin=vmin, vmax=vmax, interpolation=interpolation
             )
         elif len(img.shape) == 3:
             # last channel is color channel

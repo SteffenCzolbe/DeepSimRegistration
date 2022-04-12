@@ -5,14 +5,24 @@ import seaborn as sns
 from argparse import ArgumentParser
 import pickle
 import numpy as np
-from .config import *
+
+#######################
+#from .config import *
+from .config2D import *
+#######################
+
+from .run_models import run_models
 
 
 def main(args):
-    # load data
-    with open(args.cache_file_name, 'rb') as f:
-        test_results = pickle.load(f)
+    #load data
 
+    # for config (3D data)
+    # with open(args.cache_file_name, 'rb') as f:
+    #     test_results = pickle.load(f)
+
+    # for config2D (mind loss)
+    test_results = run_models(use_cached=True)
     data = defaultdict(list)
 
     for dataset in DATASET_ORDER:
@@ -21,6 +31,8 @@ def main(args):
         for loss_function in LOSS_FUNTION_ORDER:
             if loss_function not in test_results[dataset].keys():
                 continue
+            
+            print(dataset, loss_function)
 
             data['dataset'].append(dataset)
             data['loss_function'].append(loss_function)
@@ -31,6 +43,7 @@ def main(args):
                 data[k].append(v)
 
     # print
+    #print(data.values())
     df = pd.DataFrame(data)
     df.to_csv(args.output_file, sep=',', index=False, header=True)
 
