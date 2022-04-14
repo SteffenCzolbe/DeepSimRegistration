@@ -8,7 +8,7 @@ from .config import *
 from .run_models import run_models
 import json
 
-LOSS_FUNTION_ORDER.remove('vgg')  # not for VGG
+LOSS_FUNTION_ORDER.remove('mind')  # not for VGG
 dataset = "brain-mri"
 
 # set up sup-plots

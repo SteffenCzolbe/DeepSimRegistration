@@ -127,15 +127,12 @@ if __name__ == '__main__':
 
     tuning = glob.glob('./weights_exp/transmorph-platelet/*')
     tuning2 = glob.glob('./weights_exp/transmorph-phc/*')
-    tuning3 = glob.glob('./weights_exp/my_logs_transmorph2/lightning_logs/*')
-    #print(tuning)
-    runs = tuning3  + tuning + tuning2
+    runs = tuning + tuning2
     for run in tqdm(runs, desc='reading hparam training logs...'):
-        print(run)
         dataset, lossfun, lam = read_model_hparams(run)
         print(run, dataset, lossfun, lam)
         if lossfun in EXTRACT_TRANSMORPH_LOSS_FUNCTIONS:
-                mean_val_dice_overlap = read_model_logs(run)
-                hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap
+            mean_val_dice_overlap = read_model_logs(run)
+            hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap
 
     plot(hparam_tuning_results)

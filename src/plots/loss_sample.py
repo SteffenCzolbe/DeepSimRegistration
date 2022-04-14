@@ -112,7 +112,7 @@ def make_loss():
         I_1 = crop(*crop_area, I_1)
         I_m = crop(*crop_area, I_m)
 
-        plotfun(fig, 0, 0, model, I_m ,title='Moved',
+        plotfun(fig, 0, 0, model, I_0 ,title='Moving',
                     vmin=0, vmax=1)
 
         plotfun(fig, 0, 1, model, I_1 ,title='Fixed',

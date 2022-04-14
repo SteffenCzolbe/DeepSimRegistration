@@ -12,7 +12,7 @@ weights
 *.pickl
 .vscode
 *.tif
-*.sh
+#*.sh
 data
 data/*
 
@@ -35,6 +35,8 @@ jobs
 jobs/*
 scripts_demos/*
 scripts_demos
+scripts_ppar/*
+scripts_ppar
 logs_levels
 logs_levels/*
 logs_levels_

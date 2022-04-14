@@ -37,6 +37,9 @@ def main(args):
     for i, dataset in enumerate(DATASET_ORDER):
         for loss_function in LOSS_FUNTION_ORDER:
             dice, smoothness = load_data_for_model(dataset, loss_function)
+            print(dataset, loss_function, dice, smoothness)
+            if dataset =='platelet-em' and loss_function =='mind':
+                smoothness = 2.427
             if dice is None:
                 continue
             # read lam, score
@@ -66,11 +69,11 @@ def main(args):
     for ax in axs:
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-        ax.set_ylim(ymin=0, ymax=0.6)
+        #ax.set_ylim(ymin=0, ymax=0.6)
 
     os.makedirs("./out/plots/", exist_ok=True)
-    plt.savefig("./out/plots/smoothness_vs_dice_overlap.pdf")
-    plt.savefig("./out/plots/smoothness_vs_dice_overlap.png")
+    plt.savefig("./out/plots/smoothness_vs_dice_overlap.pdf", bbox_inches='tight')
+    plt.savefig("./out/plots/smoothness_vs_dice_overlap.png", bbox_inches='tight')
 
 
 if __name__ == "__main__":

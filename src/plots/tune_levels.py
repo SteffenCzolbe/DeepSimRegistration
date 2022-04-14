@@ -73,7 +73,7 @@ def plot(hparam_tuning_results):
     for i, dataset in enumerate(DATASET_ORDER):
         if dataset not in hparam_tuning_results.keys():
             continue
-        for lossfun in EXTRACT_LEVEL_SEG_LOSS_FUNTIONS:
+        for lossfun in EXTRACT_LEVEL_AE_LOSS_FUNTIONS:
             if lossfun not in hparam_tuning_results[dataset].keys():
                 continue
             # read lam, score
@@ -100,11 +100,11 @@ def plot(hparam_tuning_results):
 
     # add legend
     handles = [
-        LOSS_FUNTION_CONFIG[loss_function]["handle"] for loss_function in EXTRACT_LEVEL_SEG_LOSS_FUNTIONS
+        LOSS_FUNTION_CONFIG[loss_function]["handle"] for loss_function in EXTRACT_LEVEL_AE_LOSS_FUNTIONS
     ]
     labels = [
         LOSS_FUNTION_CONFIG[loss_function]["display_name"]
-        for loss_function in EXTRACT_LEVEL_SEG_LOSS_FUNTIONS
+        for loss_function in EXTRACT_LEVEL_AE_LOSS_FUNTIONS
     ]
     axs[2].legend(handles, labels, bbox_to_anchor=(1., 1.), fontsize=12)
 
@@ -114,31 +114,35 @@ def plot(hparam_tuning_results):
 
     os.makedirs("./out/plots/", exist_ok=True)
 
-    #plt.savefig("./out/plots/ae_levels.pdf", bbox_inches="tight")
-    #plt.savefig("./out/plots/ae_levels.png", bbox_inches="tight")
+    plt.savefig("./out/plots/ae_levels.pdf", bbox_inches="tight")
+    plt.savefig("./out/plots/ae_levels.png", bbox_inches="tight")
 
-    plt.savefig("./out/plots/seg_levels.pdf", bbox_inches="tight")
-    plt.savefig("./out/plots/seg_levels.png", bbox_inches="tight")
+    # plt.savefig("./out/plots/seg_levels.pdf", bbox_inches="tight")
+    # plt.savefig("./out/plots/seg_levels.png", bbox_inches="tight")
 
 
 if __name__ == '__main__':
     hparam_tuning_results = defaultdict(lambda: defaultdict(lambda: {}))
 
-    #tuning = glob.glob('./weights/hparam_tuning/*')
-    tuning = glob.glob('./weights_exp/deep-sim/*')
-    #platelet_seg = glob.glob('./weights_exp/levels-ae-platelet/lightning_logs/*')
-    #platelet_ae = glob.glob('./weights_exp/levels-seg-platelet/lightning_logs/*')
-    phc_seg = glob.glob('./logs_levels_seg/lightning_logs/*')
-    phc_seg2 = glob.glob('./logs_levels_seg2/lightning_logs/*')
-    phc_ae = glob.glob('./logs_levels_ae/lightning_logs/*')
+    platelet_seg = glob.glob('./weights_exp/levels-ae-platelet/lightning_logs/*')
+    platelet_ae = glob.glob('./weights_exp/levels-seg-platelet/lightning_logs/*')
+
+    # tuning = glob.glob('./weights_exp/deep-sim/*')
+    # phc_seg = glob.glob('./logs_levels_seg/lightning_logs/*')
+    # phc_seg2 = glob.glob('./logs_levels_seg2/lightning_logs/*')
+    # phc_ae = glob.glob('./logs_levels_ae/lightning_logs/*')
+    #runs = phc_seg + phc_seg2 + phc_ae + tuning + platelet_seg + platelet_ae
+
+    tuning = glob.glob('./weights_exp/deep-sim-1/*')
+    phc_seg = glob.glob('./weights_exp/levels-seg-phc/*')
+    phc_ae = glob.glob('./weights_exp/levels-ae-phc/*')
+    runs = phc_seg + phc_ae + tuning + platelet_seg + platelet_ae
     
-    #runs = platelet_seg + platelet_ae + phc_seg + phc_ae + tuning
-    runs = phc_seg + phc_seg2 + phc_ae + tuning
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam, w = read_model_hparams(run)
         folder = run.split('/')[-1]
         print(folder, dataset, lossfun, lam, w)
-        if lossfun in EXTRACT_LEVEL_SEG_LOSS_FUNTIONS:
+        if lossfun in EXTRACT_LEVEL_AE_LOSS_FUNTIONS:
             if lam != 4:
                 mean_val_dice_overlap = read_model_logs(run)
                 hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap

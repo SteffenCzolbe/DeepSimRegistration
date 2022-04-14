@@ -46,8 +46,6 @@ MIND_AND_OTHER_LOSS_FUNTION = [
     #"deepsim-transfer",
 ]
 
-
-
 EXTRACT_TRANSMORPH_LOSS_FUNCTIONS = [
     "l2",
     "ncc2",
@@ -58,6 +56,18 @@ EXTRACT_TRANSMORPH_LOSS_FUNCTIONS = [
     "deepsim-ae",
     "deepsim",
 ]
+
+
+# EXTRACT_TRANSMORPH_LOSS_FUNCTIONS = [
+#     "l2",
+#     "ncc2",
+#     "ncc2+supervised",
+#     "nmi",
+#     "mind",
+#     #"vgg",
+#     "deepsim-ae",
+#     "deepsim",
+# ]
 
 
 SYN_LOSS_FUNTIONS = [

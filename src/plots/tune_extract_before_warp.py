@@ -112,7 +112,9 @@ def plot(hparam_tuning_results):
 if __name__ == '__main__':
     hparam_tuning_results = defaultdict(lambda: defaultdict(lambda: {}))
 
-    runs = glob.glob('./weights/hparam_tuning/*')
+    tuning = glob.glob('./weights/hparam_tuning/*')
+    tuning1 = glob.glob('./weights_exp/deep-sim-1/*')
+    runs = tuning + tuning1
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
         if lossfun in EXTRACT_BEFORE_WARP_LOSS_FUNTIONS:

@@ -76,12 +76,12 @@ def smooth(ys, smoothing_factor=0.6):
 
 
 # set up sup-plots
-fig = plt.figure(figsize=(8, 3))
+fig = plt.figure(figsize=(9, 3))
 axs = fig.subplots(1, len(DATASET_ORDER))
-plt.subplots_adjust(bottom=0.33)
+plt.subplots_adjust(bottom=0.33)#, wspace=0.275)
 
 # mode = 'val'
-# title = 'Val'
+# title = 'Val.'
 
 mode = 'train'
 title = 'Train'
@@ -96,7 +96,11 @@ for i, dataset in enumerate(DATASET_ORDER):
         if not os.path.isdir(path):
             continue
         x, y = read_tb_scalar_logs(path, f"{mode}/dice_overlap")
-        y = smooth(y, PLOT_CONFIG[dataset]["smoothing_factor"])
+
+        if dataset == 'platelet-em' and loss_function == 'mind':
+            y = smooth(y, 0.998)
+        else:
+            y = smooth(y, PLOT_CONFIG[dataset]["smoothing_factor"])
         c = LOSS_FUNTION_CONFIG[loss_function]["primary_color"]
         line = axs[i].plot(
             x, y, color=c, linewidth=2
@@ -121,7 +125,8 @@ fig.legend(handles, labels, loc="lower center",
 # configure precision
 for ax in axs:
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    #ax.set_xticks([0, 10000, 20000, 30000])
 
 os.makedirs("./out/plots/", exist_ok=True)
-plt.savefig(f"./out/plots/convergence_{mode}.pdf")
-plt.savefig(f"./out/plots/convergence_{mode}.png")
+plt.savefig(f"./out/plots/convergence_{mode}.pdf", bbox_inches='tight')
+plt.savefig(f"./out/plots/convergence_{mode}.png", bbox_inches='tight')

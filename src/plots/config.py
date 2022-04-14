@@ -46,6 +46,10 @@ MIND_AND_OTHER_LOSS_FUNTION = [
     #"deepsim-transfer",
 ]
 
+# MIND_AND_OTHER_LOSS_FUNTION = [
+#     "mind",
+# ]
+
 
 
 EXTRACT_TRANSMORPH_LOSS_FUNCTIONS = [
@@ -163,14 +167,14 @@ LOSS_FUNTION_CONFIG = {
     },
     "deepsim": {
         "display_name": "$DeepSim_{seg}$",
-        "display_name_bold": "$DeepSim_{seg}$",
+        "display_name_bold": "$\\bf{DeepSim_{seg}}$",
         "primary_color": plt.get_cmap("tab20c").colors[4],
         "marker": "x",
         "our_method": True
     },
     "deepsim-ae": {
         "display_name": "$DeepSim_{ae}$",
-        "display_name_bold": "$DeepSim_{ae}$",
+        "display_name_bold": "$\\bf{DeepSim_{ae}}$",
         "primary_color": plt.get_cmap("tab20c").colors[5],
         "marker": "o",
         "our_method": True
@@ -219,14 +223,14 @@ LOSS_FUNTION_CONFIG = {
     },
     "syn_ae": {
         "display_name": "$SyN + DeepSim_{ae}$",
-        "display_name_bold": "$SyN + DeepSim_{ae}$",
+        "display_name_bold": "$\\bf{SyN + DeepSim_{ae}}$",
         "feature_extractor": "ae",
         "primary_color": plt.get_cmap("tab20c").colors[17],
         "our_method": True,
     },
     "syn_seg": {
         "display_name": "$SyN + DeepSim_{seg}$",
-        "display_name_bold": "$SyN + DeepSim_{seg}$",
+        "display_name_bold": "$\\bf{SyN + DeepSim_{seg}}$",
         "feature_extractor": "seg",
         "primary_color": plt.get_cmap("tab20c").colors[16],
         "our_method": True,

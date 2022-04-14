@@ -12,17 +12,17 @@ import matplotlib.patches as patches
 import os
 
 # #os.environ["CUDA_LAUNCH_BLOCKING"]='1'
-# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
-# os.environ["CUDA_VISIBLE_DEVICES"]='0'
-# print(os.environ["CUDA_VISIBLE_DEVICES"])
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
+os.environ["CUDA_VISIBLE_DEVICES"]='7'
+print(os.environ["CUDA_VISIBLE_DEVICES"])
 
 def get_img(model, test_set_index):
     transformer = torchreg.nn.SpatialTransformer()
     integrate = torchreg.nn.FlowIntegration(6)
 
     with torch.no_grad():
-        #device = "cuda" if torch.cuda.is_available() else "cpu"
-        device = 'cpu'
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        #device = 'cpu'
         model.eval()
         model = model.to(device)
         test_set = model.test_dataloader().dataset
@@ -241,7 +241,8 @@ def plot_no_data(fig, row, col, text, fontsize=12):
 
 
 def make_overview():
-    fig = viz.Fig(5, 9, None, figsize=(9, 5))
+    #fig = viz.Fig(5, 9, None, figsize=(9, 5))
+    fig = viz.Fig(3, 9, None, figsize=(9, 3))
     # adjust subplot spacing
     fig.fig.subplots_adjust(hspace=0.05, wspace=0.05)
 
@@ -284,10 +285,15 @@ def make_overview():
 
     # label loss function
     for i, lossfun in enumerate(LOSS_FUNTION_ORDER):
+
+        if 'deepsim' in loss_function:
+            fontsize = 10
+        else:
+            fontsize = 14
         fig.axs[0, i +
-                2].set_title(LOSS_FUNTION_CONFIG[lossfun]["display_name"], verticalalignment='top')
-    fig.axs[0, 0].set_title("Moving", verticalalignment='top')
-    fig.axs[0, 1].set_title("Fixed", verticalalignment='top')
+                2].set_title(LOSS_FUNTION_CONFIG[lossfun]["display_name"], verticalalignment='top', fontsize=fontsize)
+    fig.axs[0, 0].set_title("Moving", verticalalignment='top', fontsize = 10)
+    fig.axs[0, 1].set_title("Fixed", verticalalignment='top', fontsize = 10)
 
     os.makedirs("./out/plots", exist_ok=True)
     fig.save("./out/plots/img_sample.pdf", close=False)

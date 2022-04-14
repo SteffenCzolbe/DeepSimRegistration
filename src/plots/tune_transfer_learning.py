@@ -115,13 +115,15 @@ def plot(hparam_tuning_results):
 if __name__ == '__main__':
     hparam_tuning_results = defaultdict(lambda: defaultdict(lambda: {}))
 
-    #tuning = glob.glob('./weights/hparam_tuning/*')
-    tuning = glob.glob('./weights_exp/deep-sim/*')
-    transfer_seg = glob.glob('./weights_exp/transfer-seg/lightning_logs/*')
-    transfer_ae = glob.glob('./weights_exp/transfer-ae/lightning_logs/*')
-    runs = transfer_seg + transfer_ae + tuning
+    #tuning = glob.glob('./weights_exp/deep-sim/*')
+    tuning1 = glob.glob('./weights_exp/deep-sim-1/*')
+    vgg = glob.glob('./weights_exp/deep-sim-vgg/*')
+    transfer_seg = glob.glob('./weights_exp/transfer-seg/*')
+    transfer_ae = glob.glob('./weights_exp/transfer-ae/*')
+    runs = transfer_seg + transfer_ae + vgg + tuning1 #+ tuning 
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
+        print(run, dataset, lossfun, lam)
         if lossfun in EXTRACT_TRANSFER_LOSS_FUNTIONS:
             mean_val_dice_overlap = read_model_logs(run)
             hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap

@@ -128,12 +128,14 @@ if __name__ == '__main__':
     hparam_tuning_results = defaultdict(lambda: defaultdict(lambda: {}))
 
     tuning = glob.glob('./weights/hparam_tuning/*')
-    #tuning = glob.glob('./weights_exp/deep-sim/*')
-    mind = glob.glob('./weights_exp/mind-voxelmorph/lightning_logs/*')
+    tuning1 = glob.glob('./weights_exp/deep-sim-1/*')
+    mind = glob.glob('./weights_exp/mind-voxelmorph/*')
     #transfer_seg = glob.glob('./weights_exp/transfer-seg/lightning_logs/*')
-    runs = mind + tuning #+ transfer_seg
+
+    runs = mind + tuning + tuning1
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
+        #print(run, dataset, lossfun, lam)
         if lossfun in MIND_AND_OTHER_LOSS_FUNTION:
             mean_val_dice_overlap = read_model_logs(run)
             hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap

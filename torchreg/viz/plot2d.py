@@ -330,7 +330,7 @@ class Fig:
             path: path to save at. Including extension. eg. '~/my_fig.png'
             close: Bool, closes the figure when set.
         """
-        plt.savefig(path)
+        plt.savefig(path, bbox_inches='tight')
         if close:
             plt.close(self.fig)
 
