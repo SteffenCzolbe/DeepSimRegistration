@@ -50,13 +50,14 @@ class RegistrationModel(CommonLightningModel):
             raise ValueError(f'model "{self.hparams.net}" unknow.')
         
         if hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-ae", "deepsim-transfer-ae",
+                                    "deepsim-zero", "deepsim-ae-zero",
                                     "deepsim-ae_0", "deepsim-ae_01", "deepsim-ae_02",
                                     "deepsim-ae_1", "deepsim-ae_12", "deepsim-ae_2",
                                     "deepsim_0", "deepsim_01", "deepsim_02",
                                     "deepsim_1", "deepsim_12", "deepsim_2"] and not hparams.deepsim_weights:
             raise ValueError("No weights specified for Deep Similarity Metric.")
         
-        if hparams.loss.lower() in ["deepsim", "deepsim-transfer", 
+        if hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-zero", 
                                     "deepsim_0", "deepsim_01", "deepsim_02",
                                     "deepsim_1", "deepsim_12", "deepsim_2"]:
 
@@ -76,16 +77,20 @@ class RegistrationModel(CommonLightningModel):
                 levels = 'all'
             elif hparams.loss.lower()=="deepsim-transfer":
                 levels = 'all'
+            elif hparams.loss.lower()=="deepsim-zero":
+                levels = 'all'
    
 
             feature_extractor = SegmentationModel.load_from_checkpoint(
                 hparams.deepsim_weights
             )
 
+            if 'zero' in hparams.loss.lower():
+                self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=True)
+            else:
+                self.deepsim = DeepSim(feature_extractor, levels=levels)
 
-            self.deepsim = DeepSim(feature_extractor, levels=levels)
-
-        elif hparams.loss.lower() in ["deepsim-ae", "deepsim-transfer-ae",
+        elif hparams.loss.lower() in ["deepsim-ae", "deepsim-transfer-ae","deepsim-ae-zero",
                                       "deepsim-ae_0", "deepsim-ae_01", "deepsim-ae_02",
                                       "deepsim-ae_1", "deepsim-ae_12", "deepsim-ae_2"]:
 
@@ -105,12 +110,17 @@ class RegistrationModel(CommonLightningModel):
                 levels = 'all'
             elif hparams.loss.lower()=="deepsim-transfer-ae":
                 levels = 'all'
+            elif hparams.loss.lower()=="deepsim-ae-zero":
+                levels = 'all'
 
             feature_extractor = AutoEncoderModel.load_from_checkpoint(
                 hparams.deepsim_weights
             )
 
-            self.deepsim = DeepSim(feature_extractor, levels=levels)
+            if 'zero' in hparams.loss.lower():
+                self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=True)
+            else:
+                self.deepsim = DeepSim(feature_extractor, levels=levels)
 
         elif hparams.loss.lower() == "vgg":
             feature_extractor = VGGFeatureExtractor()
@@ -161,6 +171,7 @@ class RegistrationModel(CommonLightningModel):
 
     def similarity_loss(self, I_m, I_1, S_m_onehot, S_1_onehot):
         if self.hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-ae", "deepsim-transfer-ae",
+                                         "deepsim-zero", "deepsim-ae-zero",
                                          "deepsim-ae_0", "deepsim-ae_01", "deepsim-ae_02",
                                          "deepsim-ae_1", "deepsim-ae_12", "deepsim-ae_2",
                                          "deepsim_0", "deepsim_01", "deepsim_02",
