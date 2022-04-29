@@ -20,26 +20,31 @@ def load_data_for_model(dataset, loss_function):
     if loss_function not in test_results[dataset].keys():
         return None, None
     dice = test_results[dataset][loss_function]["dice_overlap"].mean(axis=0)
-    smoothness = test_results[dataset][loss_function]["jacobian_determinant_log_var"].mean(
-        axis=0)
-    folding = test_results[dataset][loss_function]["jacobian_determinant_negative"].mean(
-        axis=0)
-    return dice, smoothness
+    log_var = test_results[dataset][loss_function]["jacobian_determinant_log_var"]
+    #smoothness = test_results[dataset][loss_function]["jacobian_determinant_log_var"].mean(axis=0)
+    smoothness = log_var[~np.isnan(log_var)].mean(axis=0)
+    folding = test_results[dataset][loss_function]["jacobian_determinant_negative"].mean(axis=0)
+    return dice, smoothness, folding
 
 
 def main(args):
 
     # set up sup-plots
-    fig = plt.figure(figsize=(10, 3))
+    # fig = plt.figure(figsize=(10, 3))
+    # axs = fig.subplots(1, len(DATASET_ORDER))
+    # plt.subplots_adjust(bottom=0.33)
+
+    fig = plt.figure(figsize=(8, 3))
     axs = fig.subplots(1, len(DATASET_ORDER))
-    plt.subplots_adjust(bottom=0.33)
+    plt.subplots_adjust(bottom=0.33, wspace=0.275)
+
 
     for i, dataset in enumerate(DATASET_ORDER):
         for loss_function in LOSS_FUNTION_ORDER:
-            dice, smoothness = load_data_for_model(dataset, loss_function)
-            print(dataset, loss_function, dice, smoothness)
-            if dataset =='platelet-em' and loss_function =='mind':
-                smoothness = 2.427
+            dice, smoothness, folding = load_data_for_model(dataset, loss_function)
+            print(dataset, loss_function, np.round(dice, 2), np.round(smoothness,2), np.round(folding * 100, 2))
+            # if dataset =='platelet-em' and loss_function =='mind':
+            #     smoothness = 2.427
             if dice is None:
                 continue
             # read lam, score
@@ -52,7 +57,7 @@ def main(args):
     fig.text(0.5, 0.2, "Test Mean Dice Overlap",
              ha="center", va="center", fontsize=16)
     fig.text(
-        0.06, 0.58, "$\sigma^2(\log |J_{\Phi}|)$", ha="center", va="center", rotation="vertical", fontsize=16)
+        0.04, 0.58, "$\sigma^2(\log |J_{\Phi}|)$", ha="center", va="center", rotation="vertical", fontsize=16)
 
     # add legend
     handles = [
@@ -66,14 +71,18 @@ def main(args):
                ncol=len(handles), handlelength=1.5, columnspacing=1.5)
 
     # configure axis precision
-    for ax in axs:
+    for i, ax in enumerate(axs):
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-        ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        if i == 2:
+            ax.xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+        else:
+            ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         #ax.set_ylim(ymin=0, ymax=0.6)
 
-    os.makedirs("./out/plots/", exist_ok=True)
-    plt.savefig("./out/plots/smoothness_vs_dice_overlap.pdf", bbox_inches='tight')
-    plt.savefig("./out/plots/smoothness_vs_dice_overlap.png", bbox_inches='tight')
+    os.makedirs("./out/plots/pdf/", exist_ok=True)
+    os.makedirs("./out/plots/png/", exist_ok=True)
+    plt.savefig("./out/plots/pdf/smoothness_vs_dice_overlap.pdf", bbox_inches='tight')
+    plt.savefig("./out/plots/png/smoothness_vs_dice_overlap.png", bbox_inches='tight')
 
 
 if __name__ == "__main__":

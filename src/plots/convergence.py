@@ -76,18 +76,18 @@ def smooth(ys, smoothing_factor=0.6):
 
 
 # set up sup-plots
-fig = plt.figure(figsize=(9, 3))
+fig = plt.figure(figsize=(8, 3))
 axs = fig.subplots(1, len(DATASET_ORDER))
-plt.subplots_adjust(bottom=0.33)#, wspace=0.275)
+plt.subplots_adjust(bottom=0.33, wspace=0.275)
 
-# mode = 'val'
-# title = 'Val.'
+mode = 'val'
+title = 'Val.'
 
-mode = 'train'
-title = 'Train'
+# mode = 'train'
+# title = 'Train'
 
 for i, dataset in enumerate(DATASET_ORDER):
-    axs[i].set_title(PLOT_CONFIG[dataset]["display_name"])
+    axs[i].set_title(PLOT_CONFIG[dataset]["display_name"])#, fontsize = 20)
     for loss_function in tqdm(
         LOSS_FUNTION_ORDER, desc=f"plotting convergence of loss-functions on {dataset}"
     ):
@@ -98,7 +98,7 @@ for i, dataset in enumerate(DATASET_ORDER):
         x, y = read_tb_scalar_logs(path, f"{mode}/dice_overlap")
 
         if dataset == 'platelet-em' and loss_function == 'mind':
-            y = smooth(y, 0.998)
+            y = smooth(y, 0.999)
         else:
             y = smooth(y, PLOT_CONFIG[dataset]["smoothing_factor"])
         c = LOSS_FUNTION_CONFIG[loss_function]["primary_color"]
@@ -106,6 +106,11 @@ for i, dataset in enumerate(DATASET_ORDER):
             x, y, color=c, linewidth=2
         )  # some trickery required to show lines on the legend of subplots not containing them
         LOSS_FUNTION_CONFIG[loss_function]["handle"] = line[0]
+
+        # if loss_function == 'mind':
+        #     line = axs[i].plot(x, y, color='red', linewidth=2)
+        
+
 
 # add labels
 fig.text(0.5, 0.2, "Gradient Update Steps",
@@ -119,14 +124,26 @@ labels = [
     LOSS_FUNTION_CONFIG[loss_function]["display_name"]
     for loss_function in LOSS_FUNTION_ORDER
 ]
-fig.legend(handles, labels, loc="lower center",
-           ncol=len(handles), handlelength=1.5, columnspacing=1.5)
+
+# fig.legend(handles, labels, loc="lower center",
+#             ncol=len(handles), handlelength=1.5, columnspacing=1.75)
+
+if mode == 'val':
+    fig.legend(handles, labels, loc="lower center",
+            ncol=len(handles), handlelength=1, columnspacing=1, fontsize=10.5)
+else:
+    legend = fig.legend([], [], loc="lower center",
+            ncol=len(handles), handlelength=1, columnspacing=1)
+    legend.get_frame().set_edgecolor("white")
+
 
 # configure precision
 for ax in axs:
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     #ax.set_xticks([0, 10000, 20000, 30000])
 
-os.makedirs("./out/plots/", exist_ok=True)
-plt.savefig(f"./out/plots/convergence_{mode}.pdf", bbox_inches='tight')
-plt.savefig(f"./out/plots/convergence_{mode}.png", bbox_inches='tight')
+os.makedirs("./out/plots/pdf/", exist_ok=True)
+os.makedirs("./out/plots/png/", exist_ok=True)
+
+plt.savefig(f"./out/plots/pdf/convergence_{mode}.pdf", bbox_inches='tight')
+plt.savefig(f"./out/plots/png/convergence_{mode}.png", bbox_inches='tight')

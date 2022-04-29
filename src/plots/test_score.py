@@ -126,6 +126,7 @@ for ax in axs:
 fig.text(0.075, 0.63, "Test Mean Dice Overlap",
          ha="center", va="center", rotation="vertical")
 
-os.makedirs("./out/plots/", exist_ok=True)
-plt.savefig("./out/plots/test_score.pdf", bbox_inches='tight')
-plt.savefig("./out/plots/test_score.png", bbox_inches='tight')
+os.makedirs("./out/plots/pdf/", exist_ok=True)
+os.makedirs("./out/plots/png/", exist_ok=True)
+plt.savefig("./out/plots/pdf/test_score.pdf", bbox_inches='tight')
+plt.savefig("./out/plots/png/test_score.png", bbox_inches='tight')

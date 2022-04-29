@@ -17,6 +17,8 @@ data
 data/*
 
 # my folders
+src/plots2/*
+src/plots2
 weights_exp
 weights_exp/*
 my_logs

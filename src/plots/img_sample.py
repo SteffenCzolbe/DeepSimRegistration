@@ -13,7 +13,7 @@ import os
 
 # #os.environ["CUDA_LAUNCH_BLOCKING"]='1'
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
-os.environ["CUDA_VISIBLE_DEVICES"]='7'
+os.environ["CUDA_VISIBLE_DEVICES"]='5'
 print(os.environ["CUDA_VISIBLE_DEVICES"])
 
 def get_img(model, test_set_index):
@@ -295,9 +295,10 @@ def make_overview():
     fig.axs[0, 0].set_title("Moving", verticalalignment='top', fontsize = 10)
     fig.axs[0, 1].set_title("Fixed", verticalalignment='top', fontsize = 10)
 
-    os.makedirs("./out/plots", exist_ok=True)
-    fig.save("./out/plots/img_sample.pdf", close=False)
-    fig.save("./out/plots/img_sample.png")
+    os.makedirs("./out/plots/pdf/", exist_ok=True)
+    os.makedirs("./out/plots/png/", exist_ok=True)
+    fig.save("./out/plots/pdf/img_sample.pdf", close=False)
+    fig.save("./out/plots/png/img_sample.png")
 
 
 def make_detail_all():
@@ -336,10 +337,10 @@ def make_detail_all():
             title=LOSS_FUNTION_CONFIG[loss_function]["display_name"],
         )
 
-    os.makedirs("./out/plots", exist_ok=True)
-    fig.save("./out/plots/img_sample_detail_all.pdf", close=False)
-    fig.save("./out/plots/img_sample_detail_all.png")
-
+    os.makedirs("./out/plots/pdf/", exist_ok=True)
+    os.makedirs("./out/plots/png/", exist_ok=True)
+    fig.save("./out/plots/pdf/img_sample_detail_all.pdf", close=False)
+    fig.save("./out/plots/png/img_sample_detail_all.png")
 
 make_overview()
 make_detail_all()

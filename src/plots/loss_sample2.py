@@ -78,18 +78,18 @@ def my_plot(fig, row, col, model, I, title, cmap='gray', vmin=0, vmax=1,interpol
 
 def make_loss():
     import matplotlib.pyplot as plt
-    plt.rcParams.update({'font.size': 7})
+    plt.rcParams.update({'font.size': 6})
 
-    #fig = viz.Fig(1, len(LOSS_FUNTION_ORDER) + 6, None, figsize=(9, 2))
-    fig = viz.Fig(2, len(LOSS_FUNTION_ORDER) + 2, figsize=(6, 2))
-    #fig.fig.subplots_adjust(hspace=0.4, wspace=0.004)
-    fig.fig.subplots_adjust(hspace=0.4, wspace=0.04)
+    figA = viz.Fig(1, len(LOSS_FUNTION_ORDER) + 2, figsize=(7, 1))
+    figA.fig.subplots_adjust(hspace=0.2, wspace=0.05)
+
+    # figB = viz.Fig(1, len(LOSS_FUNTION_ORDER) + 2, figsize=(7, 1))
+    # figB.fig.subplots_adjust(hspace=0.1, wspace=0.002)
 
     # set plotting function
     plotfun = my_plot
     dataset = "platelet-em"
     sample_idx = 5
-
     cmap = 'summer'
 
     for j, loss_function in enumerate(LOSS_FUNTION_ORDER):
@@ -107,18 +107,16 @@ def make_loss():
 
         # run model
         I_0, S_0, I_m, S_m, I_1, S_1, inv_flow = get_img(model, sample_idx)
-        # I_1 = I_1.permute(0,1,3,2)
-        # I_0 = I_0.permute(0,1,3,2)
         crop_area = (270, 470, 100, 300)
         highlight_area = (350, 410, 102, 160)
         I_0 = crop(*crop_area, I_0)
         I_1 = crop(*crop_area, I_1)
         I_m = crop(*crop_area, I_m)
 
-        plotfun(fig, 0, 0, model, I_0 ,title='Moving',
+        plotfun(figA, 0, 0, model, I_0 ,title='Moving',
                     vmin=0, vmax=1)
 
-        plotfun(fig, 0, 1, model, I_1 ,title='Fixed',
+        plotfun(figA, 0, 1, model, I_1 ,title='Fixed',
                     vmin=0, vmax=1)
                     
         lossy = get_loss(dataset, loss_function, I_0, S_0, I_m, S_m, I_1, S_1)
@@ -141,18 +139,16 @@ def make_loss():
                     seg_out = F.interpolate(lo.unsqueeze(0), size=(200, 200), mode='bilinear', align_corners=False).squeeze(0)
                     seg_outputs.append(seg_out)
 
-                    # plotfun(fig,0,j+2 +(depth+2),model,lo,title=f"$DeepSim^{depth}_{seg}$",cmap=cmap, vmin=vmin, vmax=vmax,
-                    # interpolation='bilinear')
-                    plotfun(fig,1,j +(depth),model,lo.permute(0,2,1),title=f"$DeepSim^{depth}_{seg}$",cmap=cmap, vmin=vmin, vmax=vmax,
-                    interpolation='none')
+                    # plotfun(figB, 0,j +(depth),model,lo.permute(0,2,1),title=f"$DeepSim^{depth}_{seg}$",cmap=cmap, vmin=vmin, vmax=vmax,
+                    # interpolation='none')
 
                 else:
                     ae_out = F.interpolate(lo.unsqueeze(0), size=(200, 200), mode='bilinear', align_corners=False).squeeze(0)
                     ae_outputs.append(ae_out)
-                    # plotfun(fig,0,j+2 +(depth),model,lo,title=f"$DeepSim^{depth}_{ae}$",cmap=cmap, vmin=vmin, vmax=vmax,
-                    # interpolation='bilinear')
-                    plotfun(fig,1,j-2 + depth,model,lo.permute(0,2,1),title=f"$DeepSim^{depth}_{ae}$",cmap=cmap, vmin=vmin, vmax=vmax,
-                    interpolation='none')
+
+                    # plotfun(figB, 0,j-2 + depth,model,lo.permute(0,2,1),title=f"$DeepSim^{depth}_{ae}$",cmap=cmap, vmin=vmin, vmax=vmax,
+                    # interpolation='none')
+
             if loss_function == 'deepsim':
                 seg_lvl = torch.stack(seg_outputs)
                 mean_seg_lvl = torch.mean(seg_lvl, dim = 0)
@@ -160,10 +156,6 @@ def make_loss():
                 ae_lvl = torch.stack(ae_outputs)
                 mean_ae_lvl = torch.mean(ae_lvl, dim = 0)
 
-            
-            
-            
-        
         else:
             print(lossy.size())
             if loss_function =="l2":
@@ -182,7 +174,7 @@ def make_loss():
                 print(loss.min(), loss.max(), loss.mean())  
                 vmin, vmax = loss.min().item(), loss.max().item()
                 #vmax = 1
-            plotfun(fig,0, j+2, model, loss ,title=LOSS_FUNTION_CONFIG[loss_function]["display_name"],
+            plotfun(figA, 0, j+2, model, loss ,title=LOSS_FUNTION_CONFIG[loss_function]["display_name"],
                     vmin=vmin, vmax=vmax,cmap=cmap)
         print()
 
@@ -190,8 +182,8 @@ def make_loss():
 
     print(mean_seg_lvl.size(), mean_ae_lvl.size())
     print(mean_seg_lvl.min(), mean_seg_lvl.max(), mean_seg_lvl.mean())
-    fig.plot_img(0, 4, mean_ae_lvl, cmap=cmap, title=f"$DeepSim_{ae}$", vmin=mean_ae_lvl.min(), vmax=mean_ae_lvl.max(),interpolation='bilinear')
-    fig.plot_img(0, 5, mean_seg_lvl, cmap=cmap, title=f"$DeepSim_{seg}$", vmin=mean_seg_lvl.min(), vmax=mean_seg_lvl.max(),interpolation='bilinear')
+    figA.plot_img(0, 4, mean_ae_lvl, cmap=cmap, title=f"$DeepSim_{ae}$", vmin=mean_ae_lvl.min(), vmax=mean_ae_lvl.max(),interpolation='bilinear')
+    figA.plot_img(0, 5, mean_seg_lvl, cmap=cmap, title=f"$DeepSim_{seg}$", vmin=mean_seg_lvl.min(), vmax=mean_seg_lvl.max(),interpolation='bilinear')
     seg_np = mean_seg_lvl.numpy().reshape(-1)
     ae_np = mean_ae_lvl.numpy().reshape(-1)
     print(ae_np.shape)
@@ -202,9 +194,16 @@ def make_loss():
     print(pearsonr(seg_np, ae_np))
 
 
-    os.makedirs("./out/plots", exist_ok=True)
-    fig.save("./out/plots/loss_sample.pdf", close=False)
-    fig.save("./out/plots/loss_sample.png")
+    os.makedirs("./out/plots/pdf/", exist_ok=True)
+    os.makedirs("./out/plots/png/", exist_ok=True)
+
+    figA.save("./out/plots/pdf/loss_sampleA.pdf", close=False)
+    figA.save("./out/plots/png/loss_sampleA.png")
+
+    # figB.save("./out/plots/pdf/loss_sampleB.pdf", close=False)
+    # figB.save("./out/plots/png/loss_sampleB.png")
+
+
 
 
 #make_overview()

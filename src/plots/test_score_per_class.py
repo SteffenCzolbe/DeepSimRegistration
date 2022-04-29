@@ -8,7 +8,6 @@ from .config import *
 from .run_models import run_models
 import json
 
-LOSS_FUNTION_ORDER.remove('mind')  # not for VGG
 dataset = "brain-mri"
 
 # set up sup-plots
@@ -108,9 +107,10 @@ if len(labels) > 0:
 # add legend
 labels = [LOSS_FUNTION_CONFIG[l]["display_name"] for l in LOSS_FUNTION_ORDER]
 
-
+#prop={"size": 7, "weight":'bold'}
+prop={"size": 7}
 ax.legend(handles[-(1+len(LOSS_FUNTION_ORDER)):-1],
-          labels, loc="lower left", prop={"size": 9})
+          labels, loc="lower left", prop=prop)
 
 
 
@@ -119,6 +119,7 @@ ax.legend(handles[-(1+len(LOSS_FUNTION_ORDER)):-1],
 fig.text(0.06, 0.675, "Dice Overlap", ha="center",
          va="center", rotation="vertical")
 
-os.makedirs("./out/plots/", exist_ok=True)
-plt.savefig(f"./out/plots/test_score_per_class_{dataset}.pdf")
-plt.savefig(f"./out/plots/test_score_per_class_{dataset}.png")
+os.makedirs("./out/plots/pdf/", exist_ok=True)
+os.makedirs("./out/plots/png/", exist_ok=True)
+plt.savefig(f"./out/plots/pdf/test_score_per_class_{dataset}.pdf")
+plt.savefig(f"./out/plots/png/test_score_per_class_{dataset}.png")

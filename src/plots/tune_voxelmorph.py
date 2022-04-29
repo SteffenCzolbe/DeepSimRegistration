@@ -119,9 +119,10 @@ def plot(hparam_tuning_results):
     for ax in axs:
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
 
-    os.makedirs("./out/plots/", exist_ok=True)
-    plt.savefig("./out/plots/voxelmorph.pdf", bbox_inches="tight")
-    plt.savefig("./out/plots/voxelmorph.png", bbox_inches="tight")
+    os.makedirs("./out/plots/pdf/", exist_ok=True)
+    os.makedirs("./out/plots/png/", exist_ok=True)
+    plt.savefig("./out/plots/pdf/voxelmorph.pdf", bbox_inches="tight")
+    plt.savefig("./out/plots/png/voxelmorph.png", bbox_inches="tight")
 
 
 if __name__ == '__main__':
@@ -130,9 +131,10 @@ if __name__ == '__main__':
     tuning = glob.glob('./weights/hparam_tuning/*')
     tuning1 = glob.glob('./weights_exp/deep-sim-1/*')
     mind = glob.glob('./weights_exp/mind-voxelmorph/*')
+    mind_brain = glob.glob('./weights_exp/brain-mind/*')
     #transfer_seg = glob.glob('./weights_exp/transfer-seg/lightning_logs/*')
 
-    runs = mind + tuning + tuning1
+    runs = mind + tuning + tuning1 + mind_brain
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
         #print(run, dataset, lossfun, lam)

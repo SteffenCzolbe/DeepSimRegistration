@@ -8,10 +8,10 @@ from .config2D import *
 
 import os
 
-#os.environ["CUDA_LAUNCH_BLOCKING"]='1'
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
-os.environ["CUDA_VISIBLE_DEVICES"]='4'
-print(os.environ["CUDA_VISIBLE_DEVICES"])
+# #os.environ["CUDA_LAUNCH_BLOCKING"]='1'
+# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
+# os.environ["CUDA_VISIBLE_DEVICES"]='4'
+# print(os.environ["CUDA_VISIBLE_DEVICES"])
 
 def test_model(model):
     def map_dicts(list_of_dics):
@@ -52,15 +52,28 @@ def run_models(use_cached=True):
     if use_cached and os.path.isfile(cache_file_name_2D):
         d1 = pickle.load(open(cache_file_name_3D, "rb"))
         d1b = pickle.load(open(cache_file_name_3D_mind, "rb"))
-        d2 = pickle.load(open(cache_file_name_2D, "rb"))
 
+        print(type(d1b))
+        print(d1b.keys())
+        print(d1b['brain-mri'].keys())
+        print(d1['brain-mri'].keys())
+        
         d1['brain-mri'].update({'mind': d1b['brain-mri']['mind']})
+        print(d1['brain-mri'].keys())
 
+        assert False
+
+        d2 = pickle.load(open(cache_file_name_2D, "rb"))
+        # #print(d1['phc-u373'].keys())
+        # d1['phc-u373'].update({'mind': d2['phc-u373']['mind']})
+        # d1['platelet-em'].update({'mind': d2['platelet-em']['mind']})
+        # return d1
+        #print(print(d1['phc-u373'].keys()))
         del d1['phc-u373']
         del d1['platelet-em']
         d2 = pickle.load(open(cache_file_name_2D, "rb"))
         d = {**d1, **d2}
-
+        #print(d.keys())
         return d
         
     else:
@@ -93,4 +106,4 @@ def run_models(use_cached=True):
 
 
 if __name__ == "__main__":
-    run_models(use_cached=False)
+    run_models(use_cached=True)

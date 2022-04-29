@@ -43,24 +43,23 @@ def test_model(model):
 
 def run_models(use_cached=True):
     cache_file_name_3D = "./src/plots/cache.pickl"
-    cache_file_name_3D_mind = "./src/plots/cache3D_mind.pickl"
-    cache_file_name_2D = "./src/plots/cache2D_mind.pickl"
-
     #cache_file_name_2D = "./src/plots/cache2Ddatasets.pickl"
     #cache_file_name_2D = "./src/plots/cache2D.pickl"
+    cache_file_name_2D = "./src/plots/cache2D_mind.pickl"
 
     if use_cached and os.path.isfile(cache_file_name_2D):
         d1 = pickle.load(open(cache_file_name_3D, "rb"))
-        d1b = pickle.load(open(cache_file_name_3D_mind, "rb"))
         d2 = pickle.load(open(cache_file_name_2D, "rb"))
-
-        d1['brain-mri'].update({'mind': d1b['brain-mri']['mind']})
-
+        # #print(d1['phc-u373'].keys())
+        # d1['phc-u373'].update({'mind': d2['phc-u373']['mind']})
+        # d1['platelet-em'].update({'mind': d2['platelet-em']['mind']})
+        # return d1
+        #print(print(d1['phc-u373'].keys()))
         del d1['phc-u373']
         del d1['platelet-em']
         d2 = pickle.load(open(cache_file_name_2D, "rb"))
         d = {**d1, **d2}
-
+        #print(d.keys())
         return d
         
     else:

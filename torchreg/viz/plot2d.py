@@ -48,6 +48,7 @@ class Fig:
         self.fig.suptitle(title)
         if column_titles:
             for c, column_title in zip(range(cols), column_titles):
+                #print(column_title)
                 self.axs[0, c].set_title(column_title)
 
     def set_row_label(self, row, label, offset=-30, plot_height=256):

@@ -79,7 +79,7 @@ def plot(hparam_tuning_results):
             lambdas, val_dice_overlap = list(zip(*items))
             handle = axs[i].plot(lambdas, val_dice_overlap, color=LOSS_FUNTION_CONFIG[lossfun]
                                  ["primary_color"], label=LOSS_FUNTION_CONFIG[lossfun]["display_name"], 
-                                                    linestyle='--' if 'transfer' in lossfun else '-',
+                                                    linestyle='--' if 'transfer' in lossfun or 'vgg' in lossfun else '-',
                                                     marker=LOSS_FUNTION_CONFIG[lossfun]["marker"])
             handle = handle[0]
             axs[i].set_xscale('log', basex=2)
@@ -107,9 +107,10 @@ def plot(hparam_tuning_results):
     for ax in axs:
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
 
-    os.makedirs("./out/plots/", exist_ok=True)
-    plt.savefig("./out/plots/transfer_learing.pdf", bbox_inches="tight")
-    plt.savefig("./out/plots/transfer_learing.png", bbox_inches="tight")
+    os.makedirs("./out/plots/pdf/", exist_ok=True)
+    os.makedirs("./out/plots/png/", exist_ok=True)
+    plt.savefig("./out/plots/pdf/transfer_learing.pdf", bbox_inches="tight")
+    plt.savefig("./out/plots/png/transfer_learing.png", bbox_inches="tight")
 
 
 if __name__ == '__main__':

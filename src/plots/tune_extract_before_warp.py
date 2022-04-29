@@ -104,9 +104,10 @@ def plot(hparam_tuning_results):
     for ax in axs:
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
 
-    os.makedirs("./out/plots/", exist_ok=True)
-    plt.savefig("./out/plots/extract_before_warp.pdf")
-    plt.savefig("./out/plots/extract_before_warp.png")
+    os.makedirs("./out/plots/pdf/", exist_ok=True)
+    os.makedirs("./out/plots/png/", exist_ok=True)
+    plt.savefig("./out/plots/pdf/extract_before_warp.pdf")
+    plt.savefig("./out/plots/png/extract_before_warp.png")
 
 
 if __name__ == '__main__':

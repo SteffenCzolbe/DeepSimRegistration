@@ -132,7 +132,12 @@ if __name__ == '__main__':
         dataset, lossfun, lam = read_model_hparams(run)
         print(run, dataset, lossfun, lam)
         if lossfun in EXTRACT_TRANSMORPH_LOSS_FUNCTIONS:
-            mean_val_dice_overlap = read_model_logs(run)
-            hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap
+            if dataset == 'platelet-em' and lossfun == 'mind':
+                if lam >= 2**-5:
+                    mean_val_dice_overlap = read_model_logs(run)
+                    hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap
+            else:
+                mean_val_dice_overlap = read_model_logs(run)
+                hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap
 
     plot(hparam_tuning_results)

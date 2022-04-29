@@ -9,10 +9,12 @@ import glob
 from .config2D import *
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
-# import matplotlib as mpl
+#import matplotlib as mpl
 # mpl.rcParams.update(mpl.rcParamsDefault)
 #matplotlib.rcParams['text.usetex'] = True
 #matplotlib.rcParams['text.latex.preview'] = True
+
+marker_size = matplotlib.rcParams['lines.markersize']
 
 def read_tb_scalar_log(file, scalar):
     """
@@ -81,11 +83,11 @@ def plot(hparam_tuning_results):
             items = sorted(items, key=lambda t: t[0])
             lambdas, val_dice_overlap = list(zip(*items))
             handle = axs[i].plot(lambdas, val_dice_overlap, color=LOSS_FUNTION_CONFIG[lossfun]
-                                 ["primary_color"], label=LOSS_FUNTION_CONFIG[lossfun]["display_name"], 
-                                                    linestyle='--' if '_' in lossfun else '-',
-                                                    marker='<' if 'transfer' in lossfun else LOSS_FUNTION_CONFIG[lossfun]["marker"],
-                                                    #markersize=4 if '_' in lossfun else 6,
-                                                    linewidth=1 if '_' in lossfun else 1.5)
+                                 ["primary_color"], label = LOSS_FUNTION_CONFIG[lossfun]["display_name"], 
+                                                    linestyle = ':' if '_' in lossfun else '-',
+                                                    marker = LOSS_FUNTION_CONFIG[lossfun]["marker"],
+                                                    markersize = 4 if '_' in lossfun else 6,
+                                                    linewidth = 1.5 if '_' in lossfun else 1.5)
             handle = handle[0]
             axs[i].set_xscale('log', basex=2)
             axs[i].set_title(PLOT_CONFIG[dataset]["display_name"], fontsize=18)
@@ -112,13 +114,14 @@ def plot(hparam_tuning_results):
     for ax in axs:
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
 
-    os.makedirs("./out/plots/", exist_ok=True)
+    os.makedirs("./out/plots/pdf/", exist_ok=True)
+    os.makedirs("./out/plots/png/", exist_ok=True)
 
-    plt.savefig("./out/plots/ae_levels.pdf", bbox_inches="tight")
-    plt.savefig("./out/plots/ae_levels.png", bbox_inches="tight")
+    plt.savefig("./out/plots/pdf/levels_ae.pdf", bbox_inches="tight")
+    plt.savefig("./out/plots/png/levels_ae.png", bbox_inches="tight")
 
-    # plt.savefig("./out/plots/seg_levels.pdf", bbox_inches="tight")
-    # plt.savefig("./out/plots/seg_levels.png", bbox_inches="tight")
+    # plt.savefig("./out/plots/pdf/levels_seg.pdf", bbox_inches="tight")
+    # plt.savefig("./out/plots/png/levels_seg.png", bbox_inches="tight")
 
 
 if __name__ == '__main__':
@@ -136,7 +139,7 @@ if __name__ == '__main__':
     tuning = glob.glob('./weights_exp/deep-sim-1/*')
     phc_seg = glob.glob('./weights_exp/levels-seg-phc/*')
     phc_ae = glob.glob('./weights_exp/levels-ae-phc/*')
-    runs = phc_seg + phc_ae + tuning + platelet_seg + platelet_ae
+    runs = tuning + platelet_seg + platelet_ae + phc_seg + phc_ae
     
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam, w = read_model_hparams(run)
