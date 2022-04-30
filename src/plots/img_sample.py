@@ -13,7 +13,7 @@ import os
 
 # #os.environ["CUDA_LAUNCH_BLOCKING"]='1'
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
-os.environ["CUDA_VISIBLE_DEVICES"]='5'
+os.environ["CUDA_VISIBLE_DEVICES"]='3'
 print(os.environ["CUDA_VISIBLE_DEVICES"])
 
 def get_img(model, test_set_index):

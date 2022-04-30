@@ -42,7 +42,7 @@ def main(args):
     for i, dataset in enumerate(DATASET_ORDER):
         for loss_function in LOSS_FUNTION_ORDER:
             dice, smoothness, folding = load_data_for_model(dataset, loss_function)
-            print(dataset, loss_function, np.round(dice, 2), np.round(smoothness,2), np.round(folding * 100, 2))
+            print(dataset, loss_function, np.round(dice, 3), np.round(smoothness,2), np.round(folding * 100, 2))
             # if dataset =='platelet-em' and loss_function =='mind':
             #     smoothness = 2.427
             if dice is None:
