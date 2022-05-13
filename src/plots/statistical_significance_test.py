@@ -72,11 +72,6 @@ def print_results(results):
     
 
 if __name__ == '__main__':
-    #cache_file_name = "./src/plots/cache.pickl"
-    #cache_file_name = "./src/plots/cache2Ddatasets.pickl"
-    
-    #cache_file_name = "./src/plots/cache2D_mind.pickl"
-    #results = pickle.load(open(cache_file_name, "rb"))
     results = run_models(use_cached=True)
 
     for dataset in results.keys():
@@ -90,5 +85,3 @@ if __name__ == '__main__':
                 results[dataset] = compare_metrics(results[dataset], metric0, metric1)
         
     print_results(results)
-    pickle.dump(results, open('results.pickl', "wb"))
-

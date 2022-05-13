@@ -78,7 +78,10 @@ def plot(hparam_tuning_results):
             items = sorted(items, key=lambda t: t[0])
             lambdas, val_dice_overlap = list(zip(*items))
             handle = axs[i].plot(lambdas, val_dice_overlap, color=LOSS_FUNTION_CONFIG[lossfun]
-                                 ["primary_color"], label=LOSS_FUNTION_CONFIG[lossfun]["display_name"], linestyle='--' if 'ebw' in lossfun else '-',  marker=LOSS_FUNTION_CONFIG[lossfun]["marker"])
+                                 ["primary_color"], 
+                                 label=LOSS_FUNTION_CONFIG[lossfun]["display_name"], 
+                                 linestyle='--' if 'ebw' in lossfun else '-',  
+                                 marker=LOSS_FUNTION_CONFIG[lossfun]["marker"])
             handle = handle[0]
             axs[i].set_xscale('log', basex=2)
             axs[i].set_title(PLOT_CONFIG[dataset]["display_name"], fontsize=18)
@@ -113,9 +116,9 @@ def plot(hparam_tuning_results):
 if __name__ == '__main__':
     hparam_tuning_results = defaultdict(lambda: defaultdict(lambda: {}))
 
-    tuning = glob.glob('./weights/hparam_tuning/*')
-    tuning1 = glob.glob('./weights_exp/deep-sim-1/*')
-    runs = tuning + tuning1
+    baselines = glob.glob('./weights/hparam_tuning/*')
+    deepsim = glob.glob('./weights_experiments/voxelmorph/deep-sim/*')
+    runs = baselines + deepsim
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
         if lossfun in EXTRACT_BEFORE_WARP_LOSS_FUNTIONS:

@@ -59,12 +59,6 @@ def read_model_logs(dir):
 
 
 def plot(hparam_tuning_results):
-    # set up sup-plots
-    # fig = plt.figure(figsize=(9, 3))
-    # axs = fig.subplots(1, len(DATASET_ORDER) + 1, gridspec_kw={'width_ratios': [1, 1, 0.7]})
-    # axs[2].axis("off")
-    # plt.subplots_adjust(bottom=0.18, wspace=0.3)
-    # set up sup-plots
     fig = plt.figure(figsize=(14, 3.0))
     axs = fig.subplots(1, len(DATASET_ORDER)+1)
     axs[3].axis("off")
@@ -83,7 +77,6 @@ def plot(hparam_tuning_results):
             lambdas, val_dice_overlap = list(zip(*items))
             handle = axs[i].plot(lambdas, val_dice_overlap, color=LOSS_FUNTION_CONFIG[lossfun]
                                  ["primary_color"], label=LOSS_FUNTION_CONFIG[lossfun]["display_name"], 
-                                                    #linestyle='--' if 'transfer' in lossfun else '-',
                                                     marker=LOSS_FUNTION_CONFIG[lossfun]["marker"],
                                                     markersize=4 if '_' in lossfun else 6,
                                                     linewidth=1 if '_' in lossfun else 1.5)
@@ -91,13 +84,7 @@ def plot(hparam_tuning_results):
             axs[i].set_xscale('log', basex=2)
             axs[i].set_title(PLOT_CONFIG[dataset]["display_name"], fontsize=18)
             LOSS_FUNTION_CONFIG[lossfun]["handle"] = handle
-            print(LOSS_FUNTION_CONFIG[lossfun]["handle"])
-
-    # # add labels
-    # fig.text(0.42, 0.04, "Regularization Hyperparameter $\lambda$",
-    #          ha="center", va="center", fontsize=16)
-    # fig.text(0.05, 0.5, "Val. Mean Dice Overlap", ha="center",
-    #          va="center", rotation="vertical", fontsize=16)
+            #print(LOSS_FUNTION_CONFIG[lossfun]["handle"])
     
     # add labels
     fig.text(0.42, 0.05, "Regularization Hyperparameter $\lambda$",
@@ -128,13 +115,12 @@ def plot(hparam_tuning_results):
 if __name__ == '__main__':
     hparam_tuning_results = defaultdict(lambda: defaultdict(lambda: {}))
 
-    tuning = glob.glob('./weights/hparam_tuning/*')
-    tuning1 = glob.glob('./weights_exp/deep-sim-1/*')
-    mind = glob.glob('./weights_exp/mind-voxelmorph/*')
-    mind_brain = glob.glob('./weights_exp/brain-mind/*')
-    #transfer_seg = glob.glob('./weights_exp/transfer-seg/lightning_logs/*')
+    baselines = glob.glob('./weights/hparam_tuning/*')
+    deepsim = glob.glob('./weights_experiments/voxelmorph/deep-sim/*')
+    mind_2d = glob.glob('./weights_experiments/voxelmorph/mind/mind-voxelmorph-2d/*')
+    mind_3d_brain = glob.glob('./weights_experiments/voxelmorph/mind/mind-voxelmorph-3d-brain/*')
 
-    runs = mind + tuning + tuning1 + mind_brain
+    runs = mind_2d + mind_3d_brain + baselines + deepsim 
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
         #print(run, dataset, lossfun, lam)

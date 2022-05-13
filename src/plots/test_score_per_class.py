@@ -112,9 +112,6 @@ prop={"size": 7}
 ax.legend(handles[-(1+len(LOSS_FUNTION_ORDER)):-1],
           labels, loc="lower left", prop=prop)
 
-
-
-
 # add labels
 fig.text(0.06, 0.675, "Dice Overlap", ha="center",
          va="center", rotation="vertical")

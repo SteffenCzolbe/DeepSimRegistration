@@ -5,13 +5,12 @@ from tqdm import tqdm
 from src.registration_model_run import RegistrationModel
 import torch
 from .config2D import *
-
 import os
 
-#os.environ["CUDA_LAUNCH_BLOCKING"]='1'
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
-os.environ["CUDA_VISIBLE_DEVICES"]='4'
-print(os.environ["CUDA_VISIBLE_DEVICES"])
+# #os.environ["CUDA_LAUNCH_BLOCKING"]='1'
+# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
+# os.environ["CUDA_VISIBLE_DEVICES"]='4'
+# print(os.environ["CUDA_VISIBLE_DEVICES"])
 
 def test_model(model):
     def map_dicts(list_of_dics):
@@ -42,12 +41,12 @@ def test_model(model):
 
 
 def run_models(use_cached=True):
+    # load results for 3d brain-mri dataset
     cache_file_name_3D = "./src/plots/cache.pickl"
     cache_file_name_3D_mind = "./src/plots/cache3D_mind.pickl"
-    cache_file_name_2D = "./src/plots/cache2D_mind.pickl"
 
-    #cache_file_name_2D = "./src/plots/cache2Ddatasets.pickl"
-    #cache_file_name_2D = "./src/plots/cache2D.pickl"
+    # load results for 2d datasets
+    cache_file_name_2D = "./src/plots/cache2D_mind.pickl"
 
     if use_cached and os.path.isfile(cache_file_name_2D):
         d1 = pickle.load(open(cache_file_name_3D, "rb"))
@@ -63,12 +62,13 @@ def run_models(use_cached=True):
 
         return d
         
-    else:
+    else: 
         if os.path.isfile(cache_file_name_2D):
             results = pickle.load(open(cache_file_name_2D, "rb"))
         else:
             results = {}
 
+        # run models for 2d datasets (config2D)
         for dataset in DATASET_ORDER:
             results[dataset] = {}
             for loss_function in tqdm(

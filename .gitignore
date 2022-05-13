@@ -8,6 +8,7 @@ tmp*
 *.ckpt
 out
 weights
+weights_experiments
 *.pckl
 *.pickl
 .vscode
@@ -60,14 +61,17 @@ mind_loss
 avg_time
 tests
 tests/*
+z-python_files
+z-files
+
 
 # my files
-hpc_train1.sh
-hpc_train2.sh
-hpc_train3.sh
 */train_registrationG*.py
 */train_segmentationG*.py
-
+*/config_default.py
+*/run_models_all.py
+*/z_my_config.py
+*/z-test_score.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

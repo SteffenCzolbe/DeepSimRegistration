@@ -64,7 +64,6 @@ def plot(hparam_tuning_results):
     fig = plt.figure(figsize=(9, 3))
     axs = fig.subplots(1, len(DATASET_ORDER) + 1, gridspec_kw={'width_ratios': [1, 1, 0.7]})
     axs[2].axis("off")
-    #axs = fig.subplots(1, len(DATASET_ORDER))
     plt.subplots_adjust(bottom=0.18, wspace=0.3)
 
     for i, dataset in enumerate(DATASET_ORDER):
@@ -85,7 +84,7 @@ def plot(hparam_tuning_results):
             axs[i].set_xscale('log', basex=2)
             axs[i].set_title(PLOT_CONFIG[dataset]["display_name"], fontsize=18)
             LOSS_FUNTION_CONFIG[lossfun]["handle"] = handle
-            print(LOSS_FUNTION_CONFIG[lossfun]["handle"])
+            #print(LOSS_FUNTION_CONFIG[lossfun]["handle"])
 
     # add labels
     fig.text(0.42, 0.04, "Regularization Hyperparameter $\lambda$",
@@ -116,15 +115,14 @@ def plot(hparam_tuning_results):
 if __name__ == '__main__':
     hparam_tuning_results = defaultdict(lambda: defaultdict(lambda: {}))
 
-    #tuning = glob.glob('./weights_exp/deep-sim/*')
-    tuning1 = glob.glob('./weights_exp/deep-sim-1/*')
-    vgg = glob.glob('./weights_exp/deep-sim-vgg/*')
-    transfer_seg = glob.glob('./weights_exp/transfer-seg/*')
-    transfer_ae = glob.glob('./weights_exp/transfer-ae/*')
-    runs = transfer_seg + transfer_ae + vgg + tuning1 #+ tuning 
+    deepsim = glob.glob('./weights_experiments/voxelmorph/deep-sim/*')
+    vgg = glob.glob('./weights_experiments/transfer_learning/deep-sim-vgg/*')
+    transfer_seg = glob.glob('./weights_experiments/transfer_learning/transfer-seg/*')
+    transfer_ae = glob.glob('./weights_experiments/transfer_learning/transfer-ae/*')
+    runs = transfer_seg + transfer_ae + vgg + deepsim
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
-        print(run, dataset, lossfun, lam)
+        #print(run, dataset, lossfun, lam)
         if lossfun in EXTRACT_TRANSFER_LOSS_FUNTIONS:
             mean_val_dice_overlap = read_model_logs(run)
             hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap

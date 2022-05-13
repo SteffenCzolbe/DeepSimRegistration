@@ -9,10 +9,6 @@ import glob
 from .config2D import *
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
-#import matplotlib as mpl
-#mpl.rcParams.update(mpl.rcParamsDefault)
-#matplotlib.rcParams['text.usetex'] = True
-#matplotlib.rcParams['text.latex.preview'] = True
 
 def read_tb_scalar_log(file, scalar):
     """
@@ -41,7 +37,6 @@ def read_tb_scalar_log(file, scalar):
 def read_hparams_from_yaml(file):
     with open(file) as f:
         hparams = yaml.load(f, Loader=yaml.Loader)
-        #print(hparams)
     return hparams['dataset'], hparams['loss'], hparams['lam']
 
 
@@ -68,7 +63,6 @@ def plot(hparam_tuning_results):
     fig = plt.figure(figsize=(9, 3))
     axs = fig.subplots(1, len(DATASET_ORDER) + 1, gridspec_kw={'width_ratios': [1, 1, 0.5]})
     axs[2].axis("off")
-    #axs = fig.subplots(1, len(DATASET_ORDER))
     plt.subplots_adjust(bottom=0.18, wspace=0.3)
 
     for i, dataset in enumerate(DATASET_ORDER):
@@ -83,7 +77,6 @@ def plot(hparam_tuning_results):
             lambdas, val_dice_overlap = list(zip(*items))
             handle = axs[i].plot(lambdas, val_dice_overlap, color=LOSS_FUNTION_CONFIG[lossfun]
                                  ["primary_color"], label=LOSS_FUNTION_CONFIG[lossfun]["display_name"],
-                                                    #linestyle='--' if '_' in lossfun else '-')
                                                     marker=LOSS_FUNTION_CONFIG[lossfun]["marker"],
                                                     markersize=4 if '_' in lossfun else 6,
                                                     linewidth=1 if '_' in lossfun else 1.5)
@@ -91,7 +84,7 @@ def plot(hparam_tuning_results):
             axs[i].set_xscale('log', basex=2)
             axs[i].set_title(PLOT_CONFIG[dataset]["display_name"], fontsize=18)
             LOSS_FUNTION_CONFIG[lossfun]["handle"] = handle
-            print(LOSS_FUNTION_CONFIG[lossfun]["handle"])
+            #print(LOSS_FUNTION_CONFIG[lossfun]["handle"])
 
     # add labels
     fig.text(0.42, 0.04, "Regularization Hyperparameter $\lambda$",
@@ -109,28 +102,27 @@ def plot(hparam_tuning_results):
     ]
     
     axs[2].legend(handles, labels, bbox_to_anchor=(1., 1.), fontsize=12)
-    #axs[2].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize=12)
-    #axs[2].legend(bbox_to_anchor=(1.04,1), loc="upper left")
-
 
     # configure axis precision
     for ax in axs:
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
 
-    os.makedirs("./out/plots/", exist_ok=True)
-    plt.savefig("./out/plots/tranmorph.pdf", bbox_inches="tight")
-    plt.savefig("./out/plots/tranmorph.png", bbox_inches="tight")
+    os.makedirs("./out/plots/pdf/", exist_ok=True)
+    os.makedirs("./out/plots/png/", exist_ok=True)
+    plt.savefig("./out/plots/pdf/transmorph.pdf", bbox_inches="tight")
+    plt.savefig("./out/plots/png/transmorph.png", bbox_inches="tight")
 
 
 if __name__ == '__main__':
     hparam_tuning_results = defaultdict(lambda: defaultdict(lambda: {}))
 
-    tuning = glob.glob('./weights_exp/transmorph-platelet/*')
-    tuning2 = glob.glob('./weights_exp/transmorph-phc/*')
-    runs = tuning + tuning2
+    platelet = glob.glob('./weights_experiments/transmorph2D/transmorph-platelet/*')
+    phc = glob.glob('./weights_experiments/transmorph2D/transmorph-phc/*')
+    runs = platelet + phc
+
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
-        print(run, dataset, lossfun, lam)
+        #print(run, dataset, lossfun, lam)
         if lossfun in EXTRACT_TRANSMORPH_LOSS_FUNCTIONS:
             if dataset == 'platelet-em' and lossfun == 'mind':
                 if lam >= 2**-5:

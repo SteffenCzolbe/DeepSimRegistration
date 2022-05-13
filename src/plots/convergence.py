@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import matplotlib.pyplot as plt
 import os
 from tensorboard.backend.event_processing import event_accumulator
@@ -74,76 +75,83 @@ def smooth(ys, smoothing_factor=0.6):
         new_y.append(new_y[-1] * smoothing_factor + (1 - smoothing_factor) * y)
     return new_y
 
+if __name__ == '__main__':
 
-# set up sup-plots
-fig = plt.figure(figsize=(8, 3))
-axs = fig.subplots(1, len(DATASET_ORDER))
-plt.subplots_adjust(bottom=0.33, wspace=0.275)
+    parser = ArgumentParser()
+    parser.add_argument(
+        '--mode', type=str, default='val', help='val or train')
+    args = parser.parse_args()
 
-mode = 'val'
-title = 'Val.'
+    # set up sup-plots
+    fig = plt.figure(figsize=(8, 3))
+    axs = fig.subplots(1, len(DATASET_ORDER))
+    plt.subplots_adjust(bottom=0.33, wspace=0.275)
 
-# mode = 'train'
-# title = 'Train'
+    if args.mode == 'val':
+        mode = 'val'
+        title = 'Val.'
+    elif args.mode == 'train':
+        mode = 'train'
+        title = 'Train'
+    else:
+        raise ValueError(f'wrong mode "{args.mode}". Use train or val')
 
-for i, dataset in enumerate(DATASET_ORDER):
-    axs[i].set_title(PLOT_CONFIG[dataset]["display_name"])#, fontsize = 20)
-    for loss_function in tqdm(
-        LOSS_FUNTION_ORDER, desc=f"plotting convergence of loss-functions on {dataset}"
-    ):
-        path = os.path.join("./weights/", dataset,
-                            "registration", loss_function)
-        if not os.path.isdir(path):
-            continue
-        x, y = read_tb_scalar_logs(path, f"{mode}/dice_overlap")
+    for i, dataset in enumerate(DATASET_ORDER):
+        axs[i].set_title(PLOT_CONFIG[dataset]["display_name"])#, fontsize = 20)
+        for loss_function in tqdm(
+            LOSS_FUNTION_ORDER, desc=f"plotting convergence of loss-functions on {dataset}"
+        ):
+            path = os.path.join("./weights/", dataset,
+                                "registration", loss_function)
+            if not os.path.isdir(path):
+                continue
+            x, y = read_tb_scalar_logs(path, f"{mode}/dice_overlap")
 
-        if dataset == 'platelet-em' and loss_function == 'mind':
-            y = smooth(y, 0.999)
-        else:
-            y = smooth(y, PLOT_CONFIG[dataset]["smoothing_factor"])
-        c = LOSS_FUNTION_CONFIG[loss_function]["primary_color"]
-        line = axs[i].plot(
-            x, y, color=c, linewidth=2
-        )  # some trickery required to show lines on the legend of subplots not containing them
-        LOSS_FUNTION_CONFIG[loss_function]["handle"] = line[0]
+            if dataset == 'platelet-em' and loss_function == 'mind':
+                y = smooth(y, 0.999)
+            else:
+                y = smooth(y, PLOT_CONFIG[dataset]["smoothing_factor"])
+            c = LOSS_FUNTION_CONFIG[loss_function]["primary_color"]
+            line = axs[i].plot(
+                x, y, color=c, linewidth=2
+            )  # some trickery required to show lines on the legend of subplots not containing them
+            LOSS_FUNTION_CONFIG[loss_function]["handle"] = line[0]
 
-        # if loss_function == 'mind':
-        #     line = axs[i].plot(x, y, color='red', linewidth=2)
-        
+            # if loss_function == 'mind':
+            #     line = axs[i].plot(x, y, color='red', linewidth=2)
+            
 
+    # add labels
+    fig.text(0.5, 0.2, "Gradient Update Steps",
+            ha="center", va="center", fontsize=16)
+    fig.text(0.06, 0.58, f"{title} Mean Dice Overlap", ha="center",
+            va="center", rotation="vertical", fontsize=16)
+    handles = [
+        LOSS_FUNTION_CONFIG[loss_function]["handle"] for loss_function in LOSS_FUNTION_ORDER
+    ]
+    labels = [
+        LOSS_FUNTION_CONFIG[loss_function]["display_name"]
+        for loss_function in LOSS_FUNTION_ORDER
+    ]
 
-# add labels
-fig.text(0.5, 0.2, "Gradient Update Steps",
-         ha="center", va="center", fontsize=16)
-fig.text(0.06, 0.58, f"{title} Mean Dice Overlap", ha="center",
-         va="center", rotation="vertical", fontsize=16)
-handles = [
-    LOSS_FUNTION_CONFIG[loss_function]["handle"] for loss_function in LOSS_FUNTION_ORDER
-]
-labels = [
-    LOSS_FUNTION_CONFIG[loss_function]["display_name"]
-    for loss_function in LOSS_FUNTION_ORDER
-]
+    # fig.legend(handles, labels, loc="lower center",
+    #             ncol=len(handles), handlelength=1.5, columnspacing=1.75)
 
-# fig.legend(handles, labels, loc="lower center",
-#             ncol=len(handles), handlelength=1.5, columnspacing=1.75)
+    if mode == 'val':
+        fig.legend(handles, labels, loc="lower center",
+                ncol=len(handles), handlelength=1, columnspacing=1, fontsize=10.5)
+    else:
+        legend = fig.legend([], [], loc="lower center",
+                ncol=len(handles), handlelength=1, columnspacing=1)
+        legend.get_frame().set_edgecolor("white")
 
-if mode == 'val':
-    fig.legend(handles, labels, loc="lower center",
-            ncol=len(handles), handlelength=1, columnspacing=1, fontsize=10.5)
-else:
-    legend = fig.legend([], [], loc="lower center",
-            ncol=len(handles), handlelength=1, columnspacing=1)
-    legend.get_frame().set_edgecolor("white")
+    # configure precision
+    for ax in axs:
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        #ax.set_xticks([0, 10000, 20000, 30000])
 
+    os.makedirs("./out/plots/pdf/", exist_ok=True)
+    os.makedirs("./out/plots/png/", exist_ok=True)
 
-# configure precision
-for ax in axs:
-    ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    #ax.set_xticks([0, 10000, 20000, 30000])
-
-os.makedirs("./out/plots/pdf/", exist_ok=True)
-os.makedirs("./out/plots/png/", exist_ok=True)
-
-plt.savefig(f"./out/plots/pdf/convergence_{mode}.pdf", bbox_inches='tight')
-plt.savefig(f"./out/plots/png/convergence_{mode}.png", bbox_inches='tight')
+    plt.savefig(f"./out/plots/pdf/convergence_{mode}.pdf", bbox_inches='tight')
+    plt.savefig(f"./out/plots/png/convergence_{mode}.png", bbox_inches='tight')

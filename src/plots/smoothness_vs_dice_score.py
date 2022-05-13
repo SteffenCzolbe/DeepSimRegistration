@@ -11,29 +11,25 @@ from matplotlib.ticker import FormatStrFormatter
 from .run_models import run_models
 
 def load_data_for_model(dataset, loss_function):
-    # load data
     # with open(args.cache_file_name, 'rb') as f:
     #     test_results = pickle.load(f)
+
+    # load data
     test_results = run_models(use_cached=True)
+    
     if dataset not in test_results.keys():
         return None, None
     if loss_function not in test_results[dataset].keys():
         return None, None
     dice = test_results[dataset][loss_function]["dice_overlap"].mean(axis=0)
     log_var = test_results[dataset][loss_function]["jacobian_determinant_log_var"]
-    #smoothness = test_results[dataset][loss_function]["jacobian_determinant_log_var"].mean(axis=0)
     smoothness = log_var[~np.isnan(log_var)].mean(axis=0)
     folding = test_results[dataset][loss_function]["jacobian_determinant_negative"].mean(axis=0)
     return dice, smoothness, folding
 
 
-def main(args):
-
-    # set up sup-plots
-    # fig = plt.figure(figsize=(10, 3))
-    # axs = fig.subplots(1, len(DATASET_ORDER))
-    # plt.subplots_adjust(bottom=0.33)
-
+#def main(args):
+def main():
     fig = plt.figure(figsize=(8, 3))
     axs = fig.subplots(1, len(DATASET_ORDER))
     plt.subplots_adjust(bottom=0.33, wspace=0.275)
@@ -43,8 +39,6 @@ def main(args):
         for loss_function in LOSS_FUNTION_ORDER:
             dice, smoothness, folding = load_data_for_model(dataset, loss_function)
             print(dataset, loss_function, np.round(dice, 3), np.round(smoothness,2), np.round(folding * 100, 2))
-            # if dataset =='platelet-em' and loss_function =='mind':
-            #     smoothness = 2.427
             if dice is None:
                 continue
             # read lam, score
@@ -86,8 +80,11 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = ArgumentParser()
-    parser.add_argument(
-        '--cache_file_name', type=str, default='./src/plots/cache.pickl', help='File with test results.')
-    args = parser.parse_args()
-    main(args)
+    
+    main()
+
+    # parser = ArgumentParser()
+    # parser.add_argument(
+    #     '--cache_file_name', type=str, default='./src/plots/cache.pickl', help='File with test results.')
+    # args = parser.parse_args()
+    # main(args)
