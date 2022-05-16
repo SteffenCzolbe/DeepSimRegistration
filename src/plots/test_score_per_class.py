@@ -1,12 +1,13 @@
+import json
 import matplotlib.pyplot as plt
-import os
 import numpy as np
-from tqdm import tqdm
-from src.registration_model import RegistrationModel
+import os
 import torch
+from tqdm import tqdm
+
 from .config import *
 from .run_models import run_models
-import json
+from src.registration_model import RegistrationModel
 
 dataset = "brain-mri"
 
@@ -47,7 +48,6 @@ classes = np.argsort(-mean_dice_overlaps).tolist()
 # remove unwanted classes: background (0), 5th ventricle (21), hyperintensity (23), vessel (19)
 for rm_class in [0, 21, 23, 19]:
     classes.remove(rm_class)
-
 
 def make_bold(means):
     # decide wich labels to make bold

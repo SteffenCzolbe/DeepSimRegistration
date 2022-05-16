@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-# enable math typesetting in matplotlib
 import matplotlib
 
 params = {'mathtext.default': 'regular' }          
@@ -15,7 +14,6 @@ red_cmap = plt.get_cmap("Reds")
 red_colors = red_cmap(np.arange(0, red_cmap.N))
 
 DATASET_ORDER = ["brain-mri", "platelet-em", "phc-u373"]
-#DATASET_ORDER = ["platelet-em", "phc-u373"]
 
 PLOT_CONFIG = {
     "phc-u373": {"display_name": "PhC-U373", "smoothing_factor": 0.98},
@@ -29,7 +27,6 @@ LOSS_FUNTION_ORDER = [
     "ncc2+supervised",
     "nmi",
     "mind",
-    #"vgg",
     "deepsim-ae",
     "deepsim",
 ]
@@ -46,12 +43,6 @@ MIND_AND_OTHER_LOSS_FUNTION = [
     #"deepsim-transfer",
 ]
 
-# MIND_AND_OTHER_LOSS_FUNTION = [
-#     "mind",
-# ]
-
-
-
 EXTRACT_TRANSMORPH_LOSS_FUNCTIONS = [
     "mind",
     "l2",
@@ -62,7 +53,6 @@ EXTRACT_TRANSMORPH_LOSS_FUNCTIONS = [
     "deepsim-ae",
     "deepsim",
 ]
-
 
 SYN_LOSS_FUNTIONS = [
     "syn",
@@ -150,8 +140,6 @@ LOSS_FUNTION_CONFIG = {
     "vgg": {
         "display_name": "$DeepSim_{VGG}$",
         "display_name_bold": "$DeepSim{VGG}$",
-        # "primary_color": "#bddbef",
-        # "marker": "<",
         "primary_color": "red",
         "marker": "d",
         "our_method": False
@@ -159,8 +147,6 @@ LOSS_FUNTION_CONFIG = {
     "mind": {
         "display_name": "$MIND$",
         "display_name_bold": "$MIND$",
-        # "primary_color": "blue",
-        # "marker": "d",
         "primary_color": "#bddbef",
         "marker": "<",
         "our_method": False
@@ -182,7 +168,6 @@ LOSS_FUNTION_CONFIG = {
     "deepsim-transfer": {
         "display_name": "$DeepSim_{seg}-TL$",
         "display_name_bold": "$DeepSim_{seg}-TL$",
-        #"primary_color": plt.get_cmap("tab20c").colors[4],
         "primary_color":tuple(red_colors[200][:-1]),
         "marker": "*",
         "our_method": True
@@ -190,7 +175,6 @@ LOSS_FUNTION_CONFIG = {
     "deepsim-transfer-ae": {
         "display_name": "$DeepSim_{ae}-TL$",
         "display_name_bold": "$DeepSim_{ae}-TL$",
-        #"primary_color": plt.get_cmap("tab20c").colors[5],
         "primary_color":tuple(red_colors[120][:-1]),
         "marker": "p",
         "our_method": True
@@ -239,49 +223,48 @@ LOSS_FUNTION_CONFIG = {
     "deepsim_0": {
         "display_name": "$DeepSim^{1}_{seg}$",
         "display_name_bold": "$DeepSim^{1}_{seg}$",
-        "primary_color": 'royalblue', #tuple(red_colors[64][:-1]),
+        "primary_color": 'royalblue', 
         "marker": ".",
         "our_method": True
     },
     "deepsim_1": {
         "display_name": "$DeepSim^{2}_{seg}$",
         "display_name_bold": "$DeepSim^{2}_{seg}$",
-        "primary_color": 'mediumturquoise', #tuple(red_colors[96][:-1]),
+        "primary_color": 'mediumturquoise', 
         "marker": ".",
         "our_method": True
     },
     "deepsim_2": {
         "display_name": "$DeepSim^{3}_{seg}$",
         "display_name_bold": "$DeepSim^{3}_{seg}$",
-        "primary_color": 'limegreen', #tuple(red_colors[128][:-1]),
+        "primary_color": 'limegreen', 
         "marker": ".",
         "our_method": True
     },
     "deepsim_01": {
         "display_name": "$DeepSim^{12}_{seg}$",
         "display_name_bold": "$DeepSim^{12}_{seg}$",
-        "primary_color": 'greenyellow', #tuple(orange_colors[64][:-1]),
+        "primary_color": 'greenyellow', 
         "marker": "x",
         "our_method": True
     },
     "deepsim_02": {
         "display_name": "$DeepSim^{13}_{seg}$",
         "display_name_bold": "$DeepSim^{13}_{seg}$",
-        "primary_color": 'yellowgreen', #tuple(orange_colors[96][:-1]),
+        "primary_color": 'yellowgreen', 
         "marker": "x",
         "our_method": True
     },
     "deepsim_12": {
         "display_name": "$DeepSim^{23}_{seg}$",
         "display_name_bold": "$DeepSim^{23}_{seg}$",
-        "primary_color": 'gold', #tuple(orange_colors[128][:-1]),
+        "primary_color": 'gold',
         "marker": "x",
         "our_method": True
     },
     "deepsim-ae_0": {
         "display_name": "$DeepSim^{1}_{ae}$",
         "display_name_bold": "$DeepSim^{1}_{ae}$",
-        #"primary_color": tuple(red_colors[64][:-1]),
         "primary_color": 'royalblue',
         "marker": ".",
         "our_method": True
@@ -289,7 +272,6 @@ LOSS_FUNTION_CONFIG = {
     "deepsim-ae_1": {
         "display_name": "$DeepSim^{2}_{ae}$",
         "display_name_bold": "$DeepSim^{2}_{ae}$",
-        #"primary_color": tuple(red_colors[96][:-1]),
         "primary_color": 'mediumturquoise',
         "marker": ".",
         "our_method": True
@@ -297,7 +279,6 @@ LOSS_FUNTION_CONFIG = {
     "deepsim-ae_2": {
         "display_name": "$DeepSim^{3}_{ae}$",
         "display_name_bold": "$DeepSim^{3}_{ae}$",
-        #"primary_color": tuple(red_colors[128][:-1]),
         "primary_color": 'limegreen',
         "marker": ".",
         "our_method": True
@@ -305,7 +286,6 @@ LOSS_FUNTION_CONFIG = {
     "deepsim-ae_01": {
         "display_name": "$DeepSim^{12}_{ae}$",
         "display_name_bold": "$DeepSim^{12}_{ae}$",
-        #"primary_color": tuple(orange_colors[64][:-1]),
         "primary_color": 'greenyellow',
         "marker": "o",
         "our_method": True
@@ -313,7 +293,6 @@ LOSS_FUNTION_CONFIG = {
     "deepsim-ae_02": {
         "display_name": "$DeepSim^{13}_{ae}$",
         "display_name_bold": "$DeepSim^{13}_{ae}$",
-        #"primary_color": tuple(orange_colors[96][:-1]),
         "primary_color":  'yellowgreen',
         "marker": "o",
         "our_method": True
@@ -321,7 +300,6 @@ LOSS_FUNTION_CONFIG = {
     "deepsim-ae_12": {
         "display_name": "$DeepSim^{23}_{ae}$",
         "display_name_bold": "$DeepSim^{23}_{ae}$",
-        #"primary_color": tuple(orange_colors[128][:-1]),
         "primary_color": 'gold',
         "marker": "o",
         "our_method": True

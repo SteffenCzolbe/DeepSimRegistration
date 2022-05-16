@@ -1,20 +1,20 @@
-import pickle
-import os
+import matplotlib.patches as patches
 import numpy as np
+import os
+import pickle
 from tqdm import tqdm
-from src.test_registration_voxelmorph import RegistrationModel
 import torch
+import torch.nn.functional as F
 import torchreg
 import torchreg.viz as viz
-from .config import *
-import matplotlib.patches as patches
+from scipy.stats.stats import pearsonr
 
+from .config import *
+from src.test_registration_voxelmorph import RegistrationModel
 from src.segmentation_model import SegmentationModel
 from src.autoencoder_model import AutoEncoderModel
 from src.loss_metrics import NCC, DeepSim, VGGFeatureExtractor, NMI, MIND_loss
-import torch.nn.functional as F
 import os
-from scipy.stats.stats import pearsonr
 
 LOSS_FUNTION_ORDER.remove('mind')
 LOSS_FUNTION_ORDER.remove("nmi")

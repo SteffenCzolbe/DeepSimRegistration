@@ -1,13 +1,14 @@
 import matplotlib.pyplot as plt
-import os
-import yaml
+from matplotlib.ticker import FormatStrFormatter
 import numpy as np
+import os
 from tqdm import tqdm
-from src.registration_model import RegistrationModel
 import torch
+import yaml
+
 from .config import *
 from .run_models import run_models
-from matplotlib.ticker import FormatStrFormatter
+from src.registration_model import RegistrationModel
 
 
 def get_score_and_label(dataset, loss_function):
@@ -18,14 +19,12 @@ def get_score_and_label(dataset, loss_function):
     else:
         return get_score_and_label_for_syn(dataset, loss_function)
 
-
 def get_empty_score_and_label():
     bar_color = "black"
     label = ""
     label_color = "black"
     scores = []
     return scores, bar_color, label, label_color
-
 
 def get_score_and_label_for_syn(dataset, loss_function):
     dataset_path = os.path.join('./out', dataset, 'syn')
@@ -52,11 +51,8 @@ def get_score_and_label_for_syn(dataset, loss_function):
     label_color = "black"
     return scores[LOSS_FUNTION_CONFIG[loss_function]["feature_extractor"]], bar_color, label, label_color
 
-
 def get_score_and_label_for_dl_method(dataset, loss_function):
     results = run_models(use_cached=True)
-    #print(results)
-    #print(type(results))
     if loss_function not in results[dataset].keys():
         return False
     scores = results[dataset][loss_function]["dice_overlap"]
@@ -116,11 +112,9 @@ for i, dataset in enumerate(DATASET_ORDER):
             if label is None or label == "":
                 axs[i].xaxis.majorTicks[j].set_visible(False)
 
-
 # configure axis precision
 for ax in axs:
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-
 
 # add labels
 fig.text(0.075, 0.63, "Test Mean Dice Overlap",

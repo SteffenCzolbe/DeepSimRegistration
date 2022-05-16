@@ -1,15 +1,16 @@
-import pickle
-import os
+from argparse import ArgumentParser
 import numpy as np
-from tqdm import tqdm
-from src.registration_model_run import RegistrationModel
-import torch
-from .config2D import *
 import os
+import pickle
+from tqdm import tqdm
+import torch
+
+from src.registration_model import RegistrationModel
+from .config2D import *
 
 # #os.environ["CUDA_LAUNCH_BLOCKING"]='1'
 # os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
-# os.environ["CUDA_VISIBLE_DEVICES"]='4'
+# os.environ["CUDA_VISIBLE_DEVICES"]='7'
 # print(os.environ["CUDA_VISIBLE_DEVICES"])
 
 def test_model(model):
@@ -22,7 +23,6 @@ def test_model(model):
 
     with torch.no_grad():
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        #device = "cpu"
         model.eval()
         model = model.to(device)
         test_set = model.test_dataloader().dataset
@@ -40,25 +40,33 @@ def test_model(model):
         return map_dicts(scores)
 
 
-def run_models(use_cached=True):
-    # load results for 3d brain-mri dataset
-    cache_file_name_3D = "./src/plots/cache.pickl"
-    cache_file_name_3D_mind = "./src/plots/cache3D_mind.pickl"
-
-    # load results for 2d datasets
-    cache_file_name_2D = "./src/plots/cache2D_mind.pickl"
+def run_models(use_cached=True, model='voxelmorph'):
+    if model == 'voxelmorph':
+        # load results for 3d brain-mri dataset
+        cache_file_name_3D = "./src/plots/cache.pickl"
+        cache_file_name_3D_mind = "./src/plots/cache3D_mind.pickl"
+        # load results for 2d datasets
+        cache_file_name_2D = "./src/plots/cache2D_mind.pickl"
+    elif model == 'transmorph':
+        # load results for 2d datasets
+        cache_file_name_2D = "./src/plots/cache2D_transmorph.pickl"
 
     if use_cached and os.path.isfile(cache_file_name_2D):
-        d1 = pickle.load(open(cache_file_name_3D, "rb"))
-        d1b = pickle.load(open(cache_file_name_3D_mind, "rb"))
+        if model == 'voxelmorph':
+            d1 = pickle.load(open(cache_file_name_3D, "rb"))
+            d1b = pickle.load(open(cache_file_name_3D_mind, "rb"))
+            d1['brain-mri'].update({'mind': d1b['brain-mri']['mind']})
+            del d1['phc-u373']
+            del d1['platelet-em']
+
         d2 = pickle.load(open(cache_file_name_2D, "rb"))
 
-        d1['brain-mri'].update({'mind': d1b['brain-mri']['mind']})
-
-        del d1['phc-u373']
-        del d1['platelet-em']
-        d2 = pickle.load(open(cache_file_name_2D, "rb"))
-        d = {**d1, **d2}
+        if model == 'voxelmorph':        
+            d = {**d1, **d2}
+        elif model == 'transmorph':
+            d = d2
+        else:
+            raise ValueError(f'model "{args.net}" unknow. \n use voxelmorph or transmorph')
 
         return d
         
@@ -68,29 +76,45 @@ def run_models(use_cached=True):
         else:
             results = {}
 
-        # run models for 2d datasets (config2D)
+        if model == 'voxelmorph':
+            folder = 'registration'
+        elif model == 'transmorph':
+            folder = 'transmorph'
+        else:
+            raise ValueError(f'model "{args.net}" unknow. \n use voxelmorph or transmorph') 
+        
+        # run models for 2d datasets (config2D) - change to config to run for both 2d and 3d datasets
         for dataset in DATASET_ORDER:
             results[dataset] = {}
             for loss_function in tqdm(
                 LOSS_FUNTION_ORDER, desc=f"testing loss-functions on {dataset}"
             ):
                 path = os.path.join(
-                    "./weights/", dataset, "registration", loss_function
+                    "./weights/", dataset, folder, loss_function
                 )
                 if not os.path.isdir(path):
                     continue
                 # load model
                 checkpoint_path = os.path.join(path, "weights.ckpt")
+
+                # IMPORTANT!
+                # hard-code self.hparams.net for old voxelmoprh checkpoints!
+                # uncomment line 33 in src.registration_model
                 model = RegistrationModel.load_from_checkpoint(
                     checkpoint_path=checkpoint_path
                 )
+                #print(loss_function, checkpoint_path)
                 step_dict = test_model(model)
                 results[dataset][loss_function] = step_dict
-                print(f"{dataset}, {loss_function}:")
-                print(step_dict)
+                #print(f"{dataset}, {loss_function}:")
+                #print(step_dict)
         pickle.dump(results, open(cache_file_name_2D, "wb"))
         return results
 
 
 if __name__ == "__main__":
-    run_models(use_cached=False)
+    parser = ArgumentParser()
+    parser.add_argument(
+        '--net', type=str, default='voxelmorph', help='voxelmorph or transmorph.')
+    args = parser.parse_args()
+    run_models(use_cached=False, model=args.net)

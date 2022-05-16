@@ -1,10 +1,11 @@
 from argparse import ArgumentParser
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 import os
 from tensorboard.backend.event_processing import event_accumulator
 from tqdm import tqdm
+
 from .config import *
-from matplotlib.ticker import FormatStrFormatter
 
 
 # read logs
@@ -117,10 +118,6 @@ if __name__ == '__main__':
             )  # some trickery required to show lines on the legend of subplots not containing them
             LOSS_FUNTION_CONFIG[loss_function]["handle"] = line[0]
 
-            # if loss_function == 'mind':
-            #     line = axs[i].plot(x, y, color='red', linewidth=2)
-            
-
     # add labels
     fig.text(0.5, 0.2, "Gradient Update Steps",
             ha="center", va="center", fontsize=16)
@@ -133,9 +130,6 @@ if __name__ == '__main__':
         LOSS_FUNTION_CONFIG[loss_function]["display_name"]
         for loss_function in LOSS_FUNTION_ORDER
     ]
-
-    # fig.legend(handles, labels, loc="lower center",
-    #             ncol=len(handles), handlelength=1.5, columnspacing=1.75)
 
     if mode == 'val':
         fig.legend(handles, labels, loc="lower center",

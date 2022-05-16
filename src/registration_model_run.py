@@ -18,7 +18,7 @@ class RegistrationModel(CommonLightningModel):
     We use pytorch lightning to organize our model code
     """
 
-    def __init__(self, hparams, model='voxelmorph'):
+    def __init__(self, hparams): #, model='voxelmorph'):
         """
         Init method instantiates the network
         """
@@ -27,11 +27,10 @@ class RegistrationModel(CommonLightningModel):
         self.probabilistic= False
         self.probabilistic_p = 0.5
 
-
-        # hard-coded
-        ######### TEST #########
-        self.hparams.net = model
-        ########################
+        # # hard-coded
+        # ######### TEST #########
+        # self.hparams.net = model
+        # ########################
 
         # set net
         if self.hparams.net == 'voxelmorph':

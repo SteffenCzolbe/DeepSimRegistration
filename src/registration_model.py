@@ -18,7 +18,7 @@ class RegistrationModel(CommonLightningModel):
     We use pytorch lightning to organize our model code
     """
 
-    def __init__(self, hparams):#, model='voxelmorph'):
+    def __init__(self, hparams):
         """
         Init method instantiates the network
         """
@@ -27,11 +27,10 @@ class RegistrationModel(CommonLightningModel):
         self.probabilistic= False
         self.probabilistic_p = 0.5
 
-
-        # # hard-coded
-        # ######### TEST #########
-        # self.hparams.net = model
-        # ########################
+        # when testing src.plots.run_models 
+        # hard-code self.hparams.net 
+        # for old voxelmoprh checkpoints
+        # self.hparams.net = 'voxelmorph'
 
         # set net
         if self.hparams.net == 'voxelmorph':
@@ -167,8 +166,6 @@ class RegistrationModel(CommonLightningModel):
 
         return flow
 
-
-
     def similarity_loss(self, I_m, I_1, S_m_onehot, S_1_onehot):
         if self.hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-ae", "deepsim-transfer-ae",
                                          "deepsim-zero", "deepsim-ae-zero",
@@ -214,8 +211,7 @@ class RegistrationModel(CommonLightningModel):
             .squeeze(-1)
             .float()
         )
-        
-    
+            
     def get_dropout_layers(self, model):
         """
         Collects all the dropout layers of the model
@@ -370,7 +366,7 @@ class RegistrationModel(CommonLightningModel):
             "--loss",
             type=str,
             default="ncc",
-            help="Similarity Loss function. Options: 'l2', 'ncc', 'ncc2', 'deepsim', 'deepsim-transfer', 'deepsim-ae', 'ncc+supervised', 'vgg' (Default: ncc)",
+            help="Similarity Loss function. (Default: ncc)",
         )
         parser.add_argument(
             "--ncc_win_size",
@@ -397,9 +393,13 @@ class RegistrationModel(CommonLightningModel):
         parser.add_argument(
             "--bnorm", action="store_true", help="use batchnormalization."
         )
-        parser.add_argument("--dropout", action="store_true", help="use dropout")
-        parser.add_argument("--savedir", type=str, help="Directory to save images in")
 
+        parser.add_argument(
+            "--dropout", action="store_true", help="use dropout"
+        )
+        parser.add_argument(
+            "--savedir", type=str, help="Directory to save images in"
+        )
 
         parser.add_argument(
             "--net", type=str, default="voxelmorph", help="voxelmorph or transmorph"

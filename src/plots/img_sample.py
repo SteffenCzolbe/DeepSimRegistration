@@ -1,19 +1,19 @@
-import pickle
-import os
+import matplotlib.patches as patches
 import numpy as np
-from tqdm import tqdm
-from src.test_registration_voxelmorph import RegistrationModel
+import os
+import pickle
 import torch
 import torchreg
 import torchreg.viz as viz
-from .config import *
-import matplotlib.patches as patches
-import os
+from tqdm import tqdm
 
-# # #os.environ["CUDA_LAUNCH_BLOCKING"]='1'
-# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
-# os.environ["CUDA_VISIBLE_DEVICES"]='3'
-# print(os.environ["CUDA_VISIBLE_DEVICES"])
+from .config import *
+from src.test_registration_voxelmorph import RegistrationModel
+
+# #os.environ["CUDA_LAUNCH_BLOCKING"]='1'
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
+os.environ["CUDA_VISIBLE_DEVICES"]='2'
+print(os.environ["CUDA_VISIBLE_DEVICES"])
 
 def get_img(model, test_set_index):
     transformer = torchreg.nn.SpatialTransformer()
@@ -240,7 +240,6 @@ def plot_no_data(fig, row, col, text, fontsize=12):
 
 
 def make_overview():
-    #fig = viz.Fig(5, 9, None, figsize=(9, 5))
     fig = viz.Fig(3, 9, None, figsize=(9, 3))
     # adjust subplot spacing
     fig.fig.subplots_adjust(hspace=0.05, wspace=0.05)

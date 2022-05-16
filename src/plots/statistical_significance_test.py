@@ -1,8 +1,8 @@
+from numpy import std, mean, sqrt
 import pickle
 import scipy.stats
-from numpy import std, mean, sqrt
-from .run_models import run_models
 
+from .run_models import run_models
 
 #correct if the population S.D. is expected to be equal for the two groups.
 def cohen_d(x,y):

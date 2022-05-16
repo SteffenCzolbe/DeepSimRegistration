@@ -1,15 +1,17 @@
 from argparse import ArgumentParser
-import pickle
-import os
+from collections import defaultdict
+import glob
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 import numpy as np
+import os
+import pickle
 from tqdm import tqdm
 from tensorboard.backend.event_processing import event_accumulator
 import yaml
-from collections import defaultdict
-import glob
+
 from .config2D import *
-import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
+
 
 def read_tb_scalar_log(file, scalar):
     """
@@ -34,18 +36,15 @@ def read_tb_scalar_log(file, scalar):
 
     return values
 
-
 def read_hparams_from_yaml(file):
     with open(file) as f:
         hparams = yaml.load(f, Loader=yaml.Loader)
     return hparams['dataset'], hparams['loss'], hparams['lam'], hparams['deepsim_weights']
 
-
 def read_model_hparams(dir):
     dataset, lossfun, lam, w = read_hparams_from_yaml(
         os.path.join(dir, 'hparams.yaml'))
     return dataset, lossfun, lam, w
-
 
 def read_model_logs(dir):
     files = os.listdir(dir)
@@ -57,7 +56,6 @@ def read_model_logs(dir):
         read_tb_scalar_log(log_files[0], 'val/dice_overlap'))
 
     return mean_val_dice_overlap
-
 
 def plot(hparam_tuning_results, deepsim='ae'):
     # set up sup-plots

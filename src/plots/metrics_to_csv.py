@@ -1,10 +1,11 @@
+from argparse import ArgumentParser
 from collections import defaultdict
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-from argparse import ArgumentParser
-import pickle
 import numpy as np
+import pickle
+import seaborn as sns
+
 from .config import *
 from .run_models import run_models
 
