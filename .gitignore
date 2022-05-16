@@ -3,8 +3,8 @@ lightning_logs*
 experiment_logs
 src/exploration
 tmp*
-*.pdf
-*.png
+#*.pdf
+#*.png
 *.ckpt
 #out
 weights
