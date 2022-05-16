@@ -83,7 +83,7 @@ class RegistrationModel(CommonLightningModel):
 
             if 'zero' in hparams.loss.lower():
                 self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=True)
-            elif 'ebw' in in hparams.loss.lower():
+            elif 'ebw' in hparams.loss.lower():
                     self.deepsim = DeepSim_v2(feature_extractor)
             else:
                 self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=False)
@@ -118,7 +118,7 @@ class RegistrationModel(CommonLightningModel):
 
             if 'zero' in hparams.loss.lower():
                 self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=True)
-            elif 'ebw' in in hparams.loss.lower():
+            elif 'ebw' in hparams.loss.lower():
                     self.deepsim = DeepSim_v2(feature_extractor)
             else:
                 self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=False)

@@ -55,43 +55,43 @@ if $TUNE_PLATELET; then
     # deepsim-ae_0
     for LAM in 0.25 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae_0/$LAM/ --loss deepsim-ae_0 --deepsim-ae_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae_0/$LAM/ --loss deepsim-ae_0 --deepsim_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim-ae_1
     for LAM in 0.25 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae_1/$LAM/ --loss deepsim-ae_1 --deepsim-ae_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae_1/$LAM/ --loss deepsim-ae_1 --deepsim_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim-ae_2
     for LAM in 0.25 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae_2/$LAM/ --loss deepsim-ae_2 --deepsim-ae_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae_2/$LAM/ --loss deepsim-ae_2 --deepsim_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim-ae_01
     for LAM in 0.25 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae_01/$LAM/ --loss deepsim-ae_01 --deepsim-ae_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae_01/$LAM/ --loss deepsim-ae_01 --deepsim_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim-ae_02
     for LAM in 0.25 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae_02/$LAM/ --loss deepsim-ae_02 --deepsim-ae_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae_02/$LAM/ --loss deepsim-ae_02 --deepsim_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim-ae_12
     for LAM in 0.25 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae_12/$LAM/ --loss deepsim-ae_12 --deepsim-ae_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-ae_12/$LAM/ --loss deepsim-ae_12 --deepsim_weights ./weights/platelet-em/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim-transfer
     for LAM in 0.125 0.25 0.5 1 2 4
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-transfer/$LAM/ --loss deepsim-transfer --deepsim-ae_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000 
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset platelet-em --savedir ./out/platelet-em/registration/deepsim-transfer/$LAM/ --loss deepsim-transfer --deepsim_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 3 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000 
     done
 
     # deepsim-transfer
@@ -165,37 +165,37 @@ if $TUNE_PHC; then
     # deepsim-ae_0
     for LAM in 0.25 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae_0/$LAM/ --loss deepsim-ae_0 --deepsim-ae_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae_0/$LAM/ --loss deepsim-ae_0 --deepsim_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim-ae_1
     for LAM in 0.25 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae_1/$LAM/ --loss deepsim-ae_1 --deepsim-ae_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae_1/$LAM/ --loss deepsim-ae_1 --deepsim_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim-ae_2
     for LAM in 0.25 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae_2/$LAM/ --loss deepsim-ae_2 --deepsim-ae_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae_2/$LAM/ --loss deepsim-ae_2 --deepsim_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim-ae_01
     for LAM in 0.25 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae_01/$LAM/ --loss deepsim-ae_01 --deepsim-ae_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae_01/$LAM/ --loss deepsim-ae_01 --deepsim_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim-ae_02
     for LAM in 0.25 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae_02/$LAM/ --loss deepsim-ae_02 --deepsim-ae_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae_02/$LAM/ --loss deepsim-ae_02 --deepsim_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim-ae_12
     for LAM in 0.25 0.5 1 2
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae_12/$LAM/ --loss deepsim-ae_12 --deepsim-ae_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset phc-u373 --savedir ./out/phc-u373/registration/deepsim-ae_12/$LAM/ --loss deepsim-ae_12 --deepsim_weights ./weights/phc-u373/autoencoder/weights.ckpt --lam $LAM --accumulate_grad_batches 2 --channels 64 128 256 --batch_size 5 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp --max_epochs=3000
     done
 
     # deepsim-transfer
