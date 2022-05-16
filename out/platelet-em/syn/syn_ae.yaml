@@ -1,0 +1,19 @@
+hparams:
+  data_from: 0.0
+  data_to: 1.0
+  dataset: platelet-em
+  feature_extractor: ae
+  feature_extractor_weights: ./weights/platelet-em/autoencoder/weights.ckpt
+  out_file: ./out/platelet-em/syn/syn_ae.yaml
+scores:
+  0: 0.8964599967002869
+  1: 0.9031410813331604
+  2: 0.9023714065551758
+  3: 0.8776512742042542
+  4: 0.8957900404930115
+  5: 0.8765702247619629
+  6: 0.8735390305519104
+  7: 0.8960534930229187
+  8: 0.901690661907196
+  9: 0.8854303956031799
+  10: 0.9126827120780945
