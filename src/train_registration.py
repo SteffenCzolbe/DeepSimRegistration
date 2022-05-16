@@ -1,9 +1,9 @@
-import os
 import argparse
+import os
 import pytorch_lightning as pl
-from .registration_model import RegistrationModel
 import torch
-#from .tests.set_gpu import get_gpus
+
+from .registration_model import RegistrationModel
 
 
 def main(hparams):
@@ -38,14 +38,6 @@ if __name__ == "__main__":
     # commandline parser
     parser = argparse.ArgumentParser()
 
-    # parser.add_argument(
-    #         "--cuda_devices",
-    #         nargs="+",
-    #         type=int,
-    #         default=[4,5,6],
-    #         help="CUDA_VISIBLE_DEVICES",
-    #     )
-
     # add model specific args
     parser = RegistrationModel.add_model_specific_args(parser)
 
@@ -58,8 +50,5 @@ if __name__ == "__main__":
     parser = pl.Trainer.add_argparse_args(parser)
 
     hparams = parser.parse_args()
-
-    #print(hparams.cuda_devices)
-    #assert Fasle
 
     main(hparams)

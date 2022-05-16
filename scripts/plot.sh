@@ -1,6 +1,6 @@
 # voxelmorph
 python3 -m src.plots.tune_voxelmorph
-python3 -m src.plots.run_models --net voxelmorph #uncomment line 33 in src.registration_model
+python3 -m src.plots.run_models --net voxelmorph
 python3 -m src.plots.smoothness_vs_dice_score --net voxelmorph
 python3 -m src.plots.convergence --mode train
 python3 -m src.plots.convergence --mode val

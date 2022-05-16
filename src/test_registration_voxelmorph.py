@@ -29,9 +29,12 @@ class RegistrationModel(CommonLightningModel):
 
 
         # hard-coded
-        ######### TEST #########
-        self.hparams.net = model
-        ########################
+        ###################################
+        # when testing src.plots.run_models 
+        # hard-code self.hparams.net 
+        # for old voxelmoprh checkpoints
+        self.hparams.net = 'voxelmorph'
+        ##################################
 
         # set net
         if self.hparams.net == 'voxelmorph':

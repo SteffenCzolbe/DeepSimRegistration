@@ -6,7 +6,7 @@ import torchreg
 import torchreg.viz as viz
 from .common_lightning_model import CommonLightningModel
 from .models.voxelmorph import Voxelmorph
-from .loss_metrics import NCC, DeepSim, VGGFeatureExtractor, NMI, MIND_loss
+from .loss_metrics import NCC, DeepSim, DeepSim_v2, VGGFeatureExtractor, NMI, MIND_loss
 from .segmentation_model import SegmentationModel
 from .autoencoder_model import AutoEncoderModel
 
@@ -26,11 +26,6 @@ class RegistrationModel(CommonLightningModel):
         self.hparams = hparams
         self.probabilistic= False
         self.probabilistic_p = 0.5
-
-        # when testing src.plots.run_models 
-        # hard-code self.hparams.net 
-        # for old voxelmoprh checkpoints
-        # self.hparams.net = 'voxelmorph'
 
         # set net
         if self.hparams.net == 'voxelmorph':
@@ -53,12 +48,14 @@ class RegistrationModel(CommonLightningModel):
                                     "deepsim-ae_0", "deepsim-ae_01", "deepsim-ae_02",
                                     "deepsim-ae_1", "deepsim-ae_12", "deepsim-ae_2",
                                     "deepsim_0", "deepsim_01", "deepsim_02",
-                                    "deepsim_1", "deepsim_12", "deepsim_2"] and not hparams.deepsim_weights:
+                                    "deepsim_1", "deepsim_12", "deepsim_2",
+                                    "deepsim-ebw", "deepsim-ae-ebw"] and not hparams.deepsim_weights:
             raise ValueError("No weights specified for Deep Similarity Metric.")
         
         if hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-zero", 
                                     "deepsim_0", "deepsim_01", "deepsim_02",
-                                    "deepsim_1", "deepsim_12", "deepsim_2"]:
+                                    "deepsim_1", "deepsim_12", "deepsim_2",
+                                    "deepsim-ebw"]:
 
             if hparams.loss.lower()=="deepsim_0":
                 levels = [0]
@@ -86,12 +83,15 @@ class RegistrationModel(CommonLightningModel):
 
             if 'zero' in hparams.loss.lower():
                 self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=True)
+            elif 'ebw' in in hparams.loss.lower():
+                    self.deepsim = DeepSim_v2(feature_extractor)
             else:
-                self.deepsim = DeepSim(feature_extractor, levels=levels)
+                self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=False)
 
         elif hparams.loss.lower() in ["deepsim-ae", "deepsim-transfer-ae","deepsim-ae-zero",
                                       "deepsim-ae_0", "deepsim-ae_01", "deepsim-ae_02",
-                                      "deepsim-ae_1", "deepsim-ae_12", "deepsim-ae_2"]:
+                                      "deepsim-ae_1", "deepsim-ae_12", "deepsim-ae_2",
+                                      "deepsim-ae-ebw"]:
 
             if hparams.loss.lower()=="deepsim-ae_0":
                 levels = [0]
@@ -118,8 +118,10 @@ class RegistrationModel(CommonLightningModel):
 
             if 'zero' in hparams.loss.lower():
                 self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=True)
+            elif 'ebw' in in hparams.loss.lower():
+                    self.deepsim = DeepSim_v2(feature_extractor)
             else:
-                self.deepsim = DeepSim(feature_extractor, levels=levels)
+                self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=False)
 
         elif hparams.loss.lower() == "vgg":
             feature_extractor = VGGFeatureExtractor()
@@ -172,8 +174,12 @@ class RegistrationModel(CommonLightningModel):
                                          "deepsim-ae_0", "deepsim-ae_01", "deepsim-ae_02",
                                          "deepsim-ae_1", "deepsim-ae_12", "deepsim-ae_2",
                                          "deepsim_0", "deepsim_01", "deepsim_02",
-                                         "deepsim_1", "deepsim_12", "deepsim_2"]:
+                                         "deepsim_1", "deepsim_12", "deepsim_2",
+                                         "deepsim-ebw", "deepsim-ae-ebw"]:
             return self.deepsim(I_m, I_1)
+        elif self.hparams.loss.lower() in ["deepsim-ebw", "deepsim-ae-ebw"]:
+            # extract before warp
+            self.deepsim.first_extract_features_then_warp(I_0, I_1, flow)
         elif self.hparams.loss.lower() == "vgg":
             return self.vgg_loss(I_m, I_1)
         elif self.hparams.loss.lower() in ["ncc", "ncc2"]:

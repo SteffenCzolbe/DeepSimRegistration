@@ -6,12 +6,13 @@ from tqdm import tqdm
 import torch
 
 from src.registration_model import RegistrationModel
+from src.test_registration_voxelmorph import RegistrationModel as RegistrationModelOLD
 from .config2D import *
 
-# #os.environ["CUDA_LAUNCH_BLOCKING"]='1'
-# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
-# os.environ["CUDA_VISIBLE_DEVICES"]='7'
-# print(os.environ["CUDA_VISIBLE_DEVICES"])
+#os.environ["CUDA_LAUNCH_BLOCKING"]='1'
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   
+os.environ["CUDA_VISIBLE_DEVICES"]='5'
+print(os.environ["CUDA_VISIBLE_DEVICES"])
 
 def test_model(model):
     def map_dicts(list_of_dics):
@@ -97,14 +98,17 @@ def run_models(use_cached=True, model='voxelmorph'):
                 # load model
                 checkpoint_path = os.path.join(path, "weights.ckpt")
 
-                # IMPORTANT!
-                # hard-code self.hparams.net for old voxelmoprh checkpoints!
-                # uncomment line 33 in src.registration_model
-                model = RegistrationModel.load_from_checkpoint(
-                    checkpoint_path=checkpoint_path
-                )
+                if model == 'voxelmorph':
+                    # hard-coded self.hparams.net for old voxelmoprh checkpoints!
+                    registration_model = RegistrationModelOLD.load_from_checkpoint(
+                        checkpoint_path=checkpoint_path
+                    )
+                else:
+                    registration_model = RegistrationModel.load_from_checkpoint(
+                        checkpoint_path=checkpoint_path
+                    )
                 #print(loss_function, checkpoint_path)
-                step_dict = test_model(model)
+                step_dict = test_model(registration_model)
                 results[dataset][loss_function] = step_dict
                 #print(f"{dataset}, {loss_function}:")
                 #print(step_dict)

@@ -1,5 +1,8 @@
 import ml_collections
 '''
+configuration file as in 
+https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration/blob/main/TransMorph/models/configs_TransMorph.py
+
 ********************************************************
                    Swin Transformer
 ********************************************************

@@ -1,11 +1,175 @@
+import math
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchreg
-import numpy as np
-import math
 from torchvision import models
 
+
+class DeepSim(nn.Module):
+    """
+    Deep similarity metric
+    """
+
+    def __init__(self, seg_model, eps=1e-6, levels='all', reduction='mean', zero_mean=False):
+        super().__init__()
+        self.seg_model = seg_model
+        self.eps = eps
+        self.levels = levels
+        self.reduction = reduction
+        self.zero_mean = zero_mean
+
+        # fix params
+        for param in self.seg_model.parameters():
+            param.requires_grad = False
+
+    
+    def _calculate_cos_sim(self, feat0, feat1):
+        prod_ab = torch.sum(feat0 * feat1, dim=1)
+        norm_a = torch.sum(feat0 ** 2, dim=1).clamp(self.eps) ** 0.5
+        norm_b = torch.sum(feat1 ** 2, dim=1).clamp(self.eps) ** 0.5
+        cos_sim = prod_ab / (norm_a * norm_b)
+        return cos_sim
+
+    def _zero_mean_feat(self, feats):
+        zero_mean_feats = []
+        for feat in feats:
+            feat_mean = torch.mean(feat,1) 
+            feat_mean = feat_mean.unsqueeze(1).expand_as(feat)
+            zero_mean_feat = feat - feat_mean
+            zero_mean_feats.append(zero_mean_feat)
+        return zero_mean_feats
+
+    def forward(self, y_true, y_pred):
+        # set to eval (deactivate dropout)
+        self.seg_model.eval()
+
+        # extract features
+        feats0 = self.seg_model.extract_features(y_true)
+        feats1 = self.seg_model.extract_features(y_pred)
+        losses = []
+
+        if self.zero_mean:
+            feats0 = self._zero_mean_feat(feats0)
+            feats1 = self._zero_mean_feat(feats1)
+
+        for i, (feat0, feat1) in enumerate(zip(feats0, feats1)):
+            # calculate cosine similarity
+            if self.levels == 'all':
+                cos_sim = self._calculate_cos_sim(feat0, feat1)
+                if self.reduction == 'mean':
+                    losses.append(torch.mean(cos_sim))
+                else:
+                    losses.append(cos_sim)
+            else:
+                if i in self.levels:
+                    cos_sim = self._calculate_cos_sim(feat0, feat1)
+                    if self.reduction == 'mean':
+                        losses.append(torch.mean(cos_sim))
+                    else:
+                        losses.append(cos_sim)
+
+        if self.reduction == 'mean':
+            return -torch.stack(losses).mean() + 1
+        else:
+            return losses
+
+class DeepSim_v2(nn.Module):
+    """
+    Deep similarity metric
+    Alternative implementation
+    """
+
+    def __init__(self, feature_extractor_model, eps=1e-6):
+        super().__init__()
+        # feature extractor model variable called seg_model for backwards compatibility. Can be any model implementing the extract_features method
+        self.seg_model = feature_extractor_model
+        self.eps = eps
+        self.transformer = torchreg.nn.SpatialTransformer()
+
+        # fix params of feature extractor
+        for param in self.seg_model.parameters():
+            param.requires_grad = False
+
+    def forward(self, y_true, y_pred):
+        """DeepSim Loss. Taking the target and a morphed image. Extract features from the morphed image to calculate similarity.
+
+        Args:
+            y_true (torch.Tensor): The true target image. 
+            y_pred (torch.Tensor): The predicted (transformed) image
+
+        Returns:
+            torch.Tensor: the loss
+        """
+        # set to eval (deactivate dropout)
+        self.seg_model.eval()
+
+        # extract features
+        feats0 = self.seg_model.extract_features(y_true)
+        feats1 = self.seg_model.extract_features(y_pred)
+        return self._compare_feat_maps(feats0, feats1)
+
+    def first_warp_then_extract_features(self, I_0, I_1, flow):
+        """Alternative interface to self.forward().
+
+        Args:
+            I_0 (torch.Tensor): The moving image
+            I_1 (torch.Tensor): The fixed image
+            flow (torch.Tensor): the transformation
+
+        Returns:
+            torch.Tensor: the loss
+        """
+        I_m = self.transformer(I_0, flow)
+        return self.forward(I_1, I_m)
+
+    def first_extract_features_then_warp(self, I_0, I_1, flow):
+        """ Extracts features before warping.
+
+        Args:
+            I_0 (torch.Tensor): The moving image
+            I_1 (torch.Tensor): The fixed image
+            flow (torch.Tensor): the transformation
+
+        Returns:
+            torch.Tensor: the loss
+        """
+        # set to eval (deactivate dropout)
+        self.seg_model.eval()
+
+        # extract features
+        feats0 = self.seg_model.extract_features(I_0)
+        feats1 = self.seg_model.extract_features(I_1)
+
+        def apply_downscaled_transform(image, flow):
+            img_size = image.shape[2]
+            flow_size = flow.shape[2]
+            scale_factor = img_size / flow_size
+            scaled_flow = torch.nn.functional.interpolate(flow,
+                                                          scale_factor=scale_factor, mode='nearest')
+            scaled_flow *= scale_factor
+            return self.transformer(image, scaled_flow)
+
+        # warp features
+        feats0 = [apply_downscaled_transform(feat, flow) for feat in feats0]
+
+        # calculate loss
+        return self._compare_feat_maps(feats0, feats1)
+
+    def _compare_feat_maps(self, feats0, feats1):
+        losses = [self._cosine_sim(feat0, feat1).mean()
+                  for feat0, feat1 in zip(feats0, feats1)]
+
+        # mean and invert for minimization. Add +1 so loss >=0
+        return -torch.stack(losses).mean() + 1
+
+    def _cosine_sim(self, a, b):
+        prod_ab = torch.sum(a * b, dim=1)
+        norm_a = torch.sum(a ** 2, dim=1).clamp(self.eps) ** 0.5
+        norm_b = torch.sum(b ** 2, dim=1).clamp(self.eps) ** 0.5
+        cos_sim = prod_ab / (norm_a * norm_b)
+        return cos_sim
 
 class NCC(nn.Module):
     """
@@ -68,152 +232,7 @@ class NCC(nn.Module):
         if self.reduction == 'mean':
             return -torch.mean(cc) + 1
         else:
-            #return -cc + 1
             return cc
-
-class DeepSim(nn.Module):
-    """
-    Deep similarity metric
-    """
-
-    def __init__(self, seg_model, eps=1e-6, levels='all', reduction='mean', zero_mean=False):
-        super().__init__()
-        self.seg_model = seg_model
-        self.eps = eps
-        self.levels = levels
-        self.reduction = reduction
-        self.zero_mean = zero_mean
-
-        # fix params
-        for param in self.seg_model.parameters():
-            param.requires_grad = False
-
-    
-    def _calculate_cos_sim(self, feat0, feat1):
-        prod_ab = torch.sum(feat0 * feat1, dim=1)
-        norm_a = torch.sum(feat0 ** 2, dim=1).clamp(self.eps) ** 0.5
-        norm_b = torch.sum(feat1 ** 2, dim=1).clamp(self.eps) ** 0.5
-        cos_sim = prod_ab / (norm_a * norm_b)
-        return cos_sim
-
-    def _zero_mean_feat(self, feats):
-        zero_mean_feats = []
-        for feat in feats:
-            feat_mean = torch.mean(feat,1) 
-            feat_mean = feat_mean.unsqueeze(1).expand_as(feat)
-            zero_mean_feat = feat - feat_mean
-            zero_mean_feats.append(zero_mean_feat)
-        return zero_mean_feats
-
-
-
-    def forward(self, y_true, y_pred):
-        # set to eval (deactivate dropout)
-        self.seg_model.eval()
-
-        # extract features
-        feats0 = self.seg_model.extract_features(y_true)
-        feats1 = self.seg_model.extract_features(y_pred)
-        losses = []
-
-        # for i in feats0:
-        #     print(i.mean(1).mean())
-
-        if self.zero_mean:
-            feats0 = self._zero_mean_feat(feats0)
-            feats1 = self._zero_mean_feat(feats1)
-            # print()
-            # for i in feats0:
-            #     print(i.mean(1).mean())
-            # assert False
-
-        for i, (feat0, feat1) in enumerate(zip(feats0, feats1)):
-            # calculate cosine similarity
-            if self.levels == 'all':
-                cos_sim = self._calculate_cos_sim(feat0, feat1)
-                if self.reduction == 'mean':
-                    losses.append(torch.mean(cos_sim))
-                else:
-                    losses.append(cos_sim)
-                #print(f' level: {i}, shape: {feat0.size(), feat1.size()}')
-            else:
-                if i in self.levels:
-                    #print(f' level: {i}, shape: {feat0.size(), feat1.size()}')
-                    cos_sim = self._calculate_cos_sim(feat0, feat1)
-                    if self.reduction == 'mean':
-                        losses.append(torch.mean(cos_sim))
-                    else:
-                        losses.append(cos_sim)
-
-        # mean and invert for minimization
-        #print(self.reduction)
-
-        if self.reduction == 'mean':
-            return -torch.stack(losses).mean() + 1
-        else:
-            return losses
-
-
-class DeepSim_backup(nn.Module):
-    """
-    Deep similarity metric
-    """
-
-    def __init__(self, seg_model, eps=1e-6, levels='all', reduction='mean'):
-        super().__init__()
-        self.seg_model = seg_model
-        self.eps = eps
-        self.levels = levels
-        self.reduction = reduction
-
-        # fix params
-        for param in self.seg_model.parameters():
-            param.requires_grad = False
-
-    
-    def _calculate_cos_sim(self, feat0, feat1):
-        prod_ab = torch.sum(feat0 * feat1, dim=1)
-        norm_a = torch.sum(feat0 ** 2, dim=1).clamp(self.eps) ** 0.5
-        norm_b = torch.sum(feat1 ** 2, dim=1).clamp(self.eps) ** 0.5
-        cos_sim = prod_ab / (norm_a * norm_b)
-        return cos_sim
-
-
-    def forward(self, y_true, y_pred):
-        # set to eval (deactivate dropout)
-        self.seg_model.eval()
-
-        # extract features
-        feats0 = self.seg_model.extract_features(y_true)
-        feats1 = self.seg_model.extract_features(y_pred)
-        losses = []
-
-        for i, (feat0, feat1) in enumerate(zip(feats0, feats1)):
-            # calculate cosine similarity
-            if self.levels == 'all':
-                cos_sim = self._calculate_cos_sim(feat0, feat1)
-                if self.reduction == 'mean':
-                    losses.append(torch.mean(cos_sim))
-                else:
-                    losses.append(cos_sim)
-                #print(f' level: {i}, shape: {feat0.size(), feat1.size()}')
-            else:
-                if i in self.levels:
-                    #print(f' level: {i}, shape: {feat0.size(), feat1.size()}')
-                    cos_sim = self._calculate_cos_sim(feat0, feat1)
-                    if self.reduction == 'mean':
-                        losses.append(torch.mean(cos_sim))
-                    else:
-                        losses.append(cos_sim)
-
-        # mean and invert for minimization
-        #print(self.reduction)
-
-        if self.reduction == 'mean':
-            return -torch.stack(losses).mean() + 1
-        else:
-            return losses
-
 
 class VGGFeatureExtractor(nn.Module):
     """
@@ -252,6 +271,10 @@ class VGGFeatureExtractor(nn.Module):
         return self(x)
 
 class MIND_loss(torch.nn.Module):
+    """
+    Implementation retrieved from 
+    https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration/blob/main/TransMorph/losses.py
+    """
     def __init__(self, win=None):
         super(MIND_loss, self).__init__()
         self.win = win
@@ -314,7 +337,6 @@ class MIND_loss(torch.nn.Module):
 
     def forward(self, y_pred, y_true):
         return torch.mean((self.MINDSSC(y_pred) - self.MINDSSC(y_true)) ** 2)
-
 
 class NMI(nn.Module):
     """
