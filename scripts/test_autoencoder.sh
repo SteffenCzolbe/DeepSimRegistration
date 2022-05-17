@@ -1,1 +1,0 @@
-python3 -m src.test_3d_autoencoder --weights ./weights/brain-mri/autoencoder/weights.ckpt --out ./out/brain-mri/autoencoder/
