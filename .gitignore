@@ -3,15 +3,25 @@ lightning_logs*
 experiment_logs
 src/exploration
 tmp*
-*.pdf
-*.png
+#*.pdf
+#*.png
 *.ckpt
-out
+#out
 weights
+weights_experiments
 *.pckl
 *.pickl
 .vscode
 *.tif
+#*.sh
+#data
+
+# temp folders & python files
+z-files
+tests
+*/train_registrationG*.py
+*/train_segmentationG*.py
+torchreg/transforms/augmentation_tests/pre-transform/test.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,0 +1,19 @@
+hparams:
+  data_from: 0.0
+  data_to: 1.0
+  dataset: platelet-em
+  feature_extractor: seg
+  feature_extractor_weights: ./weights/platelet-em/segmentation/weights.ckpt
+  out_file: ./out/platelet-em/syn/syn_seg.yaml
+scores:
+  0: 0.9021376967430115
+  1: 0.9080448746681213
+  2: 0.910081684589386
+  3: 0.9003269672393799
+  4: 0.9092063307762146
+  5: 0.8939095139503479
+  6: 0.8837358951568604
+  7: 0.9014119505882263
+  8: 0.9117441773414612
+  9: 0.9031832814216614
+  10: 0.9196622371673584
