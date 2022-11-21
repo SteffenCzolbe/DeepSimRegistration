@@ -11,6 +11,8 @@ python3 -m src.plots.test_score_per_class
 python3 -m src.plots.img_sample
 python3 -m src.plots.loss_sample
 python3 -m src.plots.feature_maps
+python3 -m src.plots.run_models_with_added_noise
+python3 -m src.plots.plot_models_with_added_noise
 
 # transmorph
 python3 -m src.plots.tune_transmorph
