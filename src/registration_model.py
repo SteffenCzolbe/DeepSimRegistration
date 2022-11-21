@@ -26,9 +26,13 @@ class RegistrationModel(CommonLightningModel):
         self.hparams = hparams
         self.probabilistic= False
         self.probabilistic_p = 0.5
+        
+        # backwards compatibilty
+        if "net" not in self.hparams:
+            self.hparams.net = 'voxelmorph'
 
         # set net
-        if vars(self.hparams).get("net", 'voxelmorph') == 'voxelmorph':
+        if self.hparams.net == 'voxelmorph':
             self.net = Voxelmorph(
                 in_channels=self.dataset_config("channels"),
                 enc_feat=self.hparams.channels,
