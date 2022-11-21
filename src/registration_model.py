@@ -28,7 +28,7 @@ class RegistrationModel(CommonLightningModel):
         self.probabilistic_p = 0.5
 
         # set net
-        if self.hparams.net == 'voxelmorph':
+        if self.hparams.get("net", 'voxelmorph') == 'voxelmorph':
             self.net = Voxelmorph(
                 in_channels=self.dataset_config("channels"),
                 enc_feat=self.hparams.channels,
