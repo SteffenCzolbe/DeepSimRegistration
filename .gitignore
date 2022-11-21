@@ -12,6 +12,10 @@ weights
 *.pickl
 .vscode
 *.tif
+slurm_logs
+slurm*
+scripts/scratchpad.sh
+scripts/run.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
