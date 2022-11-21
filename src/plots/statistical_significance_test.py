@@ -1,6 +1,8 @@
+from numpy import std, mean, sqrt
 import pickle
 import scipy.stats
-from numpy import std, mean, sqrt
+
+from .run_models import run_models
 
 #correct if the population S.D. is expected to be equal for the two groups.
 def cohen_d(x,y):
@@ -70,8 +72,7 @@ def print_results(results):
     
 
 if __name__ == '__main__':
-    cache_file_name = "./src/plots/cache.pickl"
-    results = pickle.load(open(cache_file_name, "rb"))
+    results = run_models(use_cached=True)
 
     for dataset in results.keys():
         results[dataset] = rank_metrics(results[dataset])
@@ -84,5 +85,3 @@ if __name__ == '__main__':
                 results[dataset] = compare_metrics(results[dataset], metric0, metric1)
         
     print_results(results)
-    pickle.dump(results, open(cache_file_name, "wb"))
-

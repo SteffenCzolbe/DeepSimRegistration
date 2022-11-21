@@ -1,0 +1,19 @@
+hparams:
+  data_from: 0.0
+  data_to: 1.0
+  dataset: platelet-em
+  feature_extractor: none
+  feature_extractor_weights: null
+  out_file: ./out/platelet-em/syn/syn.yaml
+scores:
+  0: 0.8942034840583801
+  1: 0.9050688147544861
+  2: 0.9045848846435547
+  3: 0.879391610622406
+  4: 0.8986802101135254
+  5: 0.8723578453063965
+  6: 0.8747144341468811
+  7: 0.8970486521720886
+  8: 0.9026103615760803
+  9: 0.890886127948761
+  10: 0.9128873348236084

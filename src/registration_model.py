@@ -6,10 +6,12 @@ import torchreg
 import torchreg.viz as viz
 from .common_lightning_model import CommonLightningModel
 from .models.voxelmorph import Voxelmorph
-from .loss_metrics import NCC, DeepSim, VGGFeatureExtractor
+from .loss_metrics import NCC, DeepSim, DeepSim_v2, VGGFeatureExtractor, NMI, MIND_loss
 from .segmentation_model import SegmentationModel
 from .autoencoder_model import AutoEncoderModel
 
+from src.models.TransMorph2D import TransMorph2D, CONFIGS2D 
+import torch.nn.functional as F
 
 class RegistrationModel(CommonLightningModel):
     """
@@ -26,30 +28,110 @@ class RegistrationModel(CommonLightningModel):
         self.probabilistic_p = 0.5
 
         # set net
-        self.net = Voxelmorph(
-            in_channels=self.dataset_config("channels"),
-            enc_feat=self.hparams.channels,
-            dec_feat=self.hparams.channels[::-1],
-            bnorm=self.hparams.bnorm,
-            dropout=self.hparams.dropout,
-        )
+        if self.hparams.net == 'voxelmorph':
+            self.net = Voxelmorph(
+                in_channels=self.dataset_config("channels"),
+                enc_feat=self.hparams.channels,
+                dec_feat=self.hparams.channels[::-1],
+                bnorm=self.hparams.bnorm,
+                dropout=self.hparams.dropout,
+            )
+        elif self.hparams.net.lower() == 'transmorph2d-small' or self.hparams.net.lower() == 'transmorph2d':
+            model_name = self.hparams.net.lower() + '_' + self.hparams.dataset.lower()
+            config2D = CONFIGS2D[model_name]
+            self.net = TransMorph2D(config2D)
+        else:
+            raise ValueError(f'model "{self.hparams.net}" unknow.')
         
-        if hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-ae"] and not hparams.deepsim_weights:
+        if hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-ae", "deepsim-transfer-ae",
+                                    "deepsim-zero", "deepsim-ae-zero",
+                                    "deepsim-ae_0", "deepsim-ae_01", "deepsim-ae_02",
+                                    "deepsim-ae_1", "deepsim-ae_12", "deepsim-ae_2",
+                                    "deepsim_0", "deepsim_01", "deepsim_02",
+                                    "deepsim_1", "deepsim_12", "deepsim_2",
+                                    "deepsim-ebw", "deepsim-ae-ebw"] and not hparams.deepsim_weights:
             raise ValueError("No weights specified for Deep Similarity Metric.")
         
-        if hparams.loss.lower() in ["deepsim", "deepsim-transfer"]:
+        if hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-zero", 
+                                    "deepsim_0", "deepsim_01", "deepsim_02",
+                                    "deepsim_1", "deepsim_12", "deepsim_2",
+                                    "deepsim-ebw"]:
+
+            if hparams.loss.lower()=="deepsim_0":
+                levels = [0]
+            elif hparams.loss.lower()=="deepsim_1":
+                levels = [1]
+            elif hparams.loss.lower()=="deepsim_2":
+                levels = [2]
+            elif hparams.loss.lower()=="deepsim_01":
+                levels = [0,1]
+            elif hparams.loss.lower()=="deepsim_12":
+                levels = [1,2]
+            elif hparams.loss.lower()=="deepsim_02":
+                levels = [0, 2]
+            elif hparams.loss.lower()=="deepsim":
+                levels = 'all'
+            elif hparams.loss.lower()=="deepsim-transfer":
+                levels = 'all'
+            elif hparams.loss.lower()=="deepsim-zero":
+                levels = 'all'
+   
+
             feature_extractor = SegmentationModel.load_from_checkpoint(
                 hparams.deepsim_weights
             )
-            self.deepsim = DeepSim(feature_extractor)
-        elif hparams.loss.lower() == "deepsim-ae":
+
+            if 'zero' in hparams.loss.lower():
+                self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=True)
+            elif 'ebw' in hparams.loss.lower():
+                    self.deepsim = DeepSim_v2(feature_extractor)
+            else:
+                self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=False)
+
+        elif hparams.loss.lower() in ["deepsim-ae", "deepsim-transfer-ae","deepsim-ae-zero",
+                                      "deepsim-ae_0", "deepsim-ae_01", "deepsim-ae_02",
+                                      "deepsim-ae_1", "deepsim-ae_12", "deepsim-ae_2",
+                                      "deepsim-ae-ebw"]:
+
+            if hparams.loss.lower()=="deepsim-ae_0":
+                levels = [0]
+            elif hparams.loss.lower()=="deepsim-ae_1":
+                levels = [1]
+            elif hparams.loss.lower()=="deepsim-ae_2":
+                levels = [2]
+            elif hparams.loss.lower()=="deepsim-ae_01":
+                levels = [0,1]
+            elif hparams.loss.lower()=="deepsim-ae_12":
+                levels = [1,2]
+            elif hparams.loss.lower()=="deepsim-ae_02":
+                levels = [0, 2]
+            elif hparams.loss.lower()=="deepsim-ae":
+                levels = 'all'
+            elif hparams.loss.lower()=="deepsim-transfer-ae":
+                levels = 'all'
+            elif hparams.loss.lower()=="deepsim-ae-zero":
+                levels = 'all'
+
             feature_extractor = AutoEncoderModel.load_from_checkpoint(
                 hparams.deepsim_weights
             )
-            self.deepsim = DeepSim(feature_extractor)
+
+            if 'zero' in hparams.loss.lower():
+                self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=True)
+            elif 'ebw' in hparams.loss.lower():
+                    self.deepsim = DeepSim_v2(feature_extractor)
+            else:
+                self.deepsim = DeepSim(feature_extractor, levels=levels, zero_mean=False)
+
         elif hparams.loss.lower() == "vgg":
             feature_extractor = VGGFeatureExtractor()
             self.vgg_loss = DeepSim(feature_extractor)
+        elif hparams.loss.lower() == "mind":
+            self.mind_loss = MIND_loss()
+        elif hparams.loss.lower() == "nmi":
+            # brain dataset hyperintensities can be >1.0
+            self.nmi_loss = NMI(
+                vmax=1.5 if hparams.dataset == "brain-mri" else 1.)
 
         squared_ncc = hparams.loss.lower() in ["ncc2", "ncc2+supervised"]
         self.ncc = NCC(window=hparams.ncc_win_size, squared=squared_ncc)
@@ -69,20 +151,35 @@ class RegistrationModel(CommonLightningModel):
         Same as torch.nn.Module.forward(), however in Lightning you want this to
         define the operations you want to use for prediction (i.e.: on a server or as a feature extractor).
         """
-            
-        # activate dropout layers for probabilistic model
-        if self.probabilistic:
-            dropout_layers = self.get_dropout_layers(self)
-            for l in dropout_layers:
-                l.train() # activate dropout
-                l.p = self.probabilistic_p # set dropout probability
-                
-        # run model
-        return self.net(moving, fixed)
+
+        # register the images
+        if self.hparams.net.lower() == 'voxelmorph':
+            # activate dropout layers for probabilistic model
+            if self.probabilistic:
+                dropout_layers = self.get_dropout_layers(self)
+                for l in dropout_layers:
+                    l.train() # activate dropout
+                    l.p = self.probabilistic_p # set dropout probability
+            flow = self.net(moving, fixed)
+        else:
+            x = torch.cat((moving, fixed), dim=1)
+            flow = self.net(x)
+            #moved, flow = self.net(x)
+
+        return flow
 
     def similarity_loss(self, I_m, I_1, S_m_onehot, S_1_onehot):
-        if self.hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-ae"]:
+        if self.hparams.loss.lower() in ["deepsim", "deepsim-transfer", "deepsim-ae", "deepsim-transfer-ae",
+                                         "deepsim-zero", "deepsim-ae-zero",
+                                         "deepsim-ae_0", "deepsim-ae_01", "deepsim-ae_02",
+                                         "deepsim-ae_1", "deepsim-ae_12", "deepsim-ae_2",
+                                         "deepsim_0", "deepsim_01", "deepsim_02",
+                                         "deepsim_1", "deepsim_12", "deepsim_2",
+                                         "deepsim-ebw", "deepsim-ae-ebw"]:
             return self.deepsim(I_m, I_1)
+        elif self.hparams.loss.lower() in ["deepsim-ebw", "deepsim-ae-ebw"]:
+            # extract before warp
+            self.deepsim.first_extract_features_then_warp(I_0, I_1, flow)
         elif self.hparams.loss.lower() == "vgg":
             return self.vgg_loss(I_m, I_1)
         elif self.hparams.loss.lower() in ["ncc", "ncc2"]:
@@ -91,6 +188,13 @@ class RegistrationModel(CommonLightningModel):
             return self.ncc(I_m, I_1) + self.mse(S_m_onehot, S_1_onehot)
         elif self.hparams.loss.lower() == "l2":
             return self.mse(I_m, I_1)
+        elif self.hparams.loss.lower() == "mind":
+            if self.hparams.dataset.lower() in ["phc-u373", "platelet-em"]:
+                return self.mind_loss(I_m.unsqueeze(dim=-1), I_1.unsqueeze(dim=-1))
+            else:
+                return self.mind_loss(I_m, I_1) 
+        elif self.hparams.loss.lower() == "nmi":
+            return self.nmi_loss(I_m, I_1)
         else:
             raise ValueError(f'loss function "{self.hparams.loss}" unknow.')
 
@@ -113,8 +217,7 @@ class RegistrationModel(CommonLightningModel):
             .squeeze(-1)
             .float()
         )
-        
-    
+            
     def get_dropout_layers(self, model):
         """
         Collects all the dropout layers of the model
@@ -140,13 +243,34 @@ class RegistrationModel(CommonLightningModel):
         # unpack batch
         (I_0, S_0), (I_1, S_1) = batch
 
+        if self.hparams.dataset.lower() == "phc-u373":
+            if 'transmorph2d' in self.hparams.net.lower():
+                I_0 = F.pad(I_0, (8, 8) , "constant", 0)
+                I_1 = F.pad(I_1, (8, 8) , "constant", 0)
+                S_0 = F.pad(S_0, (8, 8) , "constant", 0)
+                S_1 = F.pad(S_1, (8, 8) , "constant", 0)
+
         # augment
         if self.training:
             I_0, I_1, S_0, S_1 = self.augment(I_0, I_1, S_0, S_1)
-
+        
         # predict flow
-        flow = self.forward(I_0, I_1)
-
+        #flow = self.forward(I_0, I_1)
+        if self.hparams.net.lower() == 'voxelmorph':
+            flow = self.net(I_0, I_1)
+        else:
+            x = torch.cat((I_0, I_1), dim=1)
+            flow = self.net(x)
+            #moved, flow = self.net(x)
+        
+        if self.hparams.dataset.lower() == "phc-u373":
+            if 'transmorph2d' in self.hparams.net.lower():
+                I_0 = I_0[:,:,:,8:-8]
+                I_1 = I_1[:,:,:,8:-8]
+                S_0 = S_0[:,:,:,8:-8]
+                S_1 = S_1[:,:,:,8:-8]
+                flow = flow[:,:,:,8:-8]
+                    
         # morph image and segmentation
         I_m = self.transformer(I_0, flow)
         S_m = self.transformer(S_0.float(), flow, mode="nearest").round().long()
@@ -248,7 +372,7 @@ class RegistrationModel(CommonLightningModel):
             "--loss",
             type=str,
             default="ncc",
-            help="Similarity Loss function. Options: 'l2', 'ncc', 'ncc2', 'deepsim', 'deepsim-transfer', 'deepsim-ae', 'ncc+supervised', 'vgg' (Default: ncc)",
+            help="Similarity Loss function. (Default: ncc)",
         )
         parser.add_argument(
             "--ncc_win_size",
@@ -275,6 +399,16 @@ class RegistrationModel(CommonLightningModel):
         parser.add_argument(
             "--bnorm", action="store_true", help="use batchnormalization."
         )
-        parser.add_argument("--dropout", action="store_true", help="use dropout")
-        parser.add_argument("--savedir", type=str, help="Directory to save images in")
+
+        parser.add_argument(
+            "--dropout", action="store_true", help="use dropout"
+        )
+        parser.add_argument(
+            "--savedir", type=str, help="Directory to save images in"
+        )
+
+        parser.add_argument(
+            "--net", type=str, default="voxelmorph", help="voxelmorph or transmorph"
+        )
+
         return parser

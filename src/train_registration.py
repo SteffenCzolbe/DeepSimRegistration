@@ -1,5 +1,8 @@
 import argparse
+import os
 import pytorch_lightning as pl
+import torch
+
 from .registration_model import RegistrationModel
 
 
@@ -19,10 +22,10 @@ def main(hparams):
     # add some hints for better experiments tracking
     hparams.task = "registration"
 
-    # if
-    if hasattr(hparams, "gpus") and hparams.gpus in [1, "1", [1]]:
-        print("Setting to use GPU 0.")
-        hparams.gpus = [0]
+    # # if
+    # if hasattr(hparams, "gpus") and hparams.gpus in [1, "1", [1]]:
+    #     print("Setting to use GPU 0.")
+    #     hparams.gpus = [0]
 
     # trainer
     trainer = pl.Trainer.from_argparse_args(hparams)

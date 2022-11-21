@@ -1,5 +1,6 @@
 import argparse
 import pytorch_lightning as pl
+
 from .autoencoder_model import AutoEncoderModel
 
 

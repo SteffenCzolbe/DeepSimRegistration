@@ -2,12 +2,18 @@ venv
 lightning_logs*
 experiment_logs
 src/exploration
+out/phc-u373/autoencoder/
+out/phc-u373/registration/
+out/phc-u373/segmentation/
+out/platelet-em/registration/
+out/platelet-em/segmentation/
 tmp*
-*.pdf
-*.png
+#*.pdf
+#*.png
 *.ckpt
-out
+#out
 weights
+weights_experiments
 *.pckl
 *.pickl
 .vscode
@@ -16,6 +22,15 @@ slurm_logs
 slurm*
 scripts/scratchpad.sh
 scripts/run.sh
+#*.sh
+#data
+
+# temp folders & python files
+z-files
+tests
+*/train_registrationG*.py
+*/train_segmentationG*.py
+torchreg/transforms/augmentation_tests/pre-transform/test.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -326,7 +326,7 @@ class CommonLightningModel(pl.LightningModule):
         parser.add_argument(
             "--viz_every_n_epochs",
             type=int,
-            default=25,
+            default=300,
             help="Visualization every n epochs. Default 25.",
         )
         return parser

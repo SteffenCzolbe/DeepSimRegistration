@@ -55,7 +55,7 @@ class Voxelmorph(nn.Module):
         dec_activations = self.backbone(x)
         x = dec_activations[-1]
 
-        # predict flow and integrate
+        # predict flow 
         flow = self.flow(x)
 
         return flow

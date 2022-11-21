@@ -8,26 +8,35 @@ from PIL import Image
 
 
 class Fig:
-    def __init__(self, rows=1, cols=1, title=None, figsize=None):
+    def __init__(self, rows=1, cols=1, title=None, figsize=None, transparent_background=False, column_titles=None, axs=None,
+                 sharex=False, sharey=False):
         """
         instantiates a plot.
         Parameters:
             rows: how many plots per row
             cols: how many plots per column
             title: title of the figure
+            transparent_background: set to make background transparent instead of white
+            column_titles: List of column titles
+            axs: Optional, 2d array of axes. If provided, will not create its own axes. Can be used to specify exact margins with Gridspec
         """
         # instantiate plot
-        self.fig, self.axs = plt.subplots(
-            nrows=rows, ncols=cols, dpi=300, figsize=figsize, frameon=False
-        )
-
-        # set title
-        self.fig.suptitle(title)
+        if axs is None:
+            self.fig, self.axs = plt.subplots(
+                nrows=rows, ncols=cols, dpi=300, figsize=figsize, frameon=not transparent_background, sharex=sharex, sharey=sharey,
+            )
+        else:
+            self.fig = plt.gcf()
+            self.fig.set_size_inches(figsize)
+            self.fig.set_dpi(300)
+            self.axs = axs
 
         # extend empty dimensions to array
-        if cols == 1:
+        if cols == 1 and rows == 1:
+            self.axs = np.array([[self.axs]])
+        elif cols == 1:
             self.axs = np.array([[ax] for ax in self.axs])
-        if rows == 1:
+        elif rows == 1:
             self.axs = np.array([self.axs])
 
         # hide all axis
@@ -35,7 +44,29 @@ class Fig:
             for ax in row:
                 ax.axis("off")
 
-    def plot_img(self, row, col, image, title=None, vmin=None, vmax=None):
+        # set titles
+        self.fig.suptitle(title)
+        if column_titles:
+            for c, column_title in zip(range(cols), column_titles):
+                #print(column_title)
+                self.axs[0, c].set_title(column_title)
+
+    def set_row_label(self, row, label, offset=-30, plot_height=256):
+        """
+        Sets a single row-headline
+
+        Args:
+            row (int): row to add the headline to
+            labels (str): label
+            offset (int, optional): horizontal-offset. Size relative to plot size. Defaults to -30.
+            plot_height (int, optional): vertical-offset. Size relative to plot size. Defaults to -256.
+        """
+        if label is not None:
+            self.axs[row, 0].text(x=-30, y=plot_height/2, s=label, fontsize=12,
+                                  rotation=90, verticalalignment='center', horizontalalignment='center')
+
+
+    def plot_img(self, row, col, image, cmap='gray', title=None, vmin=None, vmax=None, interpolation='none'):
         """
         plots a tensor of the form C x H x W at position row, col.
         C needs to be either C=1 or C=3
@@ -52,7 +83,7 @@ class Fig:
         if len(img.shape) == 2:
             # plot greyscale image
             self.axs[row, col].imshow(
-                img, cmap="gray", vmin=vmin, vmax=vmax, interpolation="none"
+                img, cmap=cmap, vmin=vmin, vmax=vmax, interpolation=interpolation
             )
         elif len(img.shape) == 3:
             # last channel is color channel
@@ -300,7 +331,7 @@ class Fig:
             path: path to save at. Including extension. eg. '~/my_fig.png'
             close: Bool, closes the figure when set.
         """
-        plt.savefig(path)
+        plt.savefig(path, bbox_inches='tight')
         if close:
             plt.close(self.fig)
 

@@ -11,8 +11,12 @@ import torchreg.viz as viz
 
 def main(hparams):
     # load model
+    #model = RegistrationModel(hparams)
+    #model.hparams.__dict__.update(net=hparams.net)
+    #print(model.hparams)
     model = RegistrationModel.load_from_checkpoint(checkpoint_path=hparams.weights)
     model.eval()
+    
 
     print(
         f"Evaluating model for dataset {model.hparams.dataset}, loss {model.hparams.loss}, lambda {model.hparams.lam}"
@@ -65,4 +69,5 @@ if __name__ == "__main__":
     )
 
     hparams = parser.parse_args()
+    
     main(hparams)
