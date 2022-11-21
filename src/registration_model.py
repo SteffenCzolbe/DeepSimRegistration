@@ -380,6 +380,14 @@ class RegistrationModel(CommonLightningModel):
             default=9,
             help="Window-Size for the NCC loss function (Default: 9)",
         )
+
+        parser.add_argument(
+            "--nmi_bin_size",
+            type=int,
+            default=64,
+            help="Bin-Size for the NMI loss function (Default: 64)",
+        )
+
         parser.add_argument(
             "--deepsim_weights",
             type=str,
