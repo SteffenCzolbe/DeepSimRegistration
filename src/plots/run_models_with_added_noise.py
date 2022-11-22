@@ -72,7 +72,9 @@ def test_model_with_noise(model, std):
             
             if i == 0:
                 # save one example
-                save_img_as_png(I_0, os.path.join('out', 'plots', 'png', 'noisy_images', f'std_{std}.png'))
+                _,_,w, h = I_0.shape
+                img_crop = I_0[:,:,w//3*2:,w//3*2:]
+                save_img_as_png(img_crop, os.path.join('out', 'plots', 'png', 'noisy_images', f'std_{std}.png'))
             
             
         # map list of dicts to a dict of lists
@@ -107,7 +109,7 @@ def run_models(use_cached=True):
                 checkpoint_path=checkpoint_path
             )
             
-            for noise_std in [-2, -1, 0, 0.05, 0.1, 0.15, 0.2, 0.25]:
+            for noise_std in [-3, -2.5, -2, -1.5, -1, -0.5, 0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
                 step_dict = test_model_with_noise(model, noise_std)
                 results[dataset][loss_function][noise_std] = step_dict
                 
