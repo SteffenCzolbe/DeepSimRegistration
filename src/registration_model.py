@@ -135,7 +135,8 @@ class RegistrationModel(CommonLightningModel):
         elif hparams.loss.lower() == "nmi":
             # brain dataset hyperintensities can be >1.0
             self.nmi_loss = NMI(
-                vmax=1.5 if hparams.dataset == "brain-mri" else 1.)
+                vmax=1.5 if hparams.dataset == "brain-mri" else 1.,
+                num_bins=hparams.nmi_bin_size)
 
         squared_ncc = hparams.loss.lower() in ["ncc2", "ncc2+supervised"]
         self.ncc = NCC(window=hparams.ncc_win_size, squared=squared_ncc)
