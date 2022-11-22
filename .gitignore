@@ -31,6 +31,7 @@ tests
 */train_registrationG*.py
 */train_segmentationG*.py
 torchreg/transforms/augmentation_tests/pre-transform/test.png
+ppar*.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
