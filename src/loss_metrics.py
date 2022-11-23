@@ -269,18 +269,34 @@ class VGGFeatureExtractor(nn.Module):
 
     def extract_features(self, x):
         return self(x)
-
+    
+    
 class MIND_loss(torch.nn.Module):
-    """
-    Implementation retrieved from 
-    https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration/blob/main/TransMorph/losses.py
-    """
-    def __init__(self, radius=2, dilation=2):
+    def __init__(self, radius:int=2, dilation:int=2):
+        """
+        Implementation of the MIND-SSC loss function
+        See http://mpheinrich.de/pub/miccai2013_943_mheinrich.pdf for the MIND-SSC descriptor. This ignores the center voxel, but compares adjacent voxels of the 6-neighborhood with each other.
+        See http://mpheinrich.de/pub/MEDIA_mycopy.pdf for the original MIND loss function.
+
+        Implementation retrieved from 
+        https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration/blob/main/TransMorph/losses.py
+        Annotation/Comments by Steffen Czolbe.
+
+        Parameters:
+            radius (int): determines size of patches around members of the 6-neighborhood
+            dilation (int): determines spacing of members of the 6-neighborhood from the center voxel
+        """
         super(MIND_loss, self).__init__()
         self.radius = radius
         self.dilation = dilation
 
     def pdist_squared(self, x):
+        # for a list of length N of interger-valued pixel-coordinates, return an NxN matrix containing the squred euclidian distance between them:
+        # 0: coordinates are the same
+        # 1: coordinates are neighbours
+        # 2: coordinates are diagonal
+        # 4: coordinates are opposide, 2 apart
+
         xx = (x ** 2).sum(dim=1).unsqueeze(2)
         yy = xx.permute(0, 2, 1)
         dist = xx + yy - 2.0 * torch.bmm(x.permute(0, 2, 1), x)
@@ -288,16 +304,17 @@ class MIND_loss(torch.nn.Module):
         dist = torch.clamp(dist, 0.0, np.inf)
         return dist
 
-    def MINDSSC(self, img, radius=2, dilation=2):
+    def MINDSSC(self, img):
         # see http://mpheinrich.de/pub/miccai2013_943_mheinrich.pdf for details on the MIND-SSC descriptor
+        # SSC = self-similarity context. Ignores the center voxel, but compares adjacent voxels of the 6-neighborhood with each other
 
-        # kernel size
-        #kernel_size = radius * 2 + 1
+        # Radius: determines size of patches around members of the 6-neighborhood, square kernel
         kernel_size = self.radius * 2 + 1
+        radius = self.radius
+        # dilation: determines spreading of 6-neighborhood
         dilation = self.dilation
-        #dilation = self.radius * 2 + 1
 
-        # define start and end locations for self-similarity pattern
+        # define neighborhood for the self-similarity pattern. These coordinates are centered on [1, 1, 1]
         six_neighbourhood = torch.Tensor([[0, 1, 1],
                                           [1, 1, 0],
                                           [1, 0, 1],
@@ -305,55 +322,51 @@ class MIND_loss(torch.nn.Module):
                                           [2, 1, 1],
                                           [1, 2, 1]]).long()
 
-        # squared distances
+        # squared distances between neighborhood coordinates
         dist = self.pdist_squared(six_neighbourhood.t().unsqueeze(0)).squeeze(0)
 
         # define comparison mask
+        # we compare adjacent neighborhood pixels (squared distance ==2), and exploid siymmetry to only calculate each pair once (x>y).
         x, y = torch.meshgrid(torch.arange(6), torch.arange(6))
         mask = ((x > y).view(-1) & (dist == 2).view(-1))
 
-        # build kernel
-        idx_shift1 = six_neighbourhood.unsqueeze(1).repeat(1, 6, 1).view(-1, 3)[mask, :]
-        idx_shift2 = six_neighbourhood.unsqueeze(0).repeat(6, 1, 1).view(-1, 3)[mask, :]
-        mshift1 = torch.zeros(12, 1, 3, 3, 3).cuda()
+        # build kernels to efficiently implement the pairwhise-patch based differences
+        idx_shift1 = six_neighbourhood.unsqueeze(1).repeat(1, 6, 1).view(-1, 3)[mask, :] # 12x3 matrix. Paiting-pixel-coordinates of the first image
+        idx_shift2 = six_neighbourhood.unsqueeze(0).repeat(6, 1, 1).view(-1, 3)[mask, :] # 12x3 matrix. Paiting-pixel-coordinates of the second image
+        mshift1 = torch.zeros(12, 1, 3, 3, 3).to(img.device) # shifting-kernels, one channel to 12 channels. Each 3x3x3 kernel has ony a single 1
         mshift1.view(-1)[torch.arange(12) * 27 + idx_shift1[:, 0] * 9 + idx_shift1[:, 1] * 3 + idx_shift1[:, 2]] = 1
-        mshift2 = torch.zeros(12, 1, 3, 3, 3).cuda()
+        mshift2 = torch.zeros(12, 1, 3, 3, 3).to(img.device)
         mshift2.view(-1)[torch.arange(12) * 27 + idx_shift2[:, 0] * 9 + idx_shift2[:, 1] * 3 + idx_shift2[:, 2]] = 1
-        rpad1 = nn.ReplicationPad3d(dilation)
+        rpad1 = nn.ReplicationPad3d(dilation) # Dadding to account for borders.
         rpad2 = nn.ReplicationPad3d(radius)
 
-        #compute patch-ssd
-        ssd = F.avg_pool3d(rpad2(
-            (F.conv3d(rpad1(img), mshift1, dilation=dilation) - F.conv3d(rpad1(img), mshift2, dilation=dilation)) ** 2),
-                           kernel_size, stride=1)
+        # compute patch-ssd
 
-        
-        # # compute patch-ssd
-        # ssd = F.avg_pool3d(rpad2(
-        #     (F.conv3d(rpad1(img), mshift1, dilation=dilation) - F.conv3d(rpad1(img), mshift2, dilation=dilation)) ** 2),
-        #                    (kernel_size,kernel_size, 1), stride=1)
-        # ssd = ssd[:,:,:,:,0]
-        # ssd = ssd.unsqueeze(dim=-1)
-        # #print(ssd.shape)
-        # #assert False
+        # shift-align all 12 patch pairings, implemented via convolution
+        h1 = F.conv3d(rpad1(img), mshift1, dilation=dilation)
+        h2 = F.conv3d(rpad1(img), mshift2, dilation=dilation)
+        # calculate difference 
+        diff = rpad2((h1 - h2) ** 2)
+        # convolve difference patches via averaging. This makes the loss magnitude invriant of patch size.
+        ssd = F.avg_pool3d(diff, kernel_size, stride=1)
+
 
         # MIND equation
-        mind = ssd - torch.min(ssd, 1, keepdim=True)[0]
-        mind_var = torch.mean(mind, 1, keepdim=True)
-        mind_var = torch.clamp(mind_var, (mind_var.mean() * 0.001).item(), (mind_var.mean() * 1000).item())
+        mind = ssd - torch.min(ssd, 1, keepdim=True)[0] # normalize by substracting lowest value
+        mind_var = torch.mean(mind, 1, keepdim=True) # Mean across neighborhood pixel pairings (channels)
+        mind_var = torch.clamp(mind_var, (mind_var.mean() * 0.001).item(), (mind_var.mean() * 1000).item()) # remove outliers
         mind /= mind_var
         mind = torch.exp(-mind)
-
-        # permute to have same ordering as C++ code
-        mind = mind[:, torch.Tensor([6, 8, 1, 11, 2, 10, 0, 7, 9, 4, 5, 3]).long(), :, :, :]
 
         return mind
 
     def forward(self, y_pred, y_true):
+        # Get the MIND-SSC descriptor for each image
         true = self.MINDSSC(y_true)
         pred = self.MINDSSC(y_pred)
-        print(true.shape, pred.shape)
-        return torch.mean((self.MINDSSC(y_pred) - self.MINDSSC(y_true)) ** 2)
+
+        # calulate difference
+        return torch.mean((true - pred) ** 2)
 
 class NMI(nn.Module):
     """
@@ -452,120 +465,6 @@ class NMI(nn.Module):
             return -torch.mean(ent_x + ent_y - ent_joint)
 
 
-
-class MIND2D(torch.nn.Module):
-
-    def __init__(self, non_local_region_size =9, patch_size =7, neighbor_size =3, gaussian_patch_sigma =3.0):
-        super(MIND2D, self).__init__()
-        self.nl_size =non_local_region_size
-        self.p_size =patch_size
-        self.n_size =neighbor_size
-        self.sigma2 =gaussian_patch_sigma *gaussian_patch_sigma
-
-
-        # calc shifted images in non local region
-        self.image_shifter =torch.nn.Conv2d(in_channels =1, out_channels =self.nl_size *self.nl_size,
-                                            kernel_size =(self.nl_size, self.nl_size),
-                                            stride=1, padding=((self.nl_size-1)//2, (self.nl_size-1)//2),
-                                            dilation=1, groups=1, bias=False, padding_mode='zeros')
-
-        for i in range(self.nl_size*self.nl_size):
-            t =torch.zeros((1, self.nl_size, self.nl_size))
-            t[0, i%self.nl_size, i//self.nl_size] =1
-            self.image_shifter.weight.data[i] =t
-
-
-        # patch summation
-        self.summation_patcher =torch.nn.Conv2d(in_channels =self.nl_size*self.nl_size, out_channels =self.nl_size*self.nl_size,
-                                              kernel_size =(self.p_size, self.p_size),
-                                              stride=1, padding=((self.p_size-1)//2, (self.p_size-1)//2),
-                                              dilation=1, groups=self.nl_size*self.nl_size, bias=False, padding_mode='zeros')
-
-        for i in range(self.nl_size*self.nl_size):
-            # gaussian kernel
-            t =torch.zeros((1, self.p_size, self.p_size))
-            cx =(self.p_size-1)//2
-            cy =(self.p_size-1)//2
-            for j in range(self.p_size *self.p_size):
-                x=j%self.p_size
-                y=j//self.p_size
-                d2 =torch.norm( torch.tensor([x-cx, y-cy]).float(), 2)
-                t[0, x, y] =math.exp(-d2 / self.sigma2)
-
-            self.summation_patcher.weight.data[i] =t
-
-
-        # neighbor images
-        self.neighbors =torch.nn.Conv2d(in_channels =1, out_channels =self.n_size*self.n_size,
-                                        kernel_size =(self.n_size, self.n_size),
-                                        stride=1, padding=((self.n_size-1)//2, (self.n_size-1)//2),
-                                        dilation=1, groups=1, bias=False, padding_mode='zeros')
-
-        for i in range(self.n_size*self.n_size):
-            t =torch.zeros((1, self.n_size, self.n_size))
-            t[0, i%self.n_size, i//self.n_size] =1
-            self.neighbors.weight.data[i] =t
-
-
-        # neighbor patcher
-        self.neighbor_summation_patcher =torch.nn.Conv2d(in_channels =self.n_size*self.n_size, out_channels =self.n_size*self.n_size,
-                                               kernel_size =(self.p_size, self.p_size),
-                                               stride=1, padding=((self.p_size-1)//2, (self.p_size-1)//2),
-                                               dilation=1, groups=self.n_size*self.n_size, bias=False, padding_mode='zeros')
-
-        for i in range(self.n_size*self.n_size):
-            t =torch.ones((1, self.p_size, self.p_size))
-            self.neighbor_summation_patcher.weight.data[i] =t
-
-
-
-    def forward(self, orig):
-        assert(len(orig.shape) ==4)
-        assert(orig.shape[1] ==1)
-
-        # get original image channel stack
-        orig_stack =torch.stack([orig.squeeze(dim=1) for i in range(self.nl_size*self.nl_size)], dim=1)
-
-        # get shifted images
-        shifted =self.image_shifter(orig)
-
-        # get image diff
-        diff_images =shifted -orig_stack
-
-        # diff's L2 norm
-        Dx_alpha =self.summation_patcher(torch.pow(diff_images, 2.0))
-
-        # calc neighbor's variance
-        neighbor_images =self.neighbor_summation_patcher( self.neighbors(orig) )
-        Vx =neighbor_images.var(dim =1).unsqueeze(dim =1)
-
-        # output mind
-        nume =torch.exp(-Dx_alpha /(Vx +1e-8))
-        denomi =nume.sum(dim =1).unsqueeze(dim =1)
-        mind =nume /denomi
-
-        print(mind.shape)
-        return mind
-
-
-class MINDLoss2D(torch.nn.Module):
-
-    def __init__(self, non_local_region_size =9, patch_size =7, neighbor_size =3, gaussian_patch_sigma =3.0):
-        super(MINDLoss2D, self).__init__()
-        self.nl_size =non_local_region_size
-        self.MIND =MIND2D(non_local_region_size =non_local_region_size,
-                        patch_size =patch_size,
-                        neighbor_size =neighbor_size,
-                        gaussian_patch_sigma =gaussian_patch_sigma)
-
-    def forward(self, input, target):
-        in_mind =self.MIND(input)
-        tar_mind =self.MIND(target)
-        mind_diff =in_mind -tar_mind
-        l1 =torch.norm( mind_diff, 1)
-        return l1/(input.shape[2] *input.shape[3] *self.nl_size *self.nl_size)
-
-    
 
 if __name__ == "__main__":
     import numpy as np
