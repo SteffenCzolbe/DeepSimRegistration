@@ -194,10 +194,7 @@ class RegistrationModel(CommonLightningModel):
         elif self.hparams.loss.lower() == "l2":
             return self.mse(I_m, I_1)
         elif self.hparams.loss.lower() == "mind":
-            if self.hparams.dataset.lower() in ["phc-u373", "platelet-em"]:
-                return self.mind_loss(I_m.unsqueeze(dim=-1), I_1.unsqueeze(dim=-1))
-            else:
-                return self.mind_loss(I_m, I_1) 
+            return self.mind_loss(I_m, I_1) 
         elif self.hparams.loss.lower() == "nmi":
             return self.nmi_loss(I_m, I_1)
         else:

@@ -280,7 +280,7 @@ class MIND_loss(torch.nn.Module):
 
         Implementation retrieved from 
         https://github.com/junyuchen245/TransMorph_Transformer_for_Medical_Image_Registration/blob/main/TransMorph/losses.py
-        Annotation/Comments by Steffen Czolbe.
+        Annotation/Comments and support for 2d by Steffen Czolbe.
 
         Parameters:
             radius (int): determines size of patches around members of the 6-neighborhood
@@ -304,15 +304,12 @@ class MIND_loss(torch.nn.Module):
         dist = torch.clamp(dist, 0.0, np.inf)
         return dist
 
-    def MINDSSC(self, img):
-        # see http://mpheinrich.de/pub/miccai2013_943_mheinrich.pdf for details on the MIND-SSC descriptor
-        # SSC = self-similarity context. Ignores the center voxel, but compares adjacent voxels of the 6-neighborhood with each other
+    def MINDSSC3d(self, img):
+        B, C, H, W, D = img.shape
+        assert H>1 and W>1 and D>1, "Use 2d implementation for 2d data"
 
         # Radius: determines size of patches around members of the 6-neighborhood, square kernel
         kernel_size = self.radius * 2 + 1
-        radius = self.radius
-        # dilation: determines spreading of 6-neighborhood
-        dilation = self.dilation
 
         # define neighborhood for the self-similarity pattern. These coordinates are centered on [1, 1, 1]
         six_neighbourhood = torch.Tensor([[0, 1, 1],
@@ -331,20 +328,20 @@ class MIND_loss(torch.nn.Module):
         mask = ((x > y).view(-1) & (dist == 2).view(-1))
 
         # build kernels to efficiently implement the pairwhise-patch based differences
-        idx_shift1 = six_neighbourhood.unsqueeze(1).repeat(1, 6, 1).view(-1, 3)[mask, :] # 12x3 matrix. Paiting-pixel-coordinates of the first image
-        idx_shift2 = six_neighbourhood.unsqueeze(0).repeat(6, 1, 1).view(-1, 3)[mask, :] # 12x3 matrix. Paiting-pixel-coordinates of the second image
+        idx_shift1 = six_neighbourhood.unsqueeze(1).repeat(1, 6, 1).view(-1, 3)[mask, :] # 12x3 matrix. Pairing-pixel-coordinates of the first image
+        idx_shift2 = six_neighbourhood.unsqueeze(0).repeat(6, 1, 1).view(-1, 3)[mask, :] # 12x3 matrix. Pairing-pixel-coordinates of the second image
         mshift1 = torch.zeros(12, 1, 3, 3, 3).to(img.device) # shifting-kernels, one channel to 12 channels. Each 3x3x3 kernel has ony a single 1
         mshift1.view(-1)[torch.arange(12) * 27 + idx_shift1[:, 0] * 9 + idx_shift1[:, 1] * 3 + idx_shift1[:, 2]] = 1
         mshift2 = torch.zeros(12, 1, 3, 3, 3).to(img.device)
         mshift2.view(-1)[torch.arange(12) * 27 + idx_shift2[:, 0] * 9 + idx_shift2[:, 1] * 3 + idx_shift2[:, 2]] = 1
-        rpad1 = nn.ReplicationPad3d(dilation) # Dadding to account for borders.
-        rpad2 = nn.ReplicationPad3d(radius)
+        rpad1 = nn.ReplicationPad3d(self.dilation) # Padding to account for borders.
+        rpad2 = nn.ReplicationPad3d(self.radius)
 
         # compute patch-ssd
 
         # shift-align all 12 patch pairings, implemented via convolution
-        h1 = F.conv3d(rpad1(img), mshift1, dilation=dilation)
-        h2 = F.conv3d(rpad1(img), mshift2, dilation=dilation)
+        h1 = F.conv3d(rpad1(img), mshift1, dilation=self.dilation)
+        h2 = F.conv3d(rpad1(img), mshift2, dilation=self.dilation)
         # calculate difference 
         diff = rpad2((h1 - h2) ** 2)
         # convolve difference patches via averaging. This makes the loss magnitude invriant of patch size.
@@ -360,10 +357,63 @@ class MIND_loss(torch.nn.Module):
 
         return mind
 
+
+    def MINDSSC2d(self, img):
+        # Radius: determines size of patches around members of the 4-neighborhood, square kernel
+        kernel_size = self.radius * 2 + 1
+
+        # define neighborhood for the self-similarity pattern. These coordinates are centered on [1, 1]
+        four_neighbourhood = torch.Tensor([[0, 1],
+                                            [1, 0],
+                                            [2, 1],
+                                            [1, 2]]).long()
+
+        # squared distances between neighborhood coordinates
+        dist = self.pdist_squared(four_neighbourhood.t().unsqueeze(0)).squeeze(0)
+
+        # define comparison mask
+        # we compare adjacent neighborhood pixels (squared distance ==2), and exploid siymmetry to only calculate each pair once (x>y).
+        x, y = torch.meshgrid(torch.arange(4), torch.arange(4))
+        mask = ((x > y).view(-1) & (dist == 2).view(-1))
+
+        # build kernels to efficiently implement the pairwhise-patch based differences
+        idx_shift1 = four_neighbourhood.unsqueeze(1).repeat(1, 4, 1).view(-1, 2)[mask, :] # 4x2 matrix. Pairing-pixel-coordinates of the first image
+        idx_shift2 = four_neighbourhood.unsqueeze(0).repeat(4, 1, 1).view(-1, 2)[mask, :] # 4x2 matrix. Pairing-pixel-coordinates of the second image
+        mshift1 = torch.zeros(4, 1, 3, 3).to(img.device) # shifting-kernels, one channel to 4 channels. Each 3x3 kernel has ony a single 1
+        mshift1.view(-1)[torch.arange(4) * 9 + idx_shift1[:, 0] * 3 + idx_shift1[:, 1]] = 1
+        mshift2 = torch.zeros(4, 1, 3, 3).to(img.device)
+        mshift2.view(-1)[torch.arange(4) * 9 + idx_shift2[:, 0] * 3 + idx_shift2[:, 1]] = 1
+        rpad1 = nn.ReplicationPad2d(self.dilation) # Padding to account for borders.
+        rpad2 = nn.ReplicationPad2d(self.radius)
+
+        # compute patch-ssd
+
+        # shift-align all 4 patch pairings, implemented via convolution
+        h1 = F.conv2d(rpad1(img), mshift1, dilation=self.dilation)
+        h2 = F.conv2d(rpad1(img), mshift2, dilation=self.dilation)
+        # calculate difference 
+        diff = rpad2((h1 - h2) ** 2)
+        # convolve difference patches via averaging. This makes the loss magnitude invriant of patch size.
+        ssd = F.avg_pool2d(diff, kernel_size, stride=1)
+
+
+        # MIND equation
+        mind = ssd - torch.min(ssd, 1, keepdim=True)[0] # normalize by substracting lowest value
+        mind_var = torch.mean(mind, 1, keepdim=True) # Mean across neighborhood pixel pairings (channels)
+        mind_var = torch.clamp(mind_var, (mind_var.mean() * 0.001).item(), (mind_var.mean() * 1000).item()) # remove outliers
+        mind /= mind_var
+        mind = torch.exp(-mind)
+
+        return mind
+
     def forward(self, y_pred, y_true):
         # Get the MIND-SSC descriptor for each image
-        true = self.MINDSSC(y_true)
-        pred = self.MINDSSC(y_pred)
+        if y_pred.dim() == 4:
+            true = self.MINDSSC2d(y_true)
+            pred = self.MINDSSC2d(y_pred)
+        elif y_pred.dim() == 5:
+            true = self.MINDSSC3d(y_true)
+            pred = self.MINDSSC3d(y_pred)
 
         # calulate difference
         return torch.mean((true - pred) ** 2)
