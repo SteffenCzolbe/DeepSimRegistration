@@ -527,24 +527,14 @@ if __name__ == "__main__":
     print(os.environ["CUDA_VISIBLE_DEVICES"])
 
     torchreg.settings.set_ndims(2)
-    #npz = np.load("invalid_loss_val.npz")
-    #I_m = torch.tensor(npz["I_m"])
-    #I_1 = torch.tensor(npz["I_1"])
-    #ncc = NCC(window=9)
-
-    # I_m =torch.rand(1,1,128,128) 
-    # I_1 =torch.rand(1,1,128,128) 
-    # mind2d = MINDLoss2D()(I_m, I_1)
-    # print(mind2d)
-
     H, W, D = 256, 128, 1
-    I_m = torch.rand(1,1,H,W,D)
-    I_1 = torch.rand(1,1,H,W,D)
-    loss2 = MIND_loss(radius=2, dilation=2)(I_m.to('cuda'), I_1.to('cuda'))
+    I_m = torch.rand(2,1,H,W,D).squeeze(dim=-1)
+    I_1 = torch.rand(2,1,H,W,D).squeeze(dim=-1)
+    
+    mind_par = 5
+    loss2 = MIND_loss(radius=mind_par, dilation=mind_par)(I_m.to('cuda'), I_1.to('cuda'))
     print(loss2)
     print(45*'-')
-    #loss4 = MIND_loss(radius=3)(I_m.to('cuda'), I_1.to('cuda'))
-    #print(loss4)
     #import ipdb; #ipdb.set_trace()
 
 

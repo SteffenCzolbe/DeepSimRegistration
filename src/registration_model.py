@@ -30,6 +30,10 @@ class RegistrationModel(CommonLightningModel):
         # backwards compatibilty
         if "net" not in self.hparams:
             self.hparams.net = 'voxelmorph'
+        if "nmi_bin_size" not in self.hparams:
+            self.hparams.nmi_bin_size = 64
+        if "mind_par" not in self.hparams:
+            self.hparams.mind_par = 2
 
         # set net
         if self.hparams.net == 'voxelmorph':
@@ -131,7 +135,7 @@ class RegistrationModel(CommonLightningModel):
             feature_extractor = VGGFeatureExtractor()
             self.vgg_loss = DeepSim(feature_extractor)
         elif hparams.loss.lower() == "mind":
-            self.mind_loss = MIND_loss()
+            self.mind_loss = MIND_loss(radius=hparams.mind_par, dilation=hparams.mind_par)
         elif hparams.loss.lower() == "nmi":
             # brain dataset hyperintensities can be >1.0
             self.nmi_loss = NMI(
@@ -388,6 +392,13 @@ class RegistrationModel(CommonLightningModel):
             type=int,
             default=64,
             help="Bin-Size for the NMI loss function (Default: 64)",
+        )
+
+        parser.add_argument(
+            "--mind_par",
+            type=int,
+            default=2,
+            help="radius and dilation parameters (radius=dilation for simplicity) for the MIND loss function (Default: 2)",
         )
 
         parser.add_argument(
