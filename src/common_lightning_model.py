@@ -8,6 +8,7 @@ import torchreg.transforms as transforms
 from .datasets.tif_stack_dataset import TiffStackDataset
 from .datasets.brain_mri_dataset import BrainMRIDataset
 from .datasets.heart_mri_dataset import HeartMRIDataset
+from .datasets.hippocampus_dataset import HippocampusMRDataset
 
 
 class CommonLightningModel(pl.LightningModule):
@@ -111,6 +112,20 @@ class CommonLightningModel(pl.LightningModule):
                 "path": "../brain_mris",
                 "reduce_lr_patience": 2,
             }
+        elif self.hparams.dataset == "hippocampusmr":
+            config = {
+                "dataset_type": "nii",
+                "channels": 1,
+                "classes": 3,
+                "class_colors": {
+                    0: None,
+                    1: (114, 167, 252),  # light blue
+                    2: (176, 32, 186),  # purple
+                },
+                "dim": 3,
+                "path": "../HippocampusMR",
+                "reduce_lr_patience": 2,
+            }
         elif self.hparams.dataset == "heart-mri":
             config = {
                 "dataset_type": "nii",
@@ -168,6 +183,15 @@ class CommonLightningModel(pl.LightningModule):
                     flip=True,
                 )
                 data = HeartMRIDataset(
+                    path=self.dataset_config("path"),
+                    split=split,
+                    pairs=self.image_pairs,
+                )
+            elif self.hparams.dataset == "hippocampusmr":
+                self.augmentation = transforms.RandomAffine(
+                    degrees=(-5, 5), translate=None, scale=None, shear=None, flip=True
+                )
+                data = HippocampusMRDataset(
                     path=self.dataset_config("path"),
                     split=split,
                     pairs=self.image_pairs,

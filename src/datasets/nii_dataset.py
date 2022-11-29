@@ -14,17 +14,29 @@ class NiiDataset(Dataset):
         image_nii_label_files: List[str],
         min_intensity: float,
         max_intensity: float,
+        quantile_normalization:bool=False,
     ):
         super().__init__()
         self.fnames = list(zip(image_nii_files, image_nii_label_files))
         self.min_intensity = min_intensity
         self.max_intensity = max_intensity
+        self.quantile_normalization = quantile_normalization
 
     def normalize_intensity(self, x):
-        return (x - self.min_intensity) / self.max_intensity
+        if not self.quantile_normalization:
+            # normalize with given values
+            return (x - self.min_intensity) / self.max_intensity
+        else:
+            # normalize with quantiles
+            numpy_array = x.numpy()
+            min_intensity, max_intensity = np.quantile(numpy_array, (0.01, 0.99))
+            return torch.clamp((x - min_intensity) / max_intensity, 0, 1)
 
     def denormalize_intensity(self, x):
-        return (x * self.max_intensity) + self.min_intensity
+        if not self.quantile_normalization:
+            return (x * self.max_intensity) + self.min_intensity
+        else:
+            return x*256
 
     def __len__(self):
         return len(self.fnames)
@@ -50,9 +62,10 @@ class NiiAtlasDataset(NiiDataset):
         image_nii_label_files: List[str],
         min_intensity: float,
         max_intensity: float,
+        quantile_normalization:bool=False,
     ):
         super().__init__(
-            image_nii_files, image_nii_label_files, min_intensity, max_intensity
+            image_nii_files, image_nii_label_files, min_intensity, max_intensity, quantile_normalization
         )
         self.atlas = self.normalize_intensity(self.load_nii(atlas_nii_file))
         self.atlas_seg = self.load_nii(atlas_nii_label_file, dtype=torch.long)
@@ -60,3 +73,28 @@ class NiiAtlasDataset(NiiDataset):
     def __getitem__(self, idx):
         img, seg = super().__getitem__(idx)
         return (img, seg), (self.atlas, self.atlas_seg)
+
+class NiiSub2SubDataset(NiiDataset):
+    def __init__(
+        self,
+        image_nii_files: List[str],
+        image_nii_label_files: List[str],
+        min_intensity: float,
+        max_intensity: float,
+        quantile_normalization:bool=False,
+    ):
+        super().__init__(
+            image_nii_files, image_nii_label_files, min_intensity, max_intensity, quantile_normalization
+        )
+        self.n = len(self.fnames)
+        
+    def __len__(self):
+        return self.n*(self.n-1)
+
+    def __getitem__(self, idx):
+        idx1 = idx // self.n
+        idx2 = idx % self.n
+        img1, seg1 = super().__getitem__(idx1)
+        img2, seg2 = super().__getitem__(idx2)
+        return (img1, seg1), (img2, seg2)
+    
