@@ -4,6 +4,7 @@
 TUNE_PLATELET=true
 TUNE_PHC=true
 TUNE_BRAIN=true
+TUNE_HIPPOCAMPUS=true
 
 
 # Check if slurm compute cluster available. Submit as slurm job if possible.
@@ -147,3 +148,13 @@ if $TUNE_BRAIN; then
     $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset brain-mri --loss deepsim-ae --deepsim_weights ./weights/brain-mri/autoencoder/weights.ckpt --lam $LAM --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_steps=15000
     done   
 fi
+
+
+if $TUNE_HIPPOCAMPUS; then
+    # l2
+    for LAM in 0.02 0.04 0.08 0.16 0.32
+    do
+    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset hippocampusmr --loss l2 --lam $LAM --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --bnorm --dropout --max_steps=15000
+    done
+fi
+

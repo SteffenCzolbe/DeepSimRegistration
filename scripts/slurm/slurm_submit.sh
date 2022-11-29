@@ -48,6 +48,11 @@ case $DATASET in
     GRES=gpu:titanrtx:1
     DATASET_SHORT=br
     ;;
+    hippocampusmr)
+    TIME=8-00:00:00
+    GRES=gpu:titanx:1
+    DATASET_SHORT=hi
+    ;;
     heart-mri)
     TIME=1-00:00:00
     GRES=gpu:titanrtx:1

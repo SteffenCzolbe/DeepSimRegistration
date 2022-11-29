@@ -14,4 +14,4 @@ fi
 $WRAPPER_FUNC python3 -m src.train_segmentation --dataset platelet-em --max_steps 50000 --savedir ./out/platelet-em/segmentation/ --channels 64 128 256 --batch_size 3 --accumulate_grad_batches 2 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp
 $WRAPPER_FUNC python3 -m src.train_segmentation --dataset phc-u373 --max_steps 50000 --savedir ./out/phc-u373/segmentation/ --channels 64 128 256 --batch_size 5 --accumulate_grad_batches 2 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp
 $WRAPPER_FUNC python3 -m src.train_segmentation --dataset brain-mri --max_steps 100000 --channels 32 64 128 --batch_size 1 --accumulate_grad_batches 4 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp
-$WRAPPER_FUNC python3 -m src.train_segmentation --dataset heart-mri --max_steps 100000 --channels 32 64 128 --batch_size 1 --accumulate_grad_batches 4 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp
+$WRAPPER_FUNC python3 -m src.train_segmentation --dataset hippocampusmr --max_steps 100000 --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --bnorm --dropout --distributed_backend ddp
