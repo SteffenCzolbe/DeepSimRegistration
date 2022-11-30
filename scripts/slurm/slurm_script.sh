@@ -17,6 +17,10 @@
 #Note that a program will be killed once it exceeds this time!
 #SBATCH --time=5-00:00:00
 
+# output files
+#SBATCH --output=slurm_logs/slurm-%j.%x.out
+#SBATCH --error=slurm_logs/slurm-%j.%x.err
+
 # debugging flags (optional)
 export NCCL_DEBUG=INFO
 export PYTHONFAULTHANDLER=1
