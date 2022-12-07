@@ -154,7 +154,43 @@ if $TUNE_HIPPOCAMPUS; then
     # l2
     for LAM in 0.02 0.04 0.08 0.16 0.32
     do
-    $WRAPPER_FUNC python3 -m src.train_registration --net voxelmorph --dataset hippocampusmr --loss l2 --lam $LAM --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --bnorm --dropout --max_steps=15000
+        $WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss l2 --lam $LAM --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=300000
+    done
+
+    # ncc
+    for LAM in 0.25 0.5 1 2 4
+    do
+        $WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss ncc2 --lam $LAM --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=300000
+    done
+
+    # ncc sup
+    for LAM in 0.25 0.5 1 2 4
+    do
+        $WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss ncc2+supervised --lam $LAM --ncc_win_size 9 --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=300000
+    done
+
+    # nmi
+    for LAM in 0.25 0.5 1 2 4
+    do
+        $WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss nmi --lam $LAM --ncc_win_size 9 --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=300000
+    done
+
+    # mind
+    for LAM in 0.25 0.5 1 2 4
+    do
+        $WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss mind --lam $LAM --mind_par 2 --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=300000
+    done
+
+    # deepsim seg
+    for LAM in 0.25 0.5 1 2 4
+    do
+        $WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss deepsim --lam $LAM --deepsim_weights ./weights/hippocampusmr/segmentation/weights.ckpt --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=300000
+    done
+
+    # deepsim ae
+    for LAM in 0.25 0.5 1 2 4
+    do
+        $WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss deepsim-ae --lam $LAM --deepsim_weights ./weights/hippocampusmr/autoencoder/weights.ckpt --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=300000
     done
 fi
 
