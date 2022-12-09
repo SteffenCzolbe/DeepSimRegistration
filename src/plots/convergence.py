@@ -107,11 +107,7 @@ if __name__ == '__main__':
             if not os.path.isdir(path):
                 continue
             x, y = read_tb_scalar_logs(path, f"{mode}/dice_overlap")
-
-            if dataset == 'platelet-em' and loss_function == 'mind':
-                y = smooth(y, 0.999)
-            else:
-                y = smooth(y, PLOT_CONFIG[dataset]["smoothing_factor"])
+            y = smooth(y, PLOT_CONFIG[dataset]["smoothing_factor"])
             c = LOSS_FUNTION_CONFIG[loss_function]["primary_color"]
             line = axs[i].plot(
                 x, y, color=c, linewidth=2
