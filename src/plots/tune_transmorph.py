@@ -79,7 +79,7 @@ def plot(hparam_tuning_results):
                                                     markersize=4 if '_' in lossfun else 6,
                                                     linewidth=1 if '_' in lossfun else 1.5)
             handle = handle[0]
-            axs[i].set_xscale('log', basex=2)
+            axs[i].set_xscale('log', base=2)
             axs[i].set_title(PLOT_CONFIG[dataset]["display_name"], fontsize=18)
             LOSS_FUNTION_CONFIG[lossfun]["handle"] = handle
             #print(LOSS_FUNTION_CONFIG[lossfun]["handle"])
@@ -114,13 +114,16 @@ def plot(hparam_tuning_results):
 if __name__ == '__main__':
     hparam_tuning_results = defaultdict(lambda: defaultdict(lambda: {}))
 
-    platelet = glob.glob('./weights_experiments/transmorph2D/transmorph-platelet/*')
-    phc = glob.glob('./weights_experiments/transmorph2D/transmorph-phc/*')
-    runs = platelet + phc
+    platelet = sorted(glob.glob('./weights_experiments/transmorph2D/transmorph-platelet/*'))
+    phc = sorted(glob.glob('./weights_experiments/transmorph2D/transmorph-phc/*'))
+    platelet_mind = sorted(glob.glob('./weights_experiments/transmorph2D/transmorph-platelet-new-mind/*'))
+    platelet_nmi = sorted(glob.glob('./weights_experiments/transmorph2D/transmorph-platelet-old-nmi/*'))
+    phc_mind = sorted(glob.glob('./weights_experiments/transmorph2D/transmorph-phc-old-mind/*'))
+    runs = platelet + phc + platelet_mind + phc_mind + platelet_nmi
 
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
-        #print(run, dataset, lossfun, lam)
+        print(run, dataset, lossfun, lam)
         if lossfun in EXTRACT_TRANSMORPH_LOSS_FUNCTIONS:
             if dataset == 'platelet-em' and lossfun == 'mind':
                 if lam >= 2**-5:

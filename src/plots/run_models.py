@@ -51,6 +51,8 @@ def run_models(use_cached=True, model='voxelmorph'):
     elif model == 'transmorph':
         # load results for 2d datasets
         cache_file_name_2D = "./src/plots/cache2D_transmorph.pickl"
+    else:
+            raise ValueError(f'model "{model}" unknow. Do you mean voxelmorph or transmorph ?')
 
     if use_cached and os.path.isfile(cache_file_name_2D):
         if model == 'voxelmorph':
@@ -98,19 +100,14 @@ def run_models(use_cached=True, model='voxelmorph'):
                 # load model
                 checkpoint_path = os.path.join(path, "weights.ckpt")
 
-                if model == 'voxelmorph':
-                    # hard-coded self.hparams.net for old voxelmoprh checkpoints!
-                    registration_model = RegistrationModelOLD.load_from_checkpoint(
-                        checkpoint_path=checkpoint_path
-                    )
-                else:
-                    registration_model = RegistrationModel.load_from_checkpoint(
-                        checkpoint_path=checkpoint_path
-                    )
-                #print(loss_function, checkpoint_path)
+                registration_model = RegistrationModel.load_from_checkpoint(
+                    checkpoint_path=checkpoint_path
+                )
+
+                print(loss_function, checkpoint_path)
                 step_dict = test_model(registration_model)
                 results[dataset][loss_function] = step_dict
-                #print(f"{dataset}, {loss_function}:")
+                print(f"{dataset}, {loss_function}:")
                 #print(step_dict)
         pickle.dump(results, open(cache_file_name_2D, "wb"))
         return results

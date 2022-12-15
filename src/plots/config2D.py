@@ -28,10 +28,10 @@ LOSS_FUNTION_ORDER = [
 ]
 
 MIND_AND_OTHER_LOSS_FUNTION = [
-    "l2",
-    "ncc2",
-    "ncc2+supervised",
-    "nmi",
+   "l2",
+   "ncc2",
+   "ncc2+supervised",
+   "nmi",
     "mind",
     "deepsim-ae",
     "deepsim",

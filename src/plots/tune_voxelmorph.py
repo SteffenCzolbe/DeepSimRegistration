@@ -116,9 +116,10 @@ if __name__ == '__main__':
     baselines = glob.glob('./weights/hparam_tuning/*')
     deepsim = glob.glob('./weights_experiments/voxelmorph/deep-sim/*')
     mind_2d = glob.glob('./weights_experiments/voxelmorph/mind/mind-voxelmorph-2d/*')
+    nmi_2d = glob.glob('./weights_experiments/voxelmorph/nmi/nmi-voxelmorph-2d/*')
     mind_3d_brain = glob.glob('./weights_experiments/voxelmorph/mind/mind-voxelmorph-3d-brain/*')
 
-    runs = mind_2d + mind_3d_brain + baselines + deepsim 
+    runs = mind_2d + mind_3d_brain + baselines + deepsim + nmi_2d
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
         #print(run, dataset, lossfun, lam)
