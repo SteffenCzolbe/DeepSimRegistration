@@ -40,3 +40,11 @@ $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss mind 
 $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss deepsim --deepsim_weights ./weights/brain-mri/segmentation/weights.ckpt --lam 2.0 --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=30
 $WRAPPER_FUNC python3 -m src.train_registration --dataset brain-mri --loss deepsim-ae --deepsim_weights ./weights/brain-mri/autoencoder/weights.ckpt --lam 1.0 --channels 32 64 128 --batch_size 1 --gpus -1 --lr 0.0001 --bnorm --dropout --accumulate_grad_batches 4 --max_epochs=30
 
+# hippocampusmr
+$WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss l2 --lam 0.08 --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=1000000
+$WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss ncc2 --lam 1 --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=1000000
+$WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss ncc2+supervised --lam 1 --ncc_win_size 9 --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=1000000
+$WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss nmi --lam 1 --ncc_win_size 9 --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=1000000
+$WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss mind --lam 0.25 --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=1000000
+$WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss deepsim --lam 0.5 --deepsim_weights ./weights/hippocampusmr/segmentation/weights.ckpt --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=1000000
+$WRAPPER_FUNC python3 -m src.train_registration --dataset hippocampusmr --loss deepsim-ae --lam 0.25 --deepsim_weights ./weights/hippocampusmr/autoencoder/weights.ckpt --channels 32 64 128 --batch_size 4 --gpus -1 --lr 0.0001 --max_steps=1000000
