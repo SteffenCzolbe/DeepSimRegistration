@@ -68,6 +68,11 @@ case $DATASET in
     GRES=gpu:titanx:1
     DATASET_SHORT=ph
     ;;
+    *)
+    TIME=8-00:00:00
+    GRES=gpu:titanx:1
+    DATASET_SHORT=else
+    ;;
 esac
 if [[ $TASK == "src.train_segmentation" ]]; then 
     JOBNAME="seg-"$DATASET
