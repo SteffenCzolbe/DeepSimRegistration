@@ -42,7 +42,8 @@ def HippocampusMRDataset(path: str, split: str, pairs:bool):
     )
 
     if pairs:
-        return NiiSub2SubDataset(image_nii_files, image_nii_label_files, None, None, quantile_normalization=True)
+        pairings_mode = 'cross' if split == 'train' else 'pairs'
+        return NiiSub2SubDataset(image_nii_files, image_nii_label_files, None, None, quantile_normalization=True, pairings_mode=pairings_mode)
     else:
         return NiiDataset(
                 image_nii_files, image_nii_label_files, None, None, quantile_normalization=True

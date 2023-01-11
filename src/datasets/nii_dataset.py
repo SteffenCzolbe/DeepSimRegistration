@@ -81,19 +81,30 @@ class NiiSub2SubDataset(NiiDataset):
         image_nii_label_files: List[str],
         min_intensity: float,
         max_intensity: float,
+        pairings_mode, #Literal['cross', 'pairs'],
         quantile_normalization:bool=False,
     ):
         super().__init__(
             image_nii_files, image_nii_label_files, min_intensity, max_intensity, quantile_normalization
         )
         self.n = len(self.fnames)
+        self.pairings_mode = pairings_mode
         
     def __len__(self):
-        return self.n*(self.n-1)
+        if self.pairings_mode == 'cross':
+            return self.n*(self.n-1)
+        elif self.pairings_mode == 'pairs':
+            return self.n
+            
 
     def __getitem__(self, idx):
-        idx1 = idx // self.n
-        idx2 = idx % self.n
+        if self.pairings_mode == 'cross':
+            idx1 = idx // self.n
+            idx2 = idx % self.n
+        elif self.pairings_mode == 'pairs':
+            idx1 = idx
+            idx2 = self.n - idx - 1
+        
         img1, seg1 = super().__getitem__(idx1)
         img2, seg2 = super().__getitem__(idx2)
         return (img1, seg1), (img2, seg2)
