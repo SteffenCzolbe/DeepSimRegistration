@@ -58,10 +58,9 @@ def read_model_logs(dir):
 
 def plot(hparam_tuning_results):
     # set up sup-plots
-    fig = plt.figure(figsize=(9, 3))
-    axs = fig.subplots(1, len(DATASET_ORDER) + 1, gridspec_kw={'width_ratios': [1, 1, 0.5]})
-    axs[2].axis("off")
-    plt.subplots_adjust(bottom=0.18, wspace=0.3)
+    fig = plt.figure(figsize=(8.2,3.4))
+    axs = fig.subplots(1, 2)
+    plt.subplots_adjust(bottom=0.3, left=0.18, wspace=0.3, hspace=0.3, right=0.9)
 
     for i, dataset in enumerate(DATASET_ORDER):
         if dataset not in hparam_tuning_results.keys():
@@ -79,15 +78,15 @@ def plot(hparam_tuning_results):
                                                     markersize=4 if '_' in lossfun else 6,
                                                     linewidth=1 if '_' in lossfun else 1.5)
             handle = handle[0]
-            axs[i].set_xscale('log', base=2)
+            axs[i].set_xscale('log', basex=2)
             axs[i].set_title(PLOT_CONFIG[dataset]["display_name"], fontsize=18)
             LOSS_FUNTION_CONFIG[lossfun]["handle"] = handle
             #print(LOSS_FUNTION_CONFIG[lossfun]["handle"])
 
     # add labels
-    fig.text(0.42, 0.04, "Regularization Hyperparameter $\lambda$",
+    fig.text(0.5, 0.15, "Regularization Hyperparameter $\lambda$",
              ha="center", va="center", fontsize=16)
-    fig.text(0.05, 0.5, "Val. Mean Dice Overlap", ha="center",
+    fig.text(0.05, 0.6, "Val. Mean Dice Overlap", ha="center",
              va="center", rotation="vertical", fontsize=16)
 
     # add legend
@@ -98,8 +97,8 @@ def plot(hparam_tuning_results):
         LOSS_FUNTION_CONFIG[loss_function]["display_name"]
         for loss_function in EXTRACT_TRANSMORPH_LOSS_FUNCTIONS
     ]
-    
-    axs[2].legend(handles, labels, bbox_to_anchor=(1., 1.), fontsize=12)
+    fig.legend(handles, labels, loc="lower left", bbox_to_anchor=(0.03, 0.0),
+            ncol=len(handles), handlelength=1.5, columnspacing=1.5)
 
     # configure axis precision
     for ax in axs:
@@ -132,5 +131,7 @@ if __name__ == '__main__':
             else:
                 mean_val_dice_overlap = read_model_logs(run)
                 hparam_tuning_results[dataset][lossfun][lam] = mean_val_dice_overlap
+                
+                
 
     plot(hparam_tuning_results)

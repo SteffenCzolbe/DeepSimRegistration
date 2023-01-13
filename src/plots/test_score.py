@@ -28,6 +28,8 @@ def get_empty_score_and_label():
 
 def get_score_and_label_for_syn(dataset, loss_function):
     dataset_path = os.path.join('./out', dataset, 'syn')
+    if not os.path.isdir(dataset_path):
+        return None
     fnames = os.listdir(dataset_path)
     scores = {}
 
@@ -64,7 +66,7 @@ def get_score_and_label_for_dl_method(dataset, loss_function):
 
 
 # set up sup-plots
-fig = plt.figure(figsize=(10, 3.5))
+fig = plt.figure(figsize=(10/3*len(DATASET_ORDER), 3.5))
 axs = fig.subplots(1, len(DATASET_ORDER))
 plt.subplots_adjust(bottom=0.4, wspace=0.2)
 plt.rcParams["boxplot.medianprops.color"] = "k"

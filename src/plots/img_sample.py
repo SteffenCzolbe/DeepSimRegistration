@@ -229,6 +229,72 @@ def plot_brainmri(fig, row, col, model, I, S, inv_flow=None):
         )
 
     torchreg.settings.set_ndims(3)  # back to 3d
+    
+
+def plot_hippocampusmr(fig, row, col, model, I, S, inv_flow=None):
+    # get slice
+    I = I[:, :, 32, :, :]
+    S = S[:, :, 32, :, :]
+    if inv_flow is not None:
+        inv_flow = inv_flow[:, [1,2], 32, :, :]
+
+    # rotate by 90 degree left
+    I = I.permute(0, 1, 3, 2).flip(dims=[2,3])
+    S = S.permute(0, 1, 3, 2).flip(dims=[2,3])
+    if inv_flow is not None:
+        inv_flow = inv_flow.permute(0, 1, 3, 2)
+        inv_flow = torch.stack([inv_flow[:, 1], inv_flow[:, 0]], dim=1)
+        inv_flow = -inv_flow.flip(dims=[2,3])
+
+    # crop
+    s = 10
+    I = crop(s, 64-s, s, 64-s, I)
+    S = crop(s, 64-s, s, 64-s, S)
+    if inv_flow is not None:
+        inv_flow = crop(s, 64-s, s, 64-s, inv_flow)
+
+    # following operations are on a 2d slice
+    torchreg.settings.set_ndims(2)
+
+    fig.plot_img(row, col, I[0], vmin=0, vmax=1)
+    fig.plot_overlay_class_mask(
+        row,
+        col,
+        S[0],
+        num_classes=model.dataset_config("classes"),
+        colors=model.dataset_config("class_colors"),
+        alpha=0.3,
+    )
+    classes_to_annotate = list(
+        map(
+            lambda t: t[0],
+            filter(
+                lambda t: t[1] is not None, model.dataset_config(
+                    "class_colors").items()
+            ),
+        )
+    )
+    for c in classes_to_annotate:
+        fig.plot_contour(
+            row,
+            col,
+            S[0],
+            contour_class=c,
+            width=1,
+            rgba=model.dataset_config("class_colors")[c],
+        )
+    if inv_flow is not None:
+        fig.plot_transform_grid(
+            row,
+            col,
+            inv_flow[0],
+            interval=3,
+            linewidth=0.15,
+            color="#FFFFFFFF",
+            overlay=True,
+        )
+
+    torchreg.settings.set_ndims(3)  # back to 3d
 
 
 def plot_no_data(fig, row, col, text, fontsize=12):
@@ -240,7 +306,7 @@ def plot_no_data(fig, row, col, text, fontsize=12):
 
 
 def make_overview():
-    fig = viz.Fig(3, 9, None, figsize=(9, 3))
+    fig = viz.Fig(4, 9, None, figsize=(9, 4))
     # adjust subplot spacing
     fig.fig.subplots_adjust(hspace=0.05, wspace=0.05)
 
@@ -252,9 +318,14 @@ def make_overview():
         elif dataset == "brain-mri":
             plotfun = plot_brainmri
             sample_idx = 0
+        elif dataset == "hippocampusmr":
+            plotfun = plot_hippocampusmr
+            sample_idx = 0
         elif dataset == "phc-u373":
             plotfun = plot_phc
             sample_idx = 9
+        else:
+            raise Exception()
 
         for j, loss_function in enumerate(LOSS_FUNTION_ORDER):
             path = os.path.join("./weights/", dataset,
@@ -297,6 +368,7 @@ def make_overview():
     os.makedirs("./out/plots/png/", exist_ok=True)
     fig.save("./out/plots/pdf/img_sample.pdf", close=False)
     fig.save("./out/plots/png/img_sample.png")
+    print('overview done!')
 
 
 def make_detail_all():
@@ -339,6 +411,9 @@ def make_detail_all():
     os.makedirs("./out/plots/png/", exist_ok=True)
     fig.save("./out/plots/pdf/img_sample_detail_all.pdf", close=False)
     fig.save("./out/plots/png/img_sample_detail_all.png")
+    print('detail done!')
 
-make_overview()
-make_detail_all()
+
+if __name__ == '__main__':
+    make_overview()
+    make_detail_all()

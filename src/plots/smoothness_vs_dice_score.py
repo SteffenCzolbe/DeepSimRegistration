@@ -24,16 +24,12 @@ def load_data_for_model(dataset, loss_function):
     dice = test_results[dataset][loss_function]["dice_overlap"].mean(axis=0)
     log_var = test_results[dataset][loss_function]["jacobian_determinant_log_var"]
     smoothness = log_var[~np.isnan(log_var)].mean(axis=0)
-    if args.net == 'voxelmorph':
-        folding = test_results[dataset][loss_function]["jacobian_determinant_negative"].mean(axis=0)
-        return dice, smoothness, folding
-    else:
-        return dice, smoothness
+    return dice, smoothness
     
 
 def main(args):
     if args.net == 'voxelmorph':
-        fig = plt.figure(figsize=(8, 3))
+        fig = plt.figure(figsize=(8/3*len(DATASET_ORDER), 3))
         axs = fig.subplots(1, len(DATASET_ORDER))
         plt.subplots_adjust(bottom=0.33, wspace=0.275)
     else:
@@ -48,12 +44,8 @@ def main(args):
 
     for i, dataset in enumerate(DATASET_ORDER):
         for loss_function in LOSS_FUNTION_ORDER:
-            if args.net == 'voxelmorph':
-                dice, smoothness, folding = load_data_for_model(dataset, loss_function)
-                print(dataset, loss_function, np.round(dice, 3), np.round(smoothness,2), np.round(folding * 100, 2))
-            else:
-                dice, smoothness = load_data_for_model(dataset, loss_function)
-                print(dataset, loss_function, dice, smoothness)
+            dice, smoothness = load_data_for_model(dataset, loss_function)
+            print(dataset, loss_function, dice, smoothness)
 
             if dice is None:
                 continue

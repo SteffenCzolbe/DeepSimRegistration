@@ -84,7 +84,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # set up sup-plots
-    fig = plt.figure(figsize=(8, 3))
+    fig = plt.figure(figsize=(10.6, 3))
     axs = fig.subplots(1, len(DATASET_ORDER))
     plt.subplots_adjust(bottom=0.33, wspace=0.275)
 
@@ -107,6 +107,7 @@ if __name__ == '__main__':
             if not os.path.isdir(path):
                 continue
             x, y = read_tb_scalar_logs(path, f"{mode}/dice_overlap")
+
             y = smooth(y, PLOT_CONFIG[dataset]["smoothing_factor"])
             c = LOSS_FUNTION_CONFIG[loss_function]["primary_color"]
             line = axs[i].plot(

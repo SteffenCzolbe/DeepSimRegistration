@@ -13,12 +13,13 @@ orange_colors = orange_cmap(np.arange(0, orange_cmap.N))
 red_cmap = plt.get_cmap("Reds")
 red_colors = red_cmap(np.arange(0, red_cmap.N))
 
-DATASET_ORDER = ["brain-mri", "platelet-em", "phc-u373"]
+DATASET_ORDER = ["brain-mri", "hippocampusmr", "platelet-em", "phc-u373"]
 
 PLOT_CONFIG = {
     "phc-u373": {"display_name": "PhC-U373", "smoothing_factor": 0.98},
     "platelet-em": {"display_name": "Platelet-EM", "smoothing_factor": 0.997},
     "brain-mri": {"display_name": "Brain-MRI", "smoothing_factor": 0.8},
+    "hippocampusmr": {"display_name": "Hippocampus MR", "smoothing_factor": 0},
 }
 
 LOSS_FUNTION_ORDER = [

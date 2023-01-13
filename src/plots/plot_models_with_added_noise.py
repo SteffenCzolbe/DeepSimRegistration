@@ -27,7 +27,7 @@ if __name__ == '__main__':
     ticks = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35]
 
     for loss_function in tqdm(
-        LOSS_FUNTION_ORDER, desc=f"plotting convergence of loss-functions on {dataset}"
+        LOSS_FUNTION_ORDER, desc=f"plotting..."
     ):
         if loss_function not in results[dataset]:
             continue

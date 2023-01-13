@@ -57,10 +57,10 @@ def read_model_logs(dir):
     return mean_val_dice_overlap
 
 def plot(hparam_tuning_results):
-    fig = plt.figure(figsize=(14, 3.0))
-    axs = fig.subplots(1, len(DATASET_ORDER)+1)
-    axs[3].axis("off")
-    plt.subplots_adjust(bottom=0.18, wspace=0.3)
+    fig = plt.figure(figsize=(8.2, 6.0)) # (width, height)
+    axs = fig.subplots(2, 2)
+    axs = axs.flatten()
+    plt.subplots_adjust(bottom=0.11, left=0.18, wspace=0.3, hspace=0.3, right=0.9)
 
 
     for i, dataset in enumerate(DATASET_ORDER):
@@ -78,27 +78,15 @@ def plot(hparam_tuning_results):
                                                     marker=LOSS_FUNTION_CONFIG[lossfun]["marker"],
                                                     markersize=4 if '_' in lossfun else 6,
                                                     linewidth=1 if '_' in lossfun else 1.5)
-            handle = handle[0]
             axs[i].set_xscale('log', basex=2)
             axs[i].set_title(PLOT_CONFIG[dataset]["display_name"], fontsize=18)
-            LOSS_FUNTION_CONFIG[lossfun]["handle"] = handle
-            #print(LOSS_FUNTION_CONFIG[lossfun]["handle"])
     
     # add labels
-    fig.text(0.42, 0.05, "Regularization Hyperparameter $\lambda$",
+    fig.text(0.5, 0.05, "Regularization Hyperparameter $\lambda$",
              ha="center", va="center", fontsize=16)
     fig.text(0.07, 0.5, "Val. Mean Dice Overlap", ha="center",
              va="center", rotation="vertical", fontsize=16)
 
-    # add legend
-    handles = [
-        LOSS_FUNTION_CONFIG[loss_function]["handle"] for loss_function in MIND_AND_OTHER_LOSS_FUNTION
-    ]
-    labels = [
-        LOSS_FUNTION_CONFIG[loss_function]["display_name"]
-        for loss_function in MIND_AND_OTHER_LOSS_FUNTION
-    ]
-    axs[2].legend(handles, labels, bbox_to_anchor=(1., 1.), fontsize=12)
 
     # configure axis precision
     for ax in axs:
@@ -116,10 +104,9 @@ if __name__ == '__main__':
     baselines = glob.glob('./weights/hparam_tuning/*')
     deepsim = glob.glob('./weights_experiments/voxelmorph/deep-sim/*')
     mind_2d = glob.glob('./weights_experiments/voxelmorph/mind/mind-voxelmorph-2d/*')
-    nmi_2d = glob.glob('./weights_experiments/voxelmorph/nmi/nmi-voxelmorph-2d/*')
     mind_3d_brain = glob.glob('./weights_experiments/voxelmorph/mind/mind-voxelmorph-3d-brain/*')
 
-    runs = mind_2d + mind_3d_brain + baselines + deepsim + nmi_2d
+    runs = mind_2d + mind_3d_brain + baselines + deepsim 
     for run in tqdm(runs, desc='reading hparam training logs...'):
         dataset, lossfun, lam = read_model_hparams(run)
         #print(run, dataset, lossfun, lam)
