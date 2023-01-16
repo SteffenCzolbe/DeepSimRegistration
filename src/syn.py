@@ -105,7 +105,7 @@ def load_feature_extractor(device, path: str, feature_extractor_model='seg'):
     return feature_extractor
 
 
-def augment_tensor_with_deep_features(img: torch.Tensor, feature_extractor) -> torch.Tensor:
+def augment_tensor_with_deep_features(img: torch.Tensor, feature_extractor, ) -> torch.Tensor:
     device = feature_extractor.device
     interpol_model = 'bicubic' if torchreg.settings.get_ndims() == 2 else 'trilinear'
     spatial_dims = [2, 3] if torchreg.settings.get_ndims() == 2 else [2, 3, 4]
@@ -227,7 +227,7 @@ if __name__ == "__main__":
     # commandline parser
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--dataset", type=str, choices=['brain-mri', 'platelet-em', 'phc-u373'], help="dataset"
+        "--dataset", type=str, choices=['brain-mri', 'hippocampusmr', 'platelet-em', 'phc-u373'], help="dataset"
     )
     parser.add_argument(
         "--feature_extractor", type=str, choices=['none', 'seg', 'ae'], default='none', help="feature_extractor"
